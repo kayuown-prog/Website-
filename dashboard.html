@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeDroid Dashboard</title>
+<style>
+body {
+  margin: 0;
+  background: #101522;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+header {
+  background: #202b40;
+  padding: 20px;
+  font-size: 25px;
+  font-weight: bold;
+}
+.container {
+  margin: 50px auto;
+  padding: 25px;
+  max-width: 400px;
+  background: #202b40;
+  border-radius: 15px;
+}
+button {
+  background: #ff477e;
+  color: white;
+  border: 0;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<header>FreeDroid</header>
+
+<div class="container">
+  <h1>Welcome to FreeDroid!</h1>
+  <p id="userEmail">Loading...</p>
+  <button id="logoutBtn">Logout</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  authDomain: "freedroid-cloud.firebaseapp.com",
+  projectId: "freedroid-cloud",
+  storageBucket: "freedroid-cloud.firebasestorage.app",
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("userEmail").textContent = user.email;
+  } else {
+    window.location.href = "login.html";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+});
+</script>
+
+</body>
+  </html>
+  
