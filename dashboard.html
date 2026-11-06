@@ -4,98 +4,190 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FreeDroid Dashboard</title>
+<title>Chess Arena - Dashboard</title>
+
 <style>
-body {
+* {
   margin: 0;
-  background: #101522;
-  color: white;
+  padding: 0;
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
-  text-align: center;
 }
+
+body {
+  background: #10141c;
+  color: white;
+}
+
 header {
-  background: #202b40;
+  background: #1b2431;
   padding: 20px;
-  font-size: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  color: #e7b75c;
+  font-size: 23px;
   font-weight: bold;
 }
+
 .container {
-  margin: 50px auto;
-  padding: 25px;
-  max-width: 400px;
-  background: #202b40;
-  border-radius: 15px;
+  max-width: 850px;
+  margin: 35px auto;
+  padding: 20px;
 }
+
+.welcome {
+  background: #1b2431;
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 22px;
+  border: 1px solid #303c4e;
+}
+
+.welcome h1 {
+  margin-bottom: 12px;
+}
+
+.welcome p {
+  color: #aab3c2;
+  word-break: break-word;
+}
+
+.points {
+  background: #292d32;
+  border: 1px solid #d4aa65;
+  padding: 22px;
+  border-radius: 15px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.points h2 {
+  color: #e7b75c;
+  font-size: 35px;
+  margin-top: 10px;
+}
+
+.games {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: #1b2431;
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  border: 1px solid #303c4e;
+}
+
+.card .emoji {
+  font-size: 45px;
+  margin-bottom: 15px;
+}
+
+.card h3 {
+  color: #e7b75c;
+  margin-bottom: 12px;
+}
+
+.card p {
+  color: #aab3c2;
+  font-size: 14px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
 button {
-  background: #ff477e;
-  color: white;
-  border: 0;
-  padding: 12px 25px;
+  border: none;
+  padding: 12px 22px;
   border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  background: #e7b75c;
+  color: #111;
+}
+
+.logout {
+  background: #e7b75c;
+}
+
+.card button {
+  width: 100%;
+}
+
+footer {
+  text-align: center;
+  color: #8994a5;
+  padding: 25px;
 }
 </style>
 </head>
+
 <body>
 
-<header>FreeDroid</header>
+<header>
+  <div class="logo">♟ CHESS ARENA</div>
+  <button class="logout" id="logoutBtn">Logout</button>
+</header>
 
 <div class="container">
-  <h1>Welcome to FreeDroid!</h1>
-  <p id="userEmail">Loading...</p>
-  <button id="logoutBtn">Logout</button>
-  <button id="logoutBtn">Logout</button>
 
-<div class="phone-section">
-    <h2>📱 Virtual Android Phone</h2>
-    <p>आपका Virtual Phone यहाँ चलेगा।</p>
+  <div class="welcome">
+    <h1>Welcome, Player! 👋</h1>
+    <p id="userEmail">Loading account...</p>
+  </div>
 
-    <button onclick="startPhone()">Start Phone</button>
-    <button onclick="stopPhone()">Stop Phone</button>
+  <div class="points">
+    <p>🏆 YOUR TOTAL POINTS</p>
+    <h2 id="totalPoints">0</h2>
+    <p>Win online matches to earn 10 points.</p>
+  </div>
 
-    <div id="phone-status">
-        Phone Status: Stopped
+  <div class="games">
+
+    <div class="card">
+      <div class="emoji">♟️</div>
+      <h3>Online Chess</h3>
+      <p>Play against real players online and earn points.</p>
+      <button onclick="location.href='chess.html'">
+        Play Online
+      </button>
     </div>
-  <div class="virtual-phone">
-    <div class="phone-screen">
-        <h3>Android</h3>
-        <p>Virtual Android Display</p>
-        <div class="android-icon">🤖</div>
-        <p>Welcome to FreeDroid</p>
+
+    <div class="card">
+      <div class="emoji">🤖</div>
+      <h3>Play With Bot</h3>
+      <p>Practice chess against computer. No points.</p>
+      <button onclick="location.href='bot.html'">
+        Play With Bot
+      </button>
     </div>
+
+    <div class="card">
+      <div class="emoji">🏆</div>
+      <h3>Leaderboard</h3>
+      <p>See the top players and their rankings.</p>
+      <button onclick="location.href='leaderboard.html'">
+        View Rankings
+      </button>
+    </div>
+
+  </div>
 </div>
 
-<style>
-.virtual-phone {
-    width: 280px;
-    height: 500px;
-    background: #111;
-    border: 8px solid #444;
-    border-radius: 30px;
-    margin: 25px auto;
-    padding: 10px;
-}
-
-.phone-screen {
-    background: #dcecff;
-    height: 100%;
-    border-radius: 20px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    color: #111;
-}
-
-.android-icon {
-    font-size: 65px;
-}
-</style>
-</div>
-</div>
+<footer>
+  © 2026 Chess Arena | All Rights Reserved
+</footer>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+
 import {
   getAuth,
   onAuthStateChanged,
@@ -117,28 +209,22 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    document.getElementById("userEmail").textContent = user.email;
+    document.getElementById("userEmail").textContent =
+      user.email || "Player";
   } else {
     window.location.href = "login.html";
   }
 });
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
-  await signOut(auth);
-  window.location.href = "login.html";
+  try {
+    await signOut(auth);
+    window.location.href = "login.html";
+  } catch (error) {
+    alert("Logout failed: " + error.message);
+  }
 });
 </script>
-<script>
-function startPhone() {
-    document.getElementById("phone-status").innerText =
-        "Phone Status: Starting...";
-}
 
-function stopPhone() {
-    document.getElementById("phone-status").innerText =
-        "Phone Status: Stopped";
-}
-</script>
 </body>
-  </html>
-  
+</html>
