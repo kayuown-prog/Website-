@@ -3,65 +3,215 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FreeDroid Cloud</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Arena | Play Chess Online</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#080d18;color:white;font-family:Arial}
-header{padding:20px;background:#101a2c;display:flex;justify-content:space-between}
-.logo{font-size:22px;color:#55d6ff;font-weight:bold}
-main{max-width:900px;margin:30px auto;padding:15px}
-h1{text-align:center}
-.sub{text-align:center;color:#9aabc5}
-.card{background:#111c30;border:1px solid #263b59;border-radius:18px;padding:22px;margin-top:25px}
-.phone{width:230px;height:410px;margin:20px auto;background:#182c50;border:7px solid #65748b;border-radius:30px;text-align:center;padding:20px}
-.clock{font-size:35px;margin-top:50px}
-.robot{font-size:55px;margin:35px}
-button{padding:13px 20px;border:0;border-radius:9px;margin:5px;cursor:pointer;font-weight:bold}
-.start{background:#28d995}
-.stop{background:#ff6575;color:white}
-.center{text-align:center}
-.note{text-align:center;color:#9aabc5;font-size:13px}
-a{color:#55d6ff}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #10141c;
+  color: white;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 7%;
+  background: #171e29;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: bold;
+  color: #e7b75c;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 18px;
+  font-size: 14px;
+}
+
+.hero {
+  text-align: center;
+  padding: 65px 20px 35px;
+}
+
+.hero h1 {
+  font-size: 38px;
+  margin-bottom: 15px;
+}
+
+.hero h1 span {
+  color: #e7b75c;
+}
+
+.hero p {
+  color: #aab3c2;
+  line-height: 1.7;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: min(310px, 85vw);
+  margin: 30px auto;
+  border: 5px solid #d4aa65;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.square {
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(20px, 7vw, 34px);
+}
+
+.light { background: #f0d9b5; }
+.dark { background: #b58863; }
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 10px;
+}
+
+.btn {
+  padding: 15px 25px;
+  border-radius: 9px;
+  text-decoration: none;
+  font-weight: bold;
+  background: #e7b75c;
+  color: #151515;
+}
+
+.btn.secondary {
+  background: #252f3e;
+  color: white;
+  border: 1px solid #49566a;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+  padding: 40px 7%;
+}
+
+.card {
+  background: #1b2431;
+  padding: 25px;
+  border-radius: 13px;
+  text-align: center;
+  border: 1px solid #303c4e;
+}
+
+.card h3 {
+  color: #e7b75c;
+  margin-bottom: 12px;
+}
+
+.card p {
+  color: #aab3c2;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #8792a3;
+  background: #171e29;
+}
 </style>
 </head>
+
 <body>
+
 <header>
-<div class="logo">FreeDroid Cloud ☁️</div>
-<div>Android 7.0</div>
+  <div class="logo">♟ CHESS ARENA</div>
+  <nav>
+    <a href="login.html">Login</a>
+    <a href="signup.html">Sign Up</a>
+  </nav>
 </header>
-<main>
-<h1>My Cloud Phone</h1>
-<p class="sub">Your Android phone in the cloud.</p>
-<div class="card">
-<h2 class="center">Virtual Android Phone</h2>
-<p class="center" id="status">● Offline</p>
-<div class="phone">
-<div>Android Nougat</div>
-<div class="clock">10:08</div>
-<div class="robot">🤖</div>
-<h3>Android 7.0</h3>
-<p>Phone Preview</p>
-</div>
-<div class="center">
-<button class="start" onclick="startPhone()">Start Phone</button>
-<button class="stop" onclick="stopPhone()">Stop Phone</button>
-</div>
-<p class="note" id="message">Cloud emulator is not connected yet.</p>
-<div class="center">
-<a href="login.html">Login</a> |
-<a href="signup.html">Signup</a>
-</div>
-</div>
-</main>
+
+<section class="hero">
+  <h1>Play Chess <span>Online</span></h1>
+  <p>
+    Challenge real players, earn points and become
+    the ultimate Chess Champion!
+  </p>
+
+  <div class="board" id="board"></div>
+
+  <div class="buttons">
+    <a href="login.html" class="btn">♟ Play Online</a>
+    <a href="login.html" class="btn secondary">🤖 Play With Bot</a>
+  </div>
+</section>
+
+<section class="features">
+  <div class="card">
+    <h3>♟ Online Matches</h3>
+    <p>Play chess with real players online.</p>
+  </div>
+
+  <div class="card">
+    <h3>🏆 Earn Points</h3>
+    <p>Win online matches and earn 10 points.</p>
+  </div>
+
+  <div class="card">
+    <h3>🤖 Play With Bot</h3>
+    <p>Practice chess against computer without points.</p>
+  </div>
+
+  <div class="card">
+    <h3>🥇 Leaderboard</h3>
+    <p>Compete with other players and climb rankings.</p>
+  </div>
+</section>
+
+<footer>
+  © 2026 Chess Arena | All Rights Reserved
+</footer>
+
 <script>
-function startPhone(){
-document.getElementById("status").innerText="● Demo Preview";
-document.getElementById("message").innerText="Real Android Cloud Server is not connected yet.";
-}
-function stopPhone(){
-document.getElementById("status").innerText="● Offline";
-}
+const pieces = [
+  "♜","♞","♝","♛","♚","♝","♞","♜",
+  "♟","♟","♟","♟","♟","♟","♟","♟",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "","","","","","","","",
+  "♙","♙","♙","♙","♙","♙","♙","♙",
+  "♖","♘","♗","♕","♔","♗","♘","♖"
+];
+
+const board = document.getElementById("board");
+
+pieces.forEach((piece, i) => {
+  const square = document.createElement("div");
+  square.className = "square " +
+    ((Math.floor(i / 8) + i % 8) % 2 === 0
+      ? "light" : "dark");
+  square.textContent = piece;
+  board.appendChild(square);
+});
 </script>
+
 </body>
 </html>
