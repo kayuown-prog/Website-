@@ -1,351 +1,171 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHESS MASTER | Play Online</title>
+<title>Chess Master</title>
 
 <style>
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
 body {
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 20% 20%, #263746, transparent 45%),
-    linear-gradient(135deg, #080d13, #172330, #080d13);
-  font-family: Arial, sans-serif;
+  background: #10141c;
   color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  min-height: 100vh;
 }
 
-.container {
-  width: 100%;
-  max-width: 420px;
-  padding: 35px 28px;
-  border: 1px solid #b99542;
-  border-radius: 22px;
-  background: rgba(13, 22, 31, 0.96);
-  box-shadow: 0 15px 60px #0009;
-  text-align: center;
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #1b2433;
+  border-bottom: 2px solid #d6a84b;
 }
 
 .logo {
-  font-size: 75px;
-  color: #f5c542;
+  color: #f5c76a;
+  font-size: 23px;
+  font-weight: bold;
 }
 
-h1 {
-  font-size: 29px;
-  letter-spacing: 3px;
-  color: #f5c542;
-  margin: 10px 0;
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 15px;
+  font-size: 14px;
 }
 
-.subtitle {
-  color: #aab4bf;
-  font-size: 13px;
-  margin-bottom: 30px;
+.hero {
+  text-align: center;
+  padding: 75px 20px;
 }
 
-.tabs {
-  display: flex;
-  background: #202d39;
-  padding: 5px;
-  border-radius: 10px;
+.hero h1 {
+  color: #f5c76a;
+  font-size: clamp(32px, 7vw, 55px);
+  margin-bottom: 20px;
+}
+
+.hero p {
+  color: #ccc;
+  font-size: 17px;
+  line-height: 1.6;
   margin-bottom: 25px;
 }
 
-.tabs button {
-  width: 50%;
-  padding: 12px;
+button {
+  background: #d6a84b;
+  color: #10141c;
+  padding: 14px 28px;
   border: none;
   border-radius: 8px;
-  background: transparent;
-  color: #aaa;
   font-weight: bold;
-}
-
-.tabs button.active {
-  background: #f5c542;
-  color: #111;
-}
-
-.input-group {
-  text-align: left;
-  margin-bottom: 17px;
-}
-
-label {
-  display: block;
-  color: #d5dce3;
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-input {
-  width: 100%;
-  padding: 15px;
-  background: #202d39;
-  border: 1px solid #3b4c5c;
-  border-radius: 9px;
-  color: white;
-  outline: none;
-  font-size: 15px;
-}
-
-input:focus {
-  border-color: #f5c542;
-}
-
-.main-btn {
-  width: 100%;
-  padding: 15px;
-  margin-top: 8px;
-  background: linear-gradient(90deg, #d5a82e, #ffdc75);
-  color: #101820;
-  border: none;
-  border-radius: 9px;
   font-size: 16px;
-  font-weight: bold;
   cursor: pointer;
 }
 
-.main-btn:disabled {
-  opacity: 0.6;
+button:hover {
+  background: #f5c76a;
 }
 
-.forgot {
-  display: block;
-  text-align: right;
-  margin-top: 17px;
-  color: #f5c542;
-  font-size: 13px;
-  cursor: pointer;
+.features {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 18px;
 }
 
-#message {
-  min-height: 20px;
-  margin-top: 18px;
-  font-size: 13px;
-  overflow-wrap: anywhere;
+.card {
+  background: #1b2433;
+  padding: 30px 20px;
+  border-radius: 12px;
+  text-align: center;
 }
 
-.footer {
-  color: #84919d;
-  margin-top: 28px;
-  font-size: 12px;
+.card h2 {
+  color: #f5c76a;
+  margin-bottom: 12px;
+}
+
+.card p {
+  color: #ccc;
+  line-height: 1.5;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  margin-top: 35px;
+  color: #aaa;
+  background: #1b2433;
+}
+
+@media(max-width:500px) {
+  header {
+    flex-direction: column;
+    gap: 15px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <div class="logo">♟</div>
-  <h1>CHESS MASTER</h1>
-  <p class="subtitle">THINK SMART. PLAY STRONG. WIN BIG.</p>
+<header>
+  <div class="logo">♟ CHESS MASTER</div>
 
-  <div class="tabs">
-    <button type="button" id="loginTab" class="active">LOGIN</button>
-    <button type="button" id="signupTab">SIGN UP</button>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="login.html">Login</a>
+  </nav>
+</header>
+
+<section class="hero">
+
+  <h1>WELCOME TO CHESS MASTER</h1>
+
+  <p>
+    Play Chess. Challenge Your Mind.<br>
+    Enjoy Chess With Friends or Computer.
+  </p>
+
+  <button onclick="location.href='login.html'">
+    GET STARTED
+  </button>
+
+</section>
+
+<section class="features">
+
+  <div class="card">
+    <h2>♟ Play With Bot</h2>
+    <p>Challenge yourself against the computer.</p>
   </div>
 
-  <form id="authForm">
-    <div class="input-group">
-      <label>Email Address</label>
-      <input type="email" id="email"
-        placeholder="Enter your email"
-        autocomplete="email" required>
-    </div>
-
-    <div class="input-group">
-      <label>Password</label>
-      <input type="password" id="password"
-        placeholder="Enter your password"
-        minlength="6"
-        autocomplete="current-password" required>
-    </div>
-
-    <button type="submit" class="main-btn" id="submitBtn">
-      LOGIN TO CHESS MASTER
-    </button>
-  </form>
-
-  <span class="forgot" id="forgotBtn">Forgot Password?</span>
-
-  <p id="message" aria-live="polite"></p>
-
-  <div class="footer">
-    ♟ CHESS MASTER © 2026
-    <br><br>
-    YOUR NEXT MOVE STARTS HERE
+  <div class="card">
+    <h2>♚ Multiplayer</h2>
+    <p>Play chess with your friends online.</p>
   </div>
-</div>
 
-<script type="module">
+  <div class="card">
+    <h2>♛ Chess Practice</h2>
+    <p>Improve your chess skills with practice.</p>
+  </div>
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+</section>
 
-import {
-  getAuth,
-  setPersistence,
-  browserLocalPersistence,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  onAuthStateChanged
-}
-from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-  authDomain: "freedroid-cloud.firebaseapp.com",
-  projectId: "freedroid-cloud",
-  storageBucket: "freedroid-cloud.firebasestorage.app",
-  messagingSenderId: "909415918359",
-  appId: "1:909415918359:web:85da71cdd35a879fa86552",
-  measurementId: "G-HV2ELB7GS6"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-const form = document.getElementById("authForm");
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const message = document.getElementById("message");
-const submitBtn = document.getElementById("submitBtn");
-
-let mode = "login";
-let redirecting = false;
-let busy = false;
-
-function showMessage(text, success = false) {
-  message.style.color = success ? "#58d68d" : "#ff7675";
-  message.textContent = text;
-}
-
-function setMode(newMode) {
-  mode = newMode;
-
-  document.getElementById("loginTab")
-    .classList.toggle("active", mode === "login");
-
-  document.getElementById("signupTab")
-    .classList.toggle("active", mode === "signup");
-
-  submitBtn.textContent = mode === "login"
-    ? "LOGIN TO CHESS MASTER"
-    : "CREATE ACCOUNT";
-
-  password.autocomplete = mode === "login"
-    ? "current-password"
-    : "new-password";
-
-  showMessage("");
-}
-
-document.getElementById("loginTab").onclick = () => {
-  setMode("login");
-};
-
-document.getElementById("signupTab").onclick = () => {
-  setMode("signup");
-};
-
-// Wait until Firebase authentication is ready.
-const authReady = setPersistence(auth, browserLocalPersistence);
-
-onAuthStateChanged(auth, async (user) => {
-  await authReady;
-
-  if (user && !redirecting) {
-    redirecting = true;
-    window.location.replace("./dashboard.html");
-  }
-});
-
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-
-  if (busy || redirecting) return;
-
-  const e = email.value.trim();
-  const p = password.value;
-
-  if (!e || !p) {
-    showMessage("Please enter email and password.");
-    return;
-  }
-
-  busy = true;
-  submitBtn.disabled = true;
-  submitBtn.textContent = "PLEASE WAIT...";
-
-  try {
-    await authReady;
-
-    if (mode === "login") {
-      await signInWithEmailAndPassword(auth, e, p);
-    } else {
-      await createUserWithEmailAndPassword(auth, e, p);
-    }
-
-    redirecting = true;
-    showMessage("Login successful! Opening Dashboard...", true);
-    window.location.replace("./dashboard.html");
-
-  } catch (error) {
-
-    const errors = {
-      "auth/invalid-credential": "Incorrect email or password.",
-      "auth/email-already-in-use": "This email already has an account.",
-      "auth/weak-password": "Password must be at least 6 characters.",
-      "auth/invalid-email": "Please enter a valid email.",
-      "auth/network-request-failed": "Check your internet connection.",
-      "auth/operation-not-allowed": "Enable Email/Password in Firebase Authentication.",
-      "auth/too-many-requests": "Too many attempts. Try again later."
-    };
-
-    showMessage(errors[error.code] || error.message);
-
-  } finally {
-    busy = false;
-    submitBtn.disabled = false;
-
-    if (!redirecting) {
-      submitBtn.textContent = mode === "login"
-        ? "LOGIN TO CHESS MASTER"
-        : "CREATE ACCOUNT";
-    }
-  }
-});
-
-document.getElementById("forgotBtn").onclick = async () => {
-  const e = email.value.trim();
-
-  if (!e) {
-    showMessage("Enter your email first.");
-    return;
-  }
-
-  try {
-    await sendPasswordResetEmail(auth, e);
-    showMessage("Password reset email sent!", true);
-  } catch (error) {
-    showMessage(error.message);
-  }
-};
-
-</script>
+<footer>
+  © 2026 Chess Master | All Rights Reserved
+</footer>
 
 </body>
-  </html>
+</html>
