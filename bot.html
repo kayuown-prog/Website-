@@ -12,8 +12,13 @@ body{margin:0;background:#10141c;color:white;text-align:center}
 header{padding:20px;background:#1b2431;color:#e7b75c;font-size:23px;font-weight:bold}
 .board{display:grid;grid-template-columns:repeat(8,1fr);width:min(94vw,450px);margin:20px auto;border:5px solid #d4aa65}
 .square{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(25px,8vw,45px);cursor:pointer;position:relative}
-.light{background:#f0d9b5}
-.dark{background:#b58863}
+.light {
+  background: #ffffff;
+}
+
+.dark {
+  background: #222222;
+}
 .selected{background:#a9bd45!important}
 .possible:after{content:"";width:23%;height:23%;border-radius:50%;background:#455b37;opacity:.7}
 button{padding:13px 22px;margin:8px;border:0;border-radius:8px;background:#e7b75c;font-weight:bold;cursor:pointer}
