@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Arena - Bot</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#10141c;color:white;text-align:center}
+header{padding:20px;background:#1b2431;color:#e7b75c;font-size:23px;font-weight:bold}
+.board{display:grid;grid-template-columns:repeat(8,1fr);width:min(94vw,450px);margin:20px auto;border:5px solid #d4aa65}
+.square{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(25px,8vw,45px);cursor:pointer;position:relative}
+.light{background:#f0d9b5}
+.dark{background:#b58863}
+.selected{background:#a9bd45!important}
+.possible:after{content:"";width:23%;height:23%;border-radius:50%;background:#455b37;opacity:.7}
+button{padding:13px 22px;margin:8px;border:0;border-radius:8px;background:#e7b75c;font-weight:bold;cursor:pointer}
+.back{background:#283344;color:white}
+#status{margin:20px;color:#e7b75c;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<header>♟ CHESS ARENA</header>
+
+<h2>🤖 Play With Bot</h2>
+<p>Practice against Computer</p>
+<p>🏆 Bot matches give 0 points</p>
+
+<div id="status">Your Turn (White)</div>
+<div class="board" id="board"></div>
+
+<button onclick="newGame()">New Game</button>
+<button class="back" onclick="location.href='dashboard.html'">Dashboard</button>
+
+<script type="module">
+import { Chess } from
+"https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
+
+const game = new Chess();
+const board = document.getElementById("board");
+const status = document.getElementById("status");
+
+const symbols = {
+  wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",
+  bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟"
+};
+
+let selected = null;
+let possible = [];
+let botThinking = false;
+
+function render() {
+  board.innerHTML = "";
+  const position = game.board();
+
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+
+      const name = "abcdefgh"[c] + (8-r);
+      const piece = position[r][c];
+
+      const cell = document.createElement("div");
+      cell.className = "square " +
+        ((r+c)%2===0 ? "light":"dark");
+
+      if(selected===name) cell.classList.add("selected");
+      if(possible.includes(name)) cell.classList.add("possible");
+
+      if(piece) cell.textContent = symbols[piece.color+piece.type];
+
+      cell.onclick = () => selectSquare(name);
+      board.appendChild(cell);
+    }
+  }
+  updateStatus();
+}
+
+function updateStatus() {
+  if(game.isCheckmate()){
+    status.textContent = game.turn()==="w"
+      ? "Bot Wins! 🤖"
+      : "You Win! 🎉";
+  } else if(game.isDraw()){
+    status.textContent = "Game Draw!";
+  } else if(botThinking){
+    status.textContent = "Bot is thinking... 🤖";
+  } else if(game.isCheck()){
+    status.textContent = "Check! Your turn.";
+  } else {
+    status.textContent = game.turn()==="w"
+      ? "Your Turn (White)"
+      : "Bot's Turn (Black)";
+  }
+}
+
+function selectSquare(square) {
+  if(game.isGameOver() || botThinking || game.turn()!=="w") return;
+
+  if(selected && possible.includes(square)){
+    try {
+      game.move({
+        from:selected,
+        to:square,
+        promotion:"q"
+      });
+      selected=null;
+      possible=[];
+      render();
+      botMove();
+      return;
+    } catch(e) {}
+  }
+
+  const piece = game.get(square);
+
+  if(piece && piece.color==="w"){
+    selected=square;
+    possible=game.moves({
+      square,
+      verbose:true
+    }).map(m=>m.to);
+  } else {
+    selected=null;
+    possible=[];
+  }
+
+  render();
+}
+
+function botMove() {
+  if(game.isGameOver()) return;
+
+  botThinking=true;
+  render();
+
+  setTimeout(()=>{
+    const moves=game.moves();
+
+    if(moves.length){
+      const move=moves[Math.floor(Math.random()*moves.length)];
+      game.move(move);
+    }
+
+    botThinking=false;
+    selected=null;
+    possible=[];
+    render();
+  },700);
+}
+
+window.newGame=function(){
+  game.reset();
+  selected=null;
+  possible=[];
+  botThinking=false;
+  render();
+};
+
+render();
+</script>
+
+</body>
+  </html>
+  
