@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Arena - Dashboard</title>
+<title>CHESS MASTER - Dashboard</title>
 
 <style>
 * {
@@ -112,10 +111,6 @@ button {
   color: #111;
 }
 
-.logout {
-  background: #e7b75c;
-}
-
 .card button {
   width: 100%;
 }
@@ -131,8 +126,8 @@ footer {
 <body>
 
 <header>
-  <div class="logo">♟ CHESS ARENA</div>
-  <button class="logout" id="logoutBtn">Logout</button>
+  <div class="logo">♟ CHESS MASTER</div>
+  <button id="logoutBtn">Logout</button>
 </header>
 
 <div class="container">
@@ -153,8 +148,8 @@ footer {
     <div class="card">
       <div class="emoji">♟️</div>
       <h3>Online Chess</h3>
-      <p>Play against real players online and earn points.</p>
-      <button onclick="location.href='chess.html'">
+      <p>Play against real players online.</p>
+      <button onclick="location.href='online.html'">
         Play Online
       </button>
     </div>
@@ -162,7 +157,7 @@ footer {
     <div class="card">
       <div class="emoji">🤖</div>
       <h3>Play With Bot</h3>
-      <p>Practice chess against computer. No points.</p>
+      <p>Practice chess against computer.</p>
       <button onclick="location.href='bot.html'">
         Play With Bot
       </button>
@@ -181,7 +176,7 @@ footer {
 </div>
 
 <footer>
-  © 2026 Chess Arena | All Rights Reserved
+  © 2026 CHESS MASTER | All Rights Reserved
 </footer>
 
 <script type="module">
@@ -195,7 +190,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7HCu0Y",
   authDomain: "freedroid-cloud.firebaseapp.com",
   projectId: "freedroid-cloud",
   storageBucket: "freedroid-cloud.firebasestorage.app",
