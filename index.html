@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FreeDroid Cloud</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ font-family:Arial,sans-serif;
+ background:#080d18;
+ color:white;
+}
+header{
+ padding:20px;
+ background:#101a2c;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+.logo{font-size:23px;font-weight:bold;color:#55d6ff}
+main{max-width:900px;margin:35px auto;padding:15px}
+h1{text-align:center;font-size:32px}
+.sub{text-align:center;color:#9aabc5}
+.card{
+ background:#111c30;
+ border:1px solid #263b59;
+ border-radius:18px;
+ padding:22px;
+ margin-top:25px;
+}
+.phone{
+ width:230px;
+ height:410px;
+ margin:20px auto;
+ background:#101827;
+ border:7px solid #65748b;
+ border-radius:30px;
+ overflow:hidden;
+ text-align:center;
+ position:relative;
+}
+.screen{
+ background:linear-gradient(145deg,#284c85,#17203e);
+ height:100%;
+ padding:20px 10px;
+}
+.clock{font-size:32px;margin-top:45px}
+.android{font-size:45px;margin:30px}
+.status{color:#8be9b0}
+button{
+ border:0;
+ padding:13px 20px;
+ border-radius:10px;
+ font-weight:bold;
+ cursor:pointer;
+ margin:5px;
+}
+.start{background:#28d995;color:#062519}
+.stop{background:#ff6575;color:white}
+button:disabled{opacity:.5;cursor:not-allowed}
+.note{color:#9aabc5;font-size:13px;text-align:center}
+footer{text-align:center;color:#71819a;padding:25px}
+</style>
+</head>
+<body>
+<header>
+ <div class="logo">FreeDroid Cloud ☁️</div>
+ <div>Android 7.0</div>
+</header>
+
+<main>
+ <h1>Your Cloud Android Phone</h1>
+ <p class="sub">Your virtual phone, anywhere, anytime.</p>
+
+ <section class="card">
+  <h2 style="text-align:center">My Virtual Phone</h2>
+  <p class="status" id="status" style="text-align:center">● Offline</p>
+
+  <div class="phone">
+   <div class="screen">
+    <div>Android Nougat</div>
+    <div class="clock">10:08</div>
+    <div class="android">🤖</div>
+    <h3>Android 7.0</h3>
+    <p>Virtual Phone Preview</p>
+   </div>
+  </div>
+
+  <div style="text-align:center">
+   <button class="start" id="start" onclick="startPhone()">Start Phone</button>
+   <button class="stop" id="stop" onclick="stopPhone()" disabled>Stop Phone</button>
+  </div>
+
+  <p class="note" id="message">
+   Preview only — Cloud Android server is not connected.
+  </p>
+ </section>
+</main>
+
+<footer>© 2026 FreeDroid Cloud</footer>
+
+<script>
+function startPhone(){
+ document.getElementById("status").innerText="● Starting...";
+ document.getElementById("message").innerText=
+ "Demo preview only. No real Android server is connected.";
+ document.getElementById("start").disabled=true;
+ setTimeout(()=>{
+ document.getElementById("status").innerText="● Demo Preview";
+ document.getElementById("start").disabled=false;
+ },1500);
+}
+function stopPhone(){
+ document.getElementById("status").innerText="● Offline";
+}
+</script>
+</body>
+  </html>
+  
