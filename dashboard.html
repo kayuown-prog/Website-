@@ -3,194 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHESS MASTER - Dashboard</title>
+<title>CHESS MASTER | Dashboard</title>
 
 <style>
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
 }
 
 body {
-  background: #10141c;
+  background: #080e16;
   color: white;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
 }
 
 header {
-  background: #1b2431;
-  padding: 20px;
+  background: #111d29;
+  border-bottom: 1px solid #b99542;
+  padding: 18px 6%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 15px;
 }
 
 .logo {
-  color: #e7b75c;
+  color: #f5c542;
   font-size: 23px;
   font-weight: bold;
+  letter-spacing: 2px;
 }
 
-.container {
-  max-width: 850px;
-  margin: 35px auto;
-  padding: 20px;
+.logout {
+  padding: 10px 18px;
+  background: #f5c542;
+  color: #111;
+  border: none;
+  border-radius: 7px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-.welcome {
-  background: #1b2431;
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 22px;
-  border: 1px solid #303c4e;
+.hero {
+  text-align: center;
+  padding: 45px 15px 25px;
 }
 
-.welcome h1 {
+.hero h1 {
+  font-size: 32px;
+  color: #f5c542;
   margin-bottom: 12px;
 }
 
-.welcome p {
-  color: #aab3c2;
-  word-break: break-word;
+.hero p {
+  color: #aab4bf;
+  font-size: 14px;
 }
 
-.points {
-  background: #292d32;
-  border: 1px solid #d4aa65;
-  padding: 22px;
-  border-radius: 15px;
+.user-info {
+  margin: 20px auto 0;
+  color: #f5c542;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.section-title {
   text-align: center;
-  margin-bottom: 25px;
+  color: #f5c542;
+  font-size: 22px;
+  margin: 25px 0;
 }
 
-.points h2 {
-  color: #e7b75c;
-  font-size: 35px;
-  margin-top: 10px;
-}
-
-.games {
+.modes {
+  width: 90%;
+  max-width: 1050px;
+  margin: auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
+  gap: 22px;
+  padding-bottom: 50px;
 }
 
 .card {
-  background: #1b2431;
-  padding: 25px;
-  border-radius: 15px;
+  background: linear-gradient(145deg, #172635, #0e1822);
+  border: 1px solid #8f7335;
+  border-radius: 16px;
+  padding: 28px 20px;
   text-align: center;
-  border: 1px solid #303c4e;
+  transition: 0.2s;
 }
 
-.card .emoji {
-  font-size: 45px;
-  margin-bottom: 15px;
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #f5c542;
+  box-shadow: 0 8px 25px #f5c54220;
 }
 
-.card h3 {
-  color: #e7b75c;
+.card .icon {
+  font-size: 55px;
+  margin-bottom: 18px;
+}
+
+.card h2 {
+  color: #f5c542;
+  font-size: 20px;
   margin-bottom: 12px;
 }
 
 .card p {
-  color: #aab3c2;
-  font-size: 14px;
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
-
-button {
-  border: none;
-  padding: 12px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  background: #e7b75c;
-  color: #111;
+  color: #aab4bf;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 42px;
 }
 
 .card button {
   width: 100%;
+  margin-top: 20px;
+  padding: 13px;
+  background: linear-gradient(90deg, #d5a82e, #ffdc75);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.card button:hover {
+  opacity: 0.85;
 }
 
 footer {
   text-align: center;
-  color: #8994a5;
-  padding: 25px;
+  padding: 22px;
+  color: #71808e;
+  border-top: 1px solid #273746;
+  font-size: 12px;
+}
+
+#loading {
+  text-align: center;
+  padding: 80px 20px;
+  color: #f5c542;
+}
+
+#app {
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
+<div id="loading">Loading Chess Master...</div>
+
+<div id="app">
+
 <header>
   <div class="logo">♟ CHESS MASTER</div>
-  <button id="logoutBtn">Logout</button>
+  <button class="logout" id="logoutBtn">LOGOUT</button>
 </header>
 
-<div class="container">
+<section class="hero">
+  <h1>WELCOME TO CHESS MASTER</h1>
+  <p>Choose your game mode and start your next battle.</p>
+  <div class="user-info" id="userEmail"></div>
+</section>
 
-  <div class="welcome">
-    <h1>Welcome, Player! 👋</h1>
-    <p id="userEmail">Loading account...</p>
+<h2 class="section-title">SELECT GAME MODE</h2>
+
+<section class="modes">
+
+  <div class="card">
+    <div class="icon">🤖</div>
+    <h2>PLAY VS COMPUTER</h2>
+    <p>Challenge the computer and improve your chess skills.</p>
+    <button onclick="openGame('bot.html')">
+      PLAY NOW
+    </button>
   </div>
 
-  <div class="points">
-    <p>🏆 YOUR TOTAL POINTS</p>
-    <h2 id="totalPoints">0</h2>
-    <p>Win online matches to earn 10 points.</p>
+  <div class="card">
+    <div class="icon">♟️</div>
+    <h2>PLAY WITH FRIEND</h2>
+    <p>Play chess with a friend on the same device.</p>
+    <button onclick="openGame('chess.html')">
+      PLAY NOW
+    </button>
   </div>
 
-  <div class="games">
-
-    <div class="card">
-      <div class="emoji">♟️</div>
-      <h3>Online Chess</h3>
-      <p>Play against real players online.</p>
-      <button onclick="location.href='online.html'">
-        Play Online
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="emoji">🤖</div>
-      <h3>Play With Bot</h3>
-      <p>Practice chess against computer.</p>
-      <button onclick="location.href='bot.html'">
-        Play With Bot
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="emoji">🏆</div>
-      <h3>Leaderboard</h3>
-      <p>See the top players and their rankings.</p>
-      <button onclick="location.href='leaderboard.html'">
-        View Rankings
-      </button>
-    </div>
-
+  <div class="card">
+    <div class="icon">🌐</div>
+    <h2>ONLINE MULTIPLAYER</h2>
+    <p>Connect with other players and play online.</p>
+    <button onclick="openGame('multiplayer.html')">
+      PLAY ONLINE
+    </button>
   </div>
-</div>
+
+</section>
 
 <footer>
-  © 2026 CHESS MASTER | All Rights Reserved
+  CHESS MASTER © 2026
+  <br><br>
+  THINK SMART. PLAY STRONG. WIN BIG.
 </footer>
 
+</div>
+
 <script type="module">
+
 import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
   getAuth,
   onAuthStateChanged,
   signOut
-} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7HCu0Y",
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
   authDomain: "freedroid-cloud.firebaseapp.com",
   projectId: "freedroid-cloud",
   storageBucket: "freedroid-cloud.firebasestorage.app",
@@ -202,24 +238,46 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+const loading = document.getElementById("loading");
+const mainApp = document.getElementById("app");
+
 onAuthStateChanged(auth, (user) => {
+
   if (user) {
     document.getElementById("userEmail").textContent =
-      user.email || "Player";
+      "Logged in as: " + user.email;
+
+    loading.style.display = "none";
+    mainApp.style.display = "block";
+
   } else {
-    window.location.href = "login.html";
+    window.location.replace("./index.html");
   }
+
 });
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
+window.openGame = function(page) {
+  window.location.href = page;
+};
+
+document.getElementById("logoutBtn").onclick = async () => {
+
+  const btn = document.getElementById("logoutBtn");
+  btn.disabled = true;
+  btn.textContent = "PLEASE WAIT...";
+
   try {
     await signOut(auth);
-    window.location.href = "login.html";
+    window.location.replace("./index.html");
   } catch (error) {
     alert("Logout failed: " + error.message);
+    btn.disabled = false;
+    btn.textContent = "LOGOUT";
   }
-});
+
+};
+
 </script>
 
 </body>
-</html>
+      </html>
