@@ -1,43 +1,183 @@
 
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-
-scale=1">
-<title>CHESS MASTER - Dashboard</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master - Dashboard</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#10141c;color:#fff;font-family:Arial}
-header{padding:20px;text-align:center;background:#1c2431;border-bottom:1px solid #344256}
-h1{color:#e7b85c;margin:0}.wrap{max-width:850px;margin:35px auto;padding:18px}
-.welcome{text-align:center;color:#c5ceda;margin-bottom:28px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
-.card{background:#1c2431;padding:24px;border-radius:16px;text-align:center;border:1px solid #344256}
-.card h2{margin-top:0}.card p{color:#aab4c3;min-height:40px}
-a.btn,button{display:inline-block;padding:13px 18px;background:#e7b85c;color:#171717;text-decoration:
-none;border:0;border-radius:9px;font-weight:bold;cursor:pointer}
-.logout{display:block;margin:28px auto;background:#344256;color:#fff}
-</style></head><body>
-<header><h1>■ CHESS MASTER</h1></header>
-<main class="wrap"><div class="welcome"><h2 id="welcome">Welcome!</h2><div id="userEmail">Checking 
-account...</div></div>
-<div class="grid">
-<section class="card"><h2>■ Play Online</h2><p>Find another player and play a live match.</p><a 
-class="btn" href="chess.html">PLAY ONLINE</a></section>
-<section class="card"><h2>■ Play vs Bot</h2><p>Practice chess against the computer.</p><a class="btn" 
-href="bot.html">PLAY BOT</a></section>
-<section class="card"><h2>■ Local Chess</h2><p>Play a game on this device.</p><a class="btn" href="chess.
-html?local=1">LOCAL GAME</a></section>
-</div><button class="logout" id="logoutBtn">LOGOUT</button><p id="message" style="text-align:center"></
-p></main>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script>
-const msg=document.getElementById('message');
-auth.onAuthStateChanged(user=>{
- if(!user){location.replace('login.html');return}
- document.getElementById('welcome').textContent='Welcome to CHESS MASTER';
- document.getElementById('userEmail').textContent=user.email||user.uid;
-});
-document.getElementById('logoutBtn').onclick=async()=>{
- try{await auth.signOut();location.replace('login.html')}catch(e){msg.textContent=e.message}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #10141c;
+  color: white;
+  min-height: 100vh;
+}
+
+header {
+  background: #1b2433;
+  padding: 20px;
+  text-align: center;
+  border-bottom: 2px solid #d6a84b;
+}
+
+header h1 {
+  color: #f5c76a;
+}
+
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  text-align: center;
+}
+
+.profile {
+  background: #1b2433;
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+}
+
+.profile h2 {
+  color: #f5c76a;
+  margin-bottom: 12px;
+}
+
+#userEmail {
+  color: #ccc;
+  margin-bottom: 20px;
+  word-break: break-word;
+}
+
+button {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  background: #d6a84b;
+  color: #10141c;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 8px;
+}
+
+button:hover {
+  background: #f5c76a;
+}
+
+.modes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 15px;
+}
+
+.mode {
+  background: #1b2433;
+  padding: 25px;
+  border-radius: 12px;
+}
+
+.mode h3 {
+  margin-bottom: 12px;
+  color: #f5c76a;
+}
+
+#message {
+  margin-top: 15px;
+  color: #ff7777;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>♟ CHESS MASTER</h1>
+</header>
+
+<div class="container">
+
+  <div class="profile">
+    <h2>Welcome to Chess Master</h2>
+    <p id="userEmail">Loading account...</p>
+    <button id="logoutBtn">Logout</button>
+    <p id="message"></p>
+  </div>
+
+  <h2 style="margin-bottom:20px;">Choose Your Mode</h2>
+
+  <div class="modes">
+
+    <div class="mode">
+      <h3>♟ Play With Bot</h3>
+      <p>Challenge computer</p>
+      <button onclick="location.href='bot.html'">Play Now</button>
+    </div>
+
+    <div class="mode">
+      <h3>♚ Multiplayer</h3>
+      <p>Play with other players</p>
+      <button onclick="location.href='chess.html'">Play Now</button>
+    </div>
+
+    <div class="mode">
+      <h3>♛ Chess Practice</h3>
+      <p>Improve your skills</p>
+      <button onclick="location.href='chess.html'">Practice</button>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// APNA PURANA FIREBASE CONFIG YAHAN LAGANA HAI
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
-</script></body></html>
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const userEmail = document.getElementById("userEmail");
+const message = document.getElementById("message");
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    userEmail.textContent = user.email || "Logged in";
+  } else {
+    window.location.replace("login.html");
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+  try {
+    await signOut(auth);
+    window.location.replace("login.html");
+  } catch (error) {
+    message.textContent = error.message;
+  }
+});
+</script>
+
+</body>
+ </html>
+ 
