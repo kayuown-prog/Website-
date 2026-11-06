@@ -4,94 +4,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Master - Login</title>
+<title>CHESS MASTER | Play Online</title>
 
 <style>
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #101820;
+  background:
+    radial-gradient(circle at 20% 20%, #263746, transparent 45%),
+    linear-gradient(135deg, #080d13, #172330, #080d13);
   font-family: Arial, sans-serif;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
 .container {
-  width: 90%;
-  max-width: 390px;
-  padding: 30px;
-  background: #1c2833;
-  border-radius: 18px;
+  width: 100%;
+  max-width: 420px;
+  padding: 35px 28px;
+  border: 1px solid #b99542;
+  border-radius: 22px;
+  background: rgba(13, 22, 31, 0.96);
+  box-shadow: 0 15px 60px #0009;
   text-align: center;
-  box-shadow: 0 10px 35px #0008;
 }
 
 .logo {
-  font-size: 65px;
+  font-size: 75px;
+  color: #f5c542;
+  text-shadow: 0 0 25px #f5c54266;
 }
 
 h1 {
+  font-size: 29px;
+  letter-spacing: 3px;
   color: #f5c542;
   margin: 10px 0;
 }
 
 .subtitle {
-  color: #aaa;
+  color: #aab4bf;
+  font-size: 13px;
+  margin-bottom: 30px;
+}
+
+.tabs {
+  display: flex;
+  background: #202d39;
+  padding: 5px;
+  border-radius: 10px;
   margin-bottom: 25px;
+}
+
+.tabs button {
+  width: 50%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #aaa;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: #f5c542;
+  color: #111;
+}
+
+.input-group {
+  text-align: left;
+  margin-bottom: 17px;
+}
+
+label {
+  display: block;
+  color: #d5dce3;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
 input {
   width: 100%;
-  padding: 14px;
-  margin: 9px 0;
-  border: 1px solid #465563;
-  border-radius: 8px;
-  background: #101820;
+  padding: 15px;
+  background: #202d39;
+  border: 1px solid #3b4c5c;
+  border-radius: 9px;
   color: white;
+  outline: none;
   font-size: 15px;
 }
 
-button {
+input:focus {
+  border-color: #f5c542;
+}
+
+.main-btn {
   width: 100%;
-  padding: 14px;
-  margin-top: 12px;
+  padding: 15px;
+  margin-top: 8px;
+  background: linear-gradient(90deg, #d5a82e, #ffdc75);
+  color: #101820;
   border: none;
-  border-radius: 8px;
-  background: #f5c542;
-  color: #111;
-  font-weight: bold;
+  border-radius: 9px;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
+  transition: 0.2s;
 }
 
-button:hover {
-  background: #ffda65;
+.main-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px #f5c54244;
 }
 
-.secondary {
-  background: #34495e;
-  color: white;
+.main-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
 }
 
-.links {
-  margin-top: 18px;
+.forgot {
+  display: block;
+  text-align: right;
+  margin-top: 17px;
   color: #f5c542;
+  font-size: 13px;
   cursor: pointer;
-  font-size: 14px;
 }
 
 #message {
-  margin-top: 15px;
-  font-size: 14px;
-  color: #ff7675;
+  min-height: 20px;
+  margin-top: 18px;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
+
+.footer {
+  color: #84919d;
+  margin-top: 28px;
+  font-size: 12px;
+}
+
 </style>
 </head>
 
@@ -99,37 +161,58 @@ button:hover {
 
 <div class="container">
 
-  <div class="logo">♟️</div>
+  <div class="logo">♟</div>
 
   <h1>CHESS MASTER</h1>
-  <p class="subtitle">Play Chess. Challenge Everyone.</p>
+  <p class="subtitle">THINK SMART. PLAY STRONG. WIN BIG.</p>
 
-  <h2 id="formTitle">Login</h2>
-
-  <input
-    type="email"
-    id="email"
-    placeholder="Enter Email"
-    autocomplete="email"
-  >
-
-  <input
-    type="password"
-    id="password"
-    placeholder="Enter Password"
-    autocomplete="current-password"
-  >
-
-  <button id="mainBtn" onclick="login()">LOGIN</button>
-
-  <button class="secondary" id="switchBtn"
-    onclick="toggleForm()">CREATE ACCOUNT</button>
-
-  <div class="links" onclick="forgotPassword()">
-    Forgot Password?
+  <div class="tabs">
+    <button id="loginTab" class="active">LOGIN</button>
+    <button id="signupTab">SIGN UP</button>
   </div>
 
-  <p id="message"></p>
+  <form id="authForm">
+
+    <div class="input-group">
+      <label>Email Address</label>
+      <input
+        type="email"
+        id="email"
+        placeholder="Enter your email"
+        autocomplete="email"
+        required
+      >
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="Enter your password"
+        minlength="6"
+        autocomplete="current-password"
+        required
+      >
+    </div>
+
+    <button type="submit" class="main-btn" id="submitBtn">
+      LOGIN TO CHESS MASTER
+    </button>
+
+  </form>
+
+  <span class="forgot" id="forgotBtn">
+    Forgot Password?
+  </span>
+
+  <p id="message" aria-live="polite"></p>
+
+  <div class="footer">
+    ♟ CHESS MASTER © 2026
+    <br><br>
+    YOUR NEXT MOVE STARTS HERE
+  </div>
 
 </div>
 
@@ -160,41 +243,56 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let isSignup = false;
+let mode = "login";
 
+const form = document.getElementById("authForm");
 const email = document.getElementById("email");
 const password = document.getElementById("password");
 const message = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
 
 function showMessage(text, success = false) {
   message.style.color = success ? "#58d68d" : "#ff7675";
   message.textContent = text;
 }
 
+function setMode(newMode) {
+  mode = newMode;
+
+  document.getElementById("loginTab")
+    .classList.toggle("active", mode === "login");
+
+  document.getElementById("signupTab")
+    .classList.toggle("active", mode === "signup");
+
+  submitBtn.textContent = mode === "login"
+    ? "LOGIN TO CHESS MASTER"
+    : "CREATE ACCOUNT";
+
+  password.autocomplete = mode === "login"
+    ? "current-password"
+    : "new-password";
+
+  showMessage("");
+}
+
+document.getElementById("loginTab").onclick = () => {
+  setMode("login");
+};
+
+document.getElementById("signupTab").onclick = () => {
+  setMode("signup");
+};
+
 onAuthStateChanged(auth, user => {
   if (user) {
-    window.location.href = "dashboard.html";
+    window.location.replace("dashboard.html");
   }
 });
 
-window.toggleForm = function() {
-  isSignup = !isSignup;
+form.addEventListener("submit", async event => {
+  event.preventDefault();
 
-  document.getElementById("formTitle").textContent =
-    isSignup ? "Create Account" : "Login";
-
-  document.getElementById("mainBtn").textContent =
-    isSignup ? "SIGN UP" : "LOGIN";
-
-  document.getElementById("switchBtn").textContent =
-    isSignup ? "BACK TO LOGIN" : "CREATE ACCOUNT";
-
-  password.autocomplete = isSignup ? "new-password" : "current-password";
-
-  showMessage("");
-};
-
-window.login = async function() {
   const e = email.value.trim();
   const p = password.value;
 
@@ -203,26 +301,41 @@ window.login = async function() {
     return;
   }
 
-  const btn = document.getElementById("mainBtn");
-  btn.disabled = true;
-  btn.textContent = "PLEASE WAIT...";
+  submitBtn.disabled = true;
+  submitBtn.textContent = "PLEASE WAIT...";
 
   try {
-    if (isSignup) {
-      await createUserWithEmailAndPassword(auth, e, p);
-      showMessage("Account created successfully!", true);
-    } else {
+    if (mode === "login") {
       await signInWithEmailAndPassword(auth, e, p);
-      showMessage("Login successful!", true);
+    } else {
+      await createUserWithEmailAndPassword(auth, e, p);
     }
-  } catch (error) {
-    showMessage(error.message);
-    btn.disabled = false;
-    btn.textContent = isSignup ? "SIGN UP" : "LOGIN";
-  }
-};
 
-window.forgotPassword = async function() {
+    showMessage("Success! Opening Chess Master...", true);
+
+    window.location.href = "dashboard.html";
+
+  } catch (error) {
+    const errors = {
+      "auth/invalid-credential": "Incorrect email or password.",
+      "auth/email-already-in-use": "This email already has an account.",
+      "auth/weak-password": "Password must be at least 6 characters.",
+      "auth/invalid-email": "Please enter a valid email.",
+      "auth/network-request-failed": "Check your internet connection.",
+      "auth/operation-not-allowed": "Enable Email/Password in Firebase Authentication."
+    };
+
+    showMessage(errors[error.code] || error.message);
+
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = mode === "login"
+      ? "LOGIN TO CHESS MASTER"
+      : "CREATE ACCOUNT";
+  }
+});
+
+document.getElementById("forgotBtn").onclick = async () => {
   const e = email.value.trim();
 
   if (!e) {
@@ -239,5 +352,6 @@ window.forgotPassword = async function() {
 };
 
 </script>
+
 </body>
 </html>
