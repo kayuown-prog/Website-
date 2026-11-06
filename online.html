@@ -68,16 +68,18 @@ import {
  getAuth,onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// SAME FIREBASE CONFIG AS LOGIN.HTML
-const firebaseConfig={
- apiKey:"YOUR_API_KEY",
- authDomain:"YOUR_AUTH_DOMAIN",
- databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
- projectId:"freedroid-cloud",
- storageBucket:"YOUR_STORAGE_BUCKET",
- messagingSenderId:"YOUR_MESSAGING_SENDER_ID",
- appId:"YOUR_APP_ID"
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  authDomain: "freedroid-cloud.firebaseapp.com",
+  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
+  projectId: "freedroid-cloud",
+  storageBucket: "freedroid-cloud.firebasestorage.app",
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
 };
+ 
 
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
