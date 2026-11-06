@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master - Online</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+
+<style>
+* { box-sizing:border-box; }
+
+body {
+  margin:0;
+  padding:20px 12px;
+  min-height:100vh;
+  background:#101820;
+  color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
+}
+
+h1 {
+  color:#f5c542;
+  letter-spacing:2px;
+}
+
+.panel {
+  max-width:480px;
+  margin:15px auto;
+  padding:18px;
+  background:#1c2833;
+  border:1px solid #b99542;
+  border-radius:15px;
+}
+
+button {
+  padding:12px 18px;
+  border:0;
+  border-radius:8px;
+  background:#f5c542;
+  color:#111;
+  font-weight:bold;
+  cursor:pointer;
+  margin:5px;
+}
+
+button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+#status {
+  color:#f5c542;
+  margin:15px 0;
+  font-weight:bold;
+}
+
+#board {
+  width:min(94vw,440px);
+  aspect-ratio:1;
+  margin:15px auto;
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  border:4px solid #b99542;
+}
+
+.square {
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(27px,8vw,48px);
+  cursor:pointer;
+  user-select:none;
+  padding:0;
+  margin:0;
+  border-radius:0;
+}
+
+.light { background:#f0d9b5; }
+.dark { background:#b58863; }
+
+.selected {
+  background:#e6c84d !important;
+}
+
+.target::after {
+  content:"";
+  position:absolute;
+  width:25%;
+  height:25%;
+  border-radius:50%;
+  background:#237a39;
+  opacity:.75;
+}
+
+.piece-white {
+  color:#fff;
+  text-shadow:1px 2px 2px #222;
+}
+
+.piece-black {
+  color:#171717;
+}
+
+.info {
+  color:#b8c4ce;
+  font-size:14px;
+  margin:8px;
+}
+
+#message {
+  color:#f5c542;
+  overflow-wrap:anywhere;
+}
+
+.hidden { display:none; }
+</style>
+</head>
+
+<body>
+
+<h1>♟ CHESS MASTER</h1>
+<p>ONLINE MULTIPLAYER</p>
+
+<div class="panel">
+
+  <div id="status">Connecting...</div>
+
+  <div id="players" class="info">
+    Waiting for players
+  </div>
+
+  <button id="findBtn" disabled>FIND OPPONENT</button>
+  <button id="cancelBtn" class="hidden">CANCEL SEARCH</button>
+
+  <div id="boardArea" class="hidden">
+
+    <div id="turnInfo" class="info"></div>
+
+    <div id="board"></div>
+
+    <div class="info" id="moveInfo"></div>
+
+    <button id="newBtn" class="hidden">NEW MATCH</button>
+
+  </div>
+
+  <p id="message"></p>
+
+  <button onclick="location.href='dashboard.html'">
+    DASHBOARD
+  </button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  push,
+  runTransaction,
+  onValue,
+  update
+}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  authDomain: "freedroid-cloud.firebaseapp.com",
+  projectId: "freedroid-cloud",
+  storageBucket: "freedroid-cloud.firebasestorage.app",
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const db = getDatabase(
+  app,
+  "https://freedroid-cloud-default-rtdb.firebaseio.com"
+);
+
+const gamesRef = ref(db,"games");
+
+const Chess = window.Chess;
+
+let user = null;
+let gameId = null;
+let gameData = null;
+let game = new Chess();
+let myColor = null;
+let selected = null;
+let targets = [];
+let latestFen = null;
+let stopGameListener = null;
+let searching = false;
+
+const board = document.getElementById("board");
+const status = document.getElementById("status");
+const players = document.getElementById("players");
+const message = document.getElementById("message");
+const findBtn = document.getElementById("findBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const boardArea = document.getElementById("boardArea");
+const newBtn = document.getElementById("newBtn");
+
+const pieces = {
+  wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",
+  bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟︎"
+};
+
+onAuthStateChanged(auth, async currentUser => {
+
+  if(!currentUser) {
+    location.replace("login.html");
+    return;
+  }
+
+  user = currentUser;
+  findBtn.disabled = false;
+  status.textContent = "Ready to play!";
+});
+
+function say(text) {
+  message.textContent = text;
+}
+
+function setSearching(value) {
+  searching = value;
+  findBtn.classList.toggle("hidden",value);
+  cancelBtn.classList.toggle("hidden",!value);
+}
+
+function findMyGame(data) {
+  if(!data || !user) return null;
+
+  return Object.entries(data).find(([id,g]) =>
+    g &&
+    (g.white === user.uid || g.black === user.uid) &&
+    ["waiting","playing"].includes(g.status)
+  );
+}
+
+async function startMatch() {
+
+  if(!user || searching) return;
+
+  setSearching(true);
+  findBtn.disabled = true;
+  boardArea.classList.add("hidden");
+  newBtn.classList.add("hidden");
+  say("Searching for another player...");
+
+  status.textContent = "Finding opponent...";
+
+  try {
+
+    const candidateId = push(gamesRef).key;
+
+    const result = await runTransaction(gamesRef,current => {
+
+      current = current || {};
+
+      const existing = Object.entries(current).find(([id,g]) =>
+        g &&
+        g.status === "waiting" &&
+        g.white !== user.uid &&
+        Date.now() - g.createdAt < 120000
+      );
+
+      if(existing) {
+        const [id,g] = existing;
+        g.black = user.uid;
+        g.status = "playing";
+        g.startedAt = Date.now();
+        return current;
+      }
+
+      const ownWaiting = Object.values(current).find(g =>
+        g &&
+        g.white === user.uid &&
+        g.status === "waiting"
+      );
+
+      if(ownWaiting) return current;
+
+      current[candidateId] = {
+        white:user.uid,
+        black:null,
+        status:"waiting",
+        fen:new Chess().fen(),
+        createdAt:Date.now()
+      };
+
+      return current;
+    });
+
+    if(!result.committed) {
+      throw new Error("Could not enter matchmaking.");
+    }
+
+    const found = findMyGame(result.snapshot.val());
+
+    if(!found) {
+      throw new Error("Match could not be found.");
+    }
+
+    gameId = found[0];
+
+    listenGame();
+
+  } catch(error) {
+
+    setSearching(false);
+    findBtn.disabled = false;
+    status.textContent = "Matchmaking error";
+    say(error.message);
+
+  }
+}
+
+function listenGame() {
+
+  if(stopGameListener) stopGameListener();
+
+  const gameRef = ref(db,"games/"+gameId);
+
+  stopGameListener = onValue(gameRef,snapshot => {
+
+    const data = snapshot.val();
+
+    if(!data) {
+      status.textContent = "Game not found.";
+      return;
+    }
+
+    gameData = data;
+
+    if(data.white === user.uid) myColor = "white";
+    else if(data.black === user.uid) myColor = "black";
+    else {
+      say("You are not a player in this game.");
+      return;
+    }
+
+    if(data.status === "waiting") {
+
+      status.textContent = "Waiting for opponent...";
+      players.textContent = "You are White · Searching for opponent";
+      setSearching(true);
+      boardArea.classList.add("hidden");
+      return;
+
+    }
+
+    setSearching(false);
+    findBtn.disabled = false;
+    boardArea.classList.remove("hidden");
+
+    if(data.status === "playing") {
+
+      status.textContent = "Opponent connected! Game started.";
+      players.textContent =
+        myColor.toUpperCase()+" · "+(myColor==="white"?"White pieces":"Black pieces");
+
+    }
+
+    latestFen = data.fen;
+    game = new Chess(data.fen);
+    selected = null;
+    targets = [];
+
+    renderBoard();
+
+    if(data.status === "finished") {
+
+      status.textContent = data.result || "Game finished.";
+      newBtn.classList.remove("hidden");
+
+    } else {
+
+      newBtn.classList.add("hidden");
+
+      const turn = game.turn();
+      const myTurn = (myColor==="white" && turn==="w") ||
+                     (myColor==="black" && turn==="b");
+
+      document.getElementById("turnInfo").textContent =
+        myTurn ? "Your turn!" : "Opponent's turn...";
+
+      if(game.isCheck()) {
+        document.getElementById("turnInfo").textContent += " CHECK!";
+      }
+
+    }
+
+  },error => {
+    say("Database error: "+error.message);
+  });
+}
+
+function renderBoard() {
+
+  board.innerHTML = "";
+
+  const files = myColor === "black"
+    ? "hgfedcba"
+    : "abcdefgh";
+
+  const ranks = myColor === "black"
+    ? "12345678"
+    : "87654321";
+
+  for(const rank of ranks) {
+
+    for(const file of files) {
+
+      const square = file+rank;
+      const piece = game.get(square);
+
+      const cell = document.createElement("button");
+      cell.className = "square";
+
+      const isLight =
+        ("abcdefgh".indexOf(file) + Number(rank)) % 2 === 0;
+
+      cell.classList.add(isLight?"light":"dark");
+
+      if(selected === square) cell.classList.add("selected");
+      if(targets.includes(square)) cell.classList.add("target");
+
+      if(piece) {
+        cell.textContent = pieces[
+          piece.color + piece.type
+        ];
+
+        cell.classList.add(
+          piece.color === "w" ? "piece-white":"piece-black"
+        );
+      }
+
+      cell.addEventListener("click",()=>clickSquare(square));
+
+      board.appendChild(cell);
+    }
+  }
+
+  document.getElementById("moveInfo").textContent =
+    "Moves played: "+game.history().length;
+}
+
+function clickSquare(square) {
+
+  if(!gameData || gameData.status !== "playing") return;
+
+  const turn = game.turn();
+
+  const myTurn =
+    (myColor === "white" && turn === "w") ||
+    (myColor === "black" && turn === "b");
+
+  if(!myTurn) {
+    say("Wait for your turn!");
+    return;
+  }
+
+  const piece = game.get(square);
+
+  if(selected && targets.includes(square)) {
+    makeMove(selected,square);
+    return;
+  }
+
+  if(piece && piece.color === turn) {
+
+    selected = square;
+
+    targets = game.moves({
+      square,
+      verbose:true
+    }).map(m=>m.to);
+
+    renderBoard();
+    return;
+  }
+
+  selected = null;
+  targets = [];
+  renderBoard();
+}
+
+async function makeMove(from,to) {
+
+  try {
+
+    const gameRef = ref(db,"games/"+gameId);
+
+    const result = await runTransaction(gameRef,current => {
+
+      if(!current || current.status !== "playing") return;
+
+      if(current.fen !== latestFen) return;
+
+      const correctPlayer =
+        myColor === "white" ? current.white : current.black;
+
+      if(correctPlayer !== user.uid) return;
+
+      const next = new Chess(current.fen);
+
+      const expectedTurn = myColor === "white" ? "w":"b";
+
+      if(next.turn() !== expectedTurn) return;
+
+      const move = next.move({
+        from,
+        to,
+        promotion:"q"
+      });
+
+      if(!move) return;
+
+      current.fen = next.fen();
+      current.lastMove = {
+        from,
+        to,
+        san:move.san
+      };
+
+      if(next.isGameOver()) {
+
+        current.status = "finished";
+
+        if(next.isCheckmate()) {
+          current.result =
+            (next.turn()==="w"?"Black":"White")+" wins by checkmate!";
+        } else {
+          current.result = "Draw!";
+        }
+
+      }
+
+      current.updatedAt = Date.now();
+
+      return current;
+
+    });
+
+    if(!result.committed) {
+      say("Move not accepted. Refreshing game position.");
+    } else {
+      say("");
+    }
+
+  } catch(error) {
+    say("Move error: "+error.message);
+  }
+
+}
+
+async function cancelSearch() {
+
+  if(!gameId || !user) return;
+
+  try {
+
+    const gameRef = ref(db,"games/"+gameId);
+
+    await runTransaction(gameRef,current => {
+
+      if(!current || current.status !== "waiting") return;
+
+      if(current.white !== user.uid) return;
+
+      current.status = "cancelled";
+      return current;
+
+    });
+
+    if(stopGameListener) stopGameListener();
+
+    gameId = null;
+    gameData = null;
+
+    setSearching(false);
+    findBtn.disabled = false;
+    status.textContent = "Search cancelled.";
+    boardArea.classList.add("hidden");
+
+  } catch(error) {
+    say(error.message);
+  }
+
+}
+
+findBtn.addEventListener("click",startMatch);
+cancelBtn.addEventListener("click",cancelSearch);
+
+newBtn.addEventListener("click",async()=> {
+
+  if(stopGameListener) stopGameListener();
+
+  gameId = null;
+  gameData = null;
+  myColor = null;
+
+  await startMatch();
+
+});
+
+</script>
+
+</body>
+</html>
