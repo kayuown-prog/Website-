@@ -3,114 +3,241 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FreeDroid Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master - Login</title>
+
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#080d18;color:white;
- font-family:Arial,sans-serif;
- display:flex;align-items:center;
- justify-content:center;min-height:100vh;
+* {
+  box-sizing: border-box;
 }
-.card{
- width:90%;max-width:380px;
- background:#111c30;padding:28px;
- border-radius:18px;border:1px solid #263b59;
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #101820;
+  font-family: Arial, sans-serif;
+  color: white;
 }
-h1{text-align:center;color:#55d6ff}
-input{
- width:100%;padding:14px;margin:10px 0;
- border:1px solid #33445e;border-radius:9px;
- background:#080d18;color:white;
+
+.container {
+  width: 90%;
+  max-width: 390px;
+  padding: 30px;
+  background: #1c2833;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 10px 35px #0008;
 }
-button{
- width:100%;padding:14px;margin-top:12px;
- background:#28d995;border:0;
- border-radius:9px;font-weight:bold;
+
+.logo {
+  font-size: 65px;
 }
-p{text-align:center;color:#9aabc5;font-size:13px}
+
+h1 {
+  color: #f5c542;
+  margin: 10px 0;
+}
+
+.subtitle {
+  color: #aaa;
+  margin-bottom: 25px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin: 9px 0;
+  border: 1px solid #465563;
+  border-radius: 8px;
+  background: #101820;
+  color: white;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #f5c542;
+  color: #111;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ffda65;
+}
+
+.secondary {
+  background: #34495e;
+  color: white;
+}
+
+.links {
+  margin-top: 18px;
+  color: #f5c542;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#message {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #ff7675;
+  overflow-wrap: anywhere;
+}
 </style>
 </head>
+
 <body>
-<div class="card">
-<h1>FreeDroid ☁️</h1>
-<h2>Welcome Back</h2>
-<form id="loginForm">
-  <input id="email" type="email"
-    placeholder="Email Address" required>
 
-  <input id="password" type="password"
-    placeholder="Password" required>
+<div class="container">
 
-  <button type="submit">Login</button>
- <button type="button" id="signupBtn">
-  Create Account
- </button>
- 
- <p id="message"></p>
-</form>
+  <div class="logo">♟️</div>
 
-<p id="message"></p>
-<p>Authentication is not connected yet.</p>
-<a href="index.html" style="color:#55d6ff">Back to Home</a>
+  <h1>CHESS MASTER</h1>
+  <p class="subtitle">Play Chess. Challenge Everyone.</p>
+
+  <h2 id="formTitle">Login</h2>
+
+  <input
+    type="email"
+    id="email"
+    placeholder="Enter Email"
+    autocomplete="email"
+  >
+
+  <input
+    type="password"
+    id="password"
+    placeholder="Enter Password"
+    autocomplete="current-password"
+  >
+
+  <button id="mainBtn" onclick="login()">LOGIN</button>
+
+  <button class="secondary" id="switchBtn"
+    onclick="toggleForm()">CREATE ACCOUNT</button>
+
+  <div class="links" onclick="forgotPassword()">
+    Forgot Password?
+  </div>
+
+  <p id="message"></p>
+
 </div>
- 
+
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged
-  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-    authDomain: "freedroid-cloud.firebaseapp.com",
-    projectId: "freedroid-cloud",
-    storageBucket: "freedroid-cloud.firebasestorage.app",
-    messagingSenderId: "909415918359",
-    appId: "1:909415918359:web:85da71cdd35a879fa86552",
-    measurementId: "G-HV2ELB7GS6"
-  };
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
-  window.firebaseAuth = {
-    auth,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    onAuthStateChanged
-  };
- document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+const firebaseConfig = {
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  authDomain: "freedroid-cloud.firebaseapp.com",
+  projectId: "freedroid-cloud",
+  storageBucket: "freedroid-cloud.firebasestorage.app",
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
+};
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("message");
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-window.location.href = "dashboard.html";
-  } catch (error) {
-    message.textContent = error.message;
+let isSignup = false;
+
+const email = document.getElementById("email");
+const password = document.getElementById("password");
+const message = document.getElementById("message");
+
+function showMessage(text, success = false) {
+  message.style.color = success ? "#58d68d" : "#ff7675";
+  message.textContent = text;
+}
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    window.location.href = "dashboard.html";
   }
 });
- document.getElementById("signupBtn").addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("message");
+
+window.toggleForm = function() {
+  isSignup = !isSignup;
+
+  document.getElementById("formTitle").textContent =
+    isSignup ? "Create Account" : "Login";
+
+  document.getElementById("mainBtn").textContent =
+    isSignup ? "SIGN UP" : "LOGIN";
+
+  document.getElementById("switchBtn").textContent =
+    isSignup ? "BACK TO LOGIN" : "CREATE ACCOUNT";
+
+  password.autocomplete = isSignup ? "new-password" : "current-password";
+
+  showMessage("");
+};
+
+window.login = async function() {
+  const e = email.value.trim();
+  const p = password.value;
+
+  if (!e || !p) {
+    showMessage("Please enter email and password.");
+    return;
+  }
+
+  const btn = document.getElementById("mainBtn");
+  btn.disabled = true;
+  btn.textContent = "PLEASE WAIT...";
 
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
-    message.textContent = "Account Created Successfully!";
+    if (isSignup) {
+      await createUserWithEmailAndPassword(auth, e, p);
+      showMessage("Account created successfully!", true);
+    } else {
+      await signInWithEmailAndPassword(auth, e, p);
+      showMessage("Login successful!", true);
+    }
   } catch (error) {
-    message.textContent = error.message;
+    showMessage(error.message);
+    btn.disabled = false;
+    btn.textContent = isSignup ? "SIGN UP" : "LOGIN";
   }
-});
+};
+
+window.forgotPassword = async function() {
+  const e = email.value.trim();
+
+  if (!e) {
+    showMessage("Enter your email first.");
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, e);
+    showMessage("Password reset email sent!", true);
+  } catch (error) {
+    showMessage(error.message);
+  }
+};
+
 </script>
- 
 </body>
 </html>
