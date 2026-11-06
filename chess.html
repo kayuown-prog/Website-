@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Arena - Play Chess</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #10141c;
+  color: white;
+  text-align: center;
+}
+
+header {
+  background: #1b2431;
+  padding: 20px;
+  color: #e7b75c;
+  font-size: 23px;
+  font-weight: bold;
+}
+
+.container {
+  padding: 20px 10px;
+}
+
+#status {
+  margin: 18px auto;
+  color: #e7b75c;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  width: min(94vw, 480px);
+  margin: 20px auto;
+  border: 5px solid #d4aa65;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.square {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(25px, 8vw, 48px);
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.light {
+  background: #f0d9b5;
+}
+
+.dark {
+  background: #b58863;
+}
+
+.selected {
+  background: #a9bd45 !important;
+}
+
+.possible::after {
+  content: "";
+  position: absolute;
+  width: 23%;
+  height: 23%;
+  border-radius: 50%;
+  background: #455b37;
+  opacity: .7;
+}
+
+button {
+  border: none;
+  padding: 13px 22px;
+  border-radius: 8px;
+  background: #e7b75c;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 8px;
+}
+
+.back {
+  background: #283344;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<header>♟ CHESS ARENA</header>
+
+<div class="container">
+
+<h2>Play Chess</h2>
+
+<p>White vs Black</p>
+
+<div id="status">Loading Chess...</div>
+
+<div class="board" id="board"></div>
+
+<button onclick="newGame()">New Game</button>
+
+<button class="back" onclick="location.href='dashboard.html'">
+Dashboard
+</button>
+
+</div>
+
+<script type="module">
+import { Chess } from
+"https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
+
+const game = new Chess();
+
+const board = document.getElementById("board");
+const status = document.getElementById("status");
+
+let selected = null;
+let possibleMoves = [];
+
+const pieces = {
+  wk: "♔", wq: "♕", wr: "♖",
+  wb: "♗", wn: "♘", wp: "♙",
+  bk: "♚", bq: "♛", br: "♜",
+  bb: "♝", bn: "♞", bp: "♟"
+};
+
+function renderBoard() {
+  board.innerHTML = "";
+
+  const position = game.board();
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+
+      const squareName =
+        "abcdefgh"[c] + (8 - r);
+
+      const piece = position[r][c];
+
+      const square = document.createElement("div");
+
+      square.className =
+        "square " +
+        ((r + c) % 2 === 0 ? "light" : "dark");
+
+      if (selected === squareName) {
+        square.classList.add("selected");
+      }
+
+      if (possibleMoves.includes(squareName)) {
+        square.classList.add("possible");
+      }
+
+      if (piece) {
+        square.textContent =
+          pieces[piece.color + piece.type];
+      }
+
+      square.addEventListener("click", () => {
+        handleSquare(squareName);
+      });
+
+      board.appendChild(square);
+    }
+  }
+
+  updateStatus();
+}
+
+function handleSquare(square) {
+
+  if (game.isGameOver()) return;
+
+  if (selected && possibleMoves.includes(square)) {
+
+    try {
+      game.move({
+        from: selected,
+        to: square,
+        promotion: "q"
+      });
+
+      selected = null;
+      possibleMoves = [];
+
+      renderBoard();
+      return;
+
+    } catch (error) {
+      selected = null;
+      possibleMoves = [];
+      renderBoard();
+      return;
+    }
+  }
+
+  const piece = game.get(square);
+
+  if (piece && piece.color === game.turn()) {
+
+    selected = square;
+
+    possibleMoves = game.moves({
+      square: square,
+      verbose: true
+    }).map(move => move.to);
+
+  } else {
+    selected = null;
+    possibleMoves = [];
+  }
+
+  renderBoard();
+}
+
+function updateStatus() {
+
+  if (game.isCheckmate()) {
+    status.textContent =
+      "Checkmate! " +
+      (game.turn() === "w" ? "Black" : "White") +
+      " Wins!";
+  }
+
+  else if (game.isDraw()) {
+    status.textContent = "Game Draw!";
+  }
+
+  else if (game.isCheck()) {
+    status.textContent =
+      (game.turn() === "w" ? "White" : "Black") +
+      " is in Check!";
+  }
+
+  else {
+    status.textContent =
+      (game.turn() === "w" ? "White" : "Black") +
+      "'s Turn";
+  }
+}
+
+window.newGame = function() {
+  game.reset();
+  selected = null;
+  possibleMoves = [];
+  renderBoard();
+};
+
+renderBoard();
+
+</script>
+
+</body>
+  </html>
+  
