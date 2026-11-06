@@ -1,99 +1,279 @@
+
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-
-scale=1">
-<title>CHESS MASTER - Online</title>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess Master Multiplayer</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#10141c;color:#fff;font-family:Arial;text-align:center;
-padding:16px}
-h1{color:#e7b85c}.board{width:min(92vw,520px);aspect-ratio:1;margin:18px auto;display:grid;grid-template-
-columns:repeat(8,1fr);border:4px solid #394557}
-.sq{display:grid;place-items:center;font-size:clamp(23px,7vw,48px);cursor:pointer;user-select:none}
-.light{background:#f0d9b5;color:#111}.dark{background:#779556;color:#111}.selected{outline:4px solid 
-#f5c451;outline-offset:-4px}
-button,a{padding:12px 18px;margin:5px;border:0;border-radius:8px;background:#e7b85c;color:#111;font-
-weight:bold;text-decoration:none;cursor:pointer}
-#status{min-height:24px;color:#ffd27a}
-</style></head><body><h1>■ ONLINE CHESS</h1><p id="status">Connecting...</p><div id="board" 
-class="board"></div>
-<button id="findBtn">FIND MATCH</button><button id="cancelBtn" style="display:none">CANCEL</button><a 
-href="dashboard.html">DASHBOARD</a>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
-<script src="firebase-config.js"></script>
-<script>
-const game=new Chess(), board=document.getElementById('board'), statusEl=document.getElementById(
-'status');
-const glyph={wk:'■',wq:'■',wr:'■',wb:'■',wn:'■',wp:'■',bk:'■',bq:'■',br:'■',bb:'■',bn:'■',bp:'■'};
-let uid=null,roomId=null,myColor=null,selected=null,queueRef=null,roomRef=null,roomListener=null,
-localMode=new URLSearchParams(location.search).has('local');
-function draw(){
- board.innerHTML='';const b=game.board();
- b.forEach((row,r)=>row.forEach((p,c)=>{
- const sq=document.createElement('div');sq.className='sq '+((r+c)%2?'dark':'light');
- const square='abcdefgh'[c]+(8-r);if(selected===square)sq.classList.add('selected');
- sq.textContent=p?glyph[p.color+p.type]:'';
- sq.onclick=()=>tap(square);board.appendChild(sq);
- }));
- if(game.game_over())statusEl.textContent=game.in_checkmate()?'Checkmate! '+(game.turn()==='w'?'Black':
-'White')+' wins.':'Draw game.';
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+ background:#10141c;color:white;
+ font-family:Arial;text-align:center;padding:15px
 }
-function tap(sq){
- if(localMode){makeMove(sq);return}
- if(!roomId||game.turn()!==myColor||game.game_over())return;
- makeMove(sq);
+h1{color:#f5c76a;margin:15px}
+input{
+ padding:12px;width:190px;border-radius:7px;
+ border:0;margin:8px
 }
-function makeMove(sq){
- if(selected){const m=game.move({from:selected,to:sq,promotion:'q'});selected=null;
- if(m){draw();if(!localMode&&roomRef)roomRef.update({fen:game.fen(),lastMove:m.san,updatedAt:firebase.
-database.ServerValue.TIMESTAMP});return}
+button{
+ padding:12px 18px;background:#d6a84b;
+ border:0;border-radius:7px;font-weight:bold;
+ margin:6px;cursor:pointer
+}
+#board{
+ width:min(92vw,480px);aspect-ratio:1;
+ display:grid;grid-template-columns:repeat(8,1fr);
+ margin:20px auto;border:4px solid #d6a84b
+}
+.square{
+ display:flex;align-items:center;justify-content:center;
+ font-size:clamp(25px,8vw,48px);cursor:pointer
+}
+.light{background:#f0d9b5}
+.dark{background:#779556}
+.selected{background:#e6d34c}
+#status{margin:15px}
+#gameArea{display:none}
+</style>
+</head>
+
+<body>
+
+<h1>♟ CHESS MASTER</h1>
+
+<div id="lobby">
+<h2>Multiplayer Chess</h2>
+<input id="roomInput" placeholder="Enter Room Code">
+<br>
+<button id="createBtn">Create Room</button>
+<button id="joinBtn">Join Room</button>
+<p id="message"></p>
+</div>
+
+<div id="gameArea">
+<h3 id="roomName"></h3>
+<p id="status">Waiting...</p>
+<div id="board"></div>
+<button onclick="location.reload()">Exit Game</button>
+<button onclick="location.href='dashboard.html'">Dashboard</button>
+</div>
+
+<script type="module">
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {getDatabase,ref,set,get,onValue,update}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+ apiKey: "YOUR_API_KEY",
+ authDomain: "YOUR_AUTH_DOMAIN",
+ databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
+ projectId: "freedroid-cloud",
+ storageBucket: "YOUR_STORAGE_BUCKET",
+ messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+ appId: "YOUR_APP_ID"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
+
+const initial=[
+["♜","♞","♝","♛","♚","♝","♞","♜"],
+["♟","♟","♟","♟","♟","♟","♟","♟"],
+["","","","","","","",""],
+["","","","","","","",""],
+["","","","","","","",""],
+["","","","","","","",""],
+["♙","♙","♙","♙","♙","♙","♙","♙"],
+["♖","♘","♗","♕","♔","♗","♘","♖"]
+];
+
+let board=initial.map(x=>[...x]);
+let room="",player="",selected=null,gameRef=null;
+let currentTurn="white",unsubscribe=null;
+
+const white="♙♖♘♗♕♔";
+const black="♟♜♞♝♛♚";
+
+function color(p){
+ if(white.includes(p))return "white";
+ if(black.includes(p))return "black";
+ return null;
+}
+
+function showMessage(t){
+ document.getElementById("message").textContent=t;
+}
+
+async function createRoom(){
+ room=document.getElementById("roomInput").value.trim();
+ if(!room)return showMessage("Enter a room code");
+
+ gameRef=ref(db,"chessRooms/"+room);
+
+ try{
+  const snap=await get(gameRef);
+  if(snap.exists())return showMessage("Room already exists");
+
+  player="white";
+  board=initial.map(x=>[...x]);
+
+  await set(gameRef,{
+   board:board,
+   turn:"white",
+   status:"waiting",
+   players:{white:true,black:false}
+  });
+
+  startGame();
+ }catch(e){showMessage(e.message)}
+}
+
+async function joinRoom(){
+ room=document.getElementById("roomInput").value.trim();
+ if(!room)return showMessage("Enter a room code");
+
+ gameRef=ref(db,"chessRooms/"+room);
+
+ try{
+  const snap=await get(gameRef);
+  if(!snap.exists())return showMessage("Room not found");
+
+  const data=snap.val();
+  if(data.players?.black)return showMessage("Room is full");
+
+  player="black";
+
+  await update(gameRef,{
+   "players/black":true,
+   status:"playing"
+  });
+
+  startGame();
+ }catch(e){showMessage(e.message)}
+}
+
+function startGame(){
+ document.getElementById("lobby").style.display="none";
+ document.getElementById("gameArea").style.display="block";
+ document.getElementById("roomName").textContent="Room: "+room;
+
+ unsubscribe=onValue(gameRef,snap=>{
+  if(!snap.exists())return;
+  const data=snap.val();
+  board=data.board;
+  currentTurn=data.turn;
+  render();
+  updateStatus(data);
+ });
+}
+
+function updateStatus(data){
+ document.getElementById("status").textContent=
+ data.status==="waiting"?"Waiting for opponent...":
+ currentTurn===player?"Your turn ("+player+")":"Opponent's turn";
+}
+
+function render(){
+ const el=document.getElementById("board");
+ el.innerHTML="";
+
+ for(let r=0;r<8;r++){
+  for(let c=0;c<8;c++){
+   const sq=document.createElement("div");
+   sq.className="square "+((r+c)%2?"dark":"light");
+   sq.textContent=board[r][c];
+
+   if(selected?.[0]===r&&selected?.[1]===c)
+    sq.classList.add("selected");
+
+   sq.onclick=()=>clickSquare(r,c);
+   el.appendChild(sq);
+  }
  }
- const p=game.get(sq);selected=p&&p.color===game.turn()?sq:null;draw();
 }
-function cleanupQueue(){if(queueRef)queueRef.remove().catch(()=>{});queueRef=null}
-async function findMatch(){
- const user=auth.currentUser;if(!user){location.replace('login.html');return}
- document.getElementById('findBtn').style.display='none';document.getElementById('cancelBtn').style.
-display='inline-block';
- statusEl.textContent='Searching for opponent...';
- // Atomic waiting-slot transaction. First player waits; next player creates the room.
- const waiting=db.ref('matchmaking/waiting');
- const result=await waiting.transaction(current=>{
- if(!current||current.uid===uid)return {uid:uid,createdAt:Date.now()};
- return current;
- });
- const slot=result.snapshot.val();
- if(slot&&slot.uid===uid){queueRef=waiting;waiting.on('value',async snap=>{
- const v=snap.val();if(v&&v.uid!==uid){waiting.off();await createRoom(v.uid,'b');}
- });}
- else if(slot&&slot.uid!==uid){await createRoom(slot.uid,'w');}
+
+function clearPath(sr,sc,r,c){
+ let dr=Math.sign(r-sr),dc=Math.sign(c-sc);
+ let x=sr+dr,y=sc+dc;
+
+ while(x!==r||y!==c){
+  if(board[x][y])return false;
+  x+=dr;y+=dc;
+ }
+ return true;
 }
-async function createRoom(opponentUid,color){
- const room=db.ref('rooms').push();roomId=room.key;roomRef=room;myColor=color;
- await room.set({players:{w:color==='w'?uid:opponentUid,b:color==='b'?uid:opponentUid},fen:game.fen(),
-status:'active',createdAt:Date.now()});
- cleanupQueue();statusEl.textContent='Match found! You are '+(color==='w'?'White':'Black')+'.';
- document.getElementById('cancelBtn').style.display='none';watchRoom();
+
+function legal(sr,sc,r,c){
+ const p=board[sr][sc],t=board[r][c];
+ if(!p||color(p)!==player||color(t)===player)return false;
+
+ let dr=r-sr,dc=c-sc,ar=Math.abs(dr),ac=Math.abs(dc);
+
+ if(p==="♙")return (dc===0&&!t&&dr===-1)||
+ (dc===0&&sr===6&&dr===-2&&!board[5][sc])||
+ (dr===-1&&ac===1&&color(t)==="black");
+
+ if(p==="♟")return (dc===0&&!t&&dr===1)||
+ (dc===0&&sr===1&&dr===2&&!board[2][sc])||
+ (dr===1&&ac===1&&color(t)==="white");
+
+ if(p==="♘"||p==="♞")return (ar===2&&ac===1)||(ar===1&&ac===2);
+ if(p==="♖"||p==="♜")return (dr===0||dc===0)&&clearPath(sr,sc,r,c);
+ if(p==="♗"||p==="♝")return ar===ac&&clearPath(sr,sc,r,c);
+ if(p==="♕"||p==="♛")return (dr===0||dc===0||ar===ac)&&clearPath(sr,sc,r,c);
+ if(p==="♔"||p==="♚")return ar<=1&&ac<=1&&(ar+ac>0);
+
+ return false;
 }
-function watchRoom(){
- if(roomListener)roomRef.off('value',roomListener);
- roomListener=roomRef.on('value',snap=>{
- const data=snap.val();if(!data)return;
- if(data.fen&&data.fen!==game.fen()){game.load(data.fen);selected=null;draw()}
- if(data.status==='active'&&!game.game_over())statusEl.textContent='You are '+(myColor==='w'?'White':
-'Black')+' — '+(game.turn()===myColor?'Your turn':'Opponent turn');
- });
+
+async function clickSquare(r,c){
+ if(currentTurn!==player)return;
+
+ if(!selected){
+  if(color(board[r][c])===player){
+   selected=[r,c];render();
+  }
+  return;
+ }
+
+ let [sr,sc]=selected;
+
+ if(sr===r&&sc===c){
+  selected=null;render();return;
+ }
+
+ if(color(board[r][c])===player){
+  selected=[r,c];render();return;
+ }
+
+ if(!legal(sr,sc,r,c))return;
+
+ let newBoard=board.map(x=>[...x]);
+ newBoard[r][c]=newBoard[sr][sc];
+ newBoard[sr][sc]="";
+
+ if(newBoard[r][c]==="♙"&&r===0)newBoard[r][c]="♕";
+ if(newBoard[r][c]==="♟"&&r===7)newBoard[r][c]="♛";
+
+ selected=null;
+
+ try{
+  await update(gameRef,{
+   board:newBoard,
+   turn:player==="white"?"black":"white"
+  });
+ }catch(e){
+  document.getElementById("status").textContent=e.message;
+ }
 }
-document.getElementById('findBtn').onclick=()=>findMatch().catch(e=>statusEl.textContent=e.message);
-document.getElementById('cancelBtn').onclick=()=>{cleanupQueue();document.getElementById('findBtn').
-style.display='inline-block';document.getElementById('cancelBtn').style.display='none';statusEl.
-textContent='Search cancelled.'};
-auth.onAuthStateChanged(user=>{
- if(!user&&!localMode){location.replace('login.html');return}
- uid=user?user.uid:'local';if(localMode){myColor='w';statusEl.textContent='Local two-player game — White 
-starts.';document.getElementById('findBtn').style.display='none'}
- draw();
-});
-window.addEventListener('beforeunload',cleanupQueue);
-</script></body></html>
+
+document.getElementById("createBtn").onclick=createRoom;
+document.getElementById("joinBtn").onclick=joinRoom;
+
+</script>
+</body>
+</html>
