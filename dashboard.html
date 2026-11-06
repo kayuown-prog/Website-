@@ -1,283 +1,43 @@
+
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CHESS MASTER | Dashboard</title>
-
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-
+scale=1">
+<title>CHESS MASTER - Dashboard</title>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: #080e16;
-  color: white;
-  font-family: Arial, sans-serif;
-  min-height: 100vh;
-}
-
-header {
-  background: #111d29;
-  border-bottom: 1px solid #b99542;
-  padding: 18px 6%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-}
-
-.logo {
-  color: #f5c542;
-  font-size: 23px;
-  font-weight: bold;
-  letter-spacing: 2px;
-}
-
-.logout {
-  padding: 10px 18px;
-  background: #f5c542;
-  color: #111;
-  border: none;
-  border-radius: 7px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.hero {
-  text-align: center;
-  padding: 45px 15px 25px;
-}
-
-.hero h1 {
-  font-size: 32px;
-  color: #f5c542;
-  margin-bottom: 12px;
-}
-
-.hero p {
-  color: #aab4bf;
-  font-size: 14px;
-}
-
-.user-info {
-  margin: 20px auto 0;
-  color: #f5c542;
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-
-.section-title {
-  text-align: center;
-  color: #f5c542;
-  font-size: 22px;
-  margin: 25px 0;
-}
-
-.modes {
-  width: 90%;
-  max-width: 1050px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 22px;
-  padding-bottom: 50px;
-}
-
-.card {
-  background: linear-gradient(145deg, #172635, #0e1822);
-  border: 1px solid #8f7335;
-  border-radius: 16px;
-  padding: 28px 20px;
-  text-align: center;
-  transition: 0.2s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  border-color: #f5c542;
-  box-shadow: 0 8px 25px #f5c54220;
-}
-
-.card .icon {
-  font-size: 55px;
-  margin-bottom: 18px;
-}
-
-.card h2 {
-  color: #f5c542;
-  font-size: 20px;
-  margin-bottom: 12px;
-}
-
-.card p {
-  color: #aab4bf;
-  font-size: 13px;
-  line-height: 1.6;
-  min-height: 42px;
-}
-
-.card button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 13px;
-  background: linear-gradient(90deg, #d5a82e, #ffdc75);
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-.card button:hover {
-  opacity: 0.85;
-}
-
-footer {
-  text-align: center;
-  padding: 22px;
-  color: #71808e;
-  border-top: 1px solid #273746;
-  font-size: 12px;
-}
-
-#loading {
-  text-align: center;
-  padding: 80px 20px;
-  color: #f5c542;
-}
-
-#app {
-  display: none;
-}
-</style>
-</head>
-
-<body>
-
-<div id="loading">Loading Chess Master...</div>
-
-<div id="app">
-
-<header>
-  <div class="logo">♟ CHESS MASTER</div>
-  <button class="logout" id="logoutBtn">LOGOUT</button>
-</header>
-
-<section class="hero">
-  <h1>WELCOME TO CHESS MASTER</h1>
-  <p>Choose your game mode and start your next battle.</p>
-  <div class="user-info" id="userEmail"></div>
-</section>
-
-<h2 class="section-title">SELECT GAME MODE</h2>
-
-<section class="modes">
-
-  <div class="card">
-    <div class="icon">🤖</div>
-    <h2>PLAY VS COMPUTER</h2>
-    <p>Challenge the computer and improve your chess skills.</p>
-    <button onclick="openGame('bot.html')">
-      PLAY NOW
-    </button>
-  </div>
-
-  <div class="card">
-    <div class="icon">♟️</div>
-    <h2>PLAY WITH FRIEND</h2>
-    <p>Play chess with a friend on the same device.</p>
-    <button onclick="openGame('chess.html')">
-      PLAY NOW
-    </button>
-  </div>
-
-  <div class="card">
-    <div class="icon">🌐</div>
-    <h2>ONLINE MULTIPLAYER</h2>
-    <p>Connect with other players and play online.</p>
-    <button onclick="openGame('multiplayer.html')">
-      PLAY ONLINE
-    </button>
-  </div>
-
-</section>
-
-<footer>
-  CHESS MASTER © 2026
-  <br><br>
-  THINK SMART. PLAY STRONG. WIN BIG.
-</footer>
-
-</div>
-
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-
-import {
-  getAuth,
-  onAuthStateChanged,
-  signOut
-}
-from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-  authDomain: "freedroid-cloud.firebaseapp.com",
-  projectId: "freedroid-cloud",
-  storageBucket: "freedroid-cloud.firebasestorage.app",
-  messagingSenderId: "909415918359",
-  appId: "1:909415918359:web:85da71cdd35a879fa86552",
-  measurementId: "G-HV2ELB7GS6"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-const loading = document.getElementById("loading");
-const mainApp = document.getElementById("app");
-
-onAuthStateChanged(auth, (user) => {
-
-  if (user) {
-    document.getElementById("userEmail").textContent =
-      "Logged in as: " + user.email;
-
-    loading.style.display = "none";
-    mainApp.style.display = "block";
-
-  } else {
-    window.location.replace("./index.html");
-  }
-
+*{box-sizing:border-box}body{margin:0;background:#10141c;color:#fff;font-family:Arial}
+header{padding:20px;text-align:center;background:#1c2431;border-bottom:1px solid #344256}
+h1{color:#e7b85c;margin:0}.wrap{max-width:850px;margin:35px auto;padding:18px}
+.welcome{text-align:center;color:#c5ceda;margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}
+.card{background:#1c2431;padding:24px;border-radius:16px;text-align:center;border:1px solid #344256}
+.card h2{margin-top:0}.card p{color:#aab4c3;min-height:40px}
+a.btn,button{display:inline-block;padding:13px 18px;background:#e7b85c;color:#171717;text-decoration:
+none;border:0;border-radius:9px;font-weight:bold;cursor:pointer}
+.logout{display:block;margin:28px auto;background:#344256;color:#fff}
+</style></head><body>
+<header><h1>■ CHESS MASTER</h1></header>
+<main class="wrap"><div class="welcome"><h2 id="welcome">Welcome!</h2><div id="userEmail">Checking 
+account...</div></div>
+<div class="grid">
+<section class="card"><h2>■ Play Online</h2><p>Find another player and play a live match.</p><a 
+class="btn" href="chess.html">PLAY ONLINE</a></section>
+<section class="card"><h2>■ Play vs Bot</h2><p>Practice chess against the computer.</p><a class="btn" 
+href="bot.html">PLAY BOT</a></section>
+<section class="card"><h2>■ Local Chess</h2><p>Play a game on this device.</p><a class="btn" href="chess.
+html?local=1">LOCAL GAME</a></section>
+</div><button class="logout" id="logoutBtn">LOGOUT</button><p id="message" style="text-align:center"></
+p></main>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const msg=document.getElementById('message');
+auth.onAuthStateChanged(user=>{
+ if(!user){location.replace('login.html');return}
+ document.getElementById('welcome').textContent='Welcome to CHESS MASTER';
+ document.getElementById('userEmail').textContent=user.email||user.uid;
 });
-
-window.openGame = function(page) {
-  window.location.href = page;
+document.getElementById('logoutBtn').onclick=async()=>{
+ try{await auth.signOut();location.replace('login.html')}catch(e){msg.textContent=e.message}
 };
-
-document.getElementById("logoutBtn").onclick = async () => {
-
-  const btn = document.getElementById("logoutBtn");
-  btn.disabled = true;
-  btn.textContent = "PLEASE WAIT...";
-
-  try {
-    await signOut(auth);
-    window.location.replace("./index.html");
-  } catch (error) {
-    alert("Logout failed: " + error.message);
-    btn.disabled = false;
-    btn.textContent = "LOGOUT";
-  }
-
-};
-
-</script>
-
-</body>
-      </html>
+</script></body></html>
