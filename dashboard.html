@@ -93,7 +93,17 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
   window.location.href = "login.html";
 });
 </script>
+<script>
+function startPhone() {
+    document.getElementById("phone-status").innerText =
+        "Phone Status: Starting...";
+}
 
+function stopPhone() {
+    document.getElementById("phone-status").innerText =
+        "Phone Status: Stopped";
+}
+</script>
 </body>
   </html>
   
