@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FreeDroid Signup</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#080d18;color:white;
+ font-family:Arial,sans-serif;
+ display:flex;align-items:center;
+ justify-content:center;min-height:100vh;
+}
+.card{
+ width:90%;max-width:380px;
+ background:#111c30;padding:28px;
+ border-radius:18px;border:1px solid #263b59;
+}
+h1{text-align:center;color:#55d6ff}
+input{
+ width:100%;padding:14px;margin:10px 0;
+ border:1px solid #33445e;border-radius:9px;
+ background:#080d18;color:white;
+}
+button{
+ width:100%;padding:14px;margin-top:12px;
+ background:#28d995;border:0;
+ border-radius:9px;font-weight:bold;
+}
+p{text-align:center;color:#9aabc5;font-size:13px}
+a{color:#55d6ff}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>FreeDroid ☁️</h1>
+<h2>Create Account</h2>
+<form onsubmit="event.preventDefault();alert('Signup system will be connected with Firebase in the next step.');">
+<input type="text" placeholder="Your Name" required>
+<input type="email" placeholder="Email Address" required>
+<input type="password" placeholder="Create Password" minlength="8" required>
+<button type="submit">Create Account</button>
+</form>
+<p>Authentication is not connected yet.</p>
+<p><a href="login.html">Already have an account? Login</a></p>
+</div>
+</body>
+</html>
