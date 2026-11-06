@@ -4,330 +4,498 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Master - Online</title>
+<title>Chess Master - Play Bot</title>
 
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{
- background:#10141c;color:white;font-family:Arial;
- text-align:center;padding:15px
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
-h1{color:#f5c76a;margin:15px}
-button{
- padding:12px 20px;margin:8px;border:0;
- border-radius:7px;background:#d6a84b;
- font-weight:bold;cursor:pointer
+
+body {
+  background: #10141c;
+  color: white;
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
+  text-align: center;
+  padding: 15px;
 }
-#board{
- width:min(92vw,480px);aspect-ratio:1;
- display:grid;grid-template-columns:repeat(8,1fr);
- margin:20px auto;border:4px solid #d6a84b
+
+header {
+  padding: 15px;
+  color: #f5c76a;
+  font-size: 25px;
+  font-weight: bold;
 }
-.square{
- display:flex;align-items:center;justify-content:center;
- font-size:clamp(25px,8vw,48px);cursor:pointer
+
+.game-container {
+  max-width: 540px;
+  margin: auto;
+  background: #1b2433;
+  padding: 15px;
+  border-radius: 15px;
+  border: 1px solid #4b5563;
 }
-.light{background:#f0d9b5}
-.dark{background:#779556}
-.selected{background:#e6d34c}
-#game{display:none}
-#status{margin:15px}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #10141c;
+  border-radius: 8px;
+  gap: 8px;
+}
+
+#status {
+  color: #f5c76a;
+  font-weight: bold;
+}
+
+#board {
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  border: 5px solid #79512e;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.square {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: clamp(27px, 8vw, 55px);
+  cursor: pointer;
+  user-select: none;
+}
+
+.light {
+  background: #f0d9b5;
+}
+
+.dark {
+  background: #779556;
+}
+
+.white-piece {
+  color: #fffdf4;
+  text-shadow:
+    1px 1px 2px #222,
+    -1px -1px 2px #222;
+}
+
+.black-piece {
+  color: #171717;
+  text-shadow: 0 1px 1px #aaa;
+}
+
+.selected {
+  background: #d6c445 !important;
+}
+
+.last-move {
+  background: #baca44 !important;
+}
+
+.dot {
+  width: 25%;
+  height: 25%;
+  border-radius: 50%;
+  background: #284c2c;
+  opacity: .65;
+  position: absolute;
+}
+
+.capture {
+  position: absolute;
+  inset: 3px;
+  border: 4px solid #284c2c;
+  border-radius: 50%;
+  opacity: .6;
+}
+
+.coordinates {
+  position: absolute;
+  font-size: 10px;
+  font-weight: bold;
+  bottom: 2px;
+  right: 3px;
+  color: #333;
+}
+
+.controls {
+  margin-top: 18px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+button {
+  padding: 12px 19px;
+  border: none;
+  border-radius: 8px;
+  background: #d6a84b;
+  color: #10141c;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #f5c76a;
+}
+
+#difficulty {
+  background: #29364b;
+  color: white;
+  padding: 10px;
+  border-radius: 7px;
+  border: 1px solid #555;
+}
+
+#message {
+  color: #ddd;
+  margin-top: 15px;
+  min-height: 22px;
+  font-size: 14px;
+}
+
+@media(max-width:400px) {
+  body { padding: 7px; }
+  .game-container { padding: 8px; }
+}
 </style>
 </head>
 
 <body>
 
-<h1>♟ CHESS MASTER ONLINE</h1>
+<header>♟ CHESS MASTER</header>
 
-<div id="lobby">
-<h2>Online Matchmaking</h2>
-<p id="status">Find a player to start</p>
-<button id="findBtn">Find Opponent</button>
-<button id="cancelBtn">Cancel Search</button>
-<br>
-<button onclick="location.href='dashboard.html'">Dashboard</button>
-</div>
+<div class="game-container">
 
-<div id="game">
-<h3 id="role"></h3>
-<p id="gameStatus">Game started</p>
-<div id="board"></div>
-<button onclick="location.href='dashboard.html'">Exit</button>
+  <div class="info">
+    <span>♙ YOU - WHITE</span>
+    <span id="status">Your turn</span>
+  </div>
+
+  <div id="board"></div>
+
+  <div class="controls">
+
+    <select id="difficulty">
+      <option value="easy">Easy Bot</option>
+      <option value="normal">Normal Bot</option>
+    </select>
+
+    <button onclick="newGame()">New Game</button>
+
+    <button onclick="location.href='dashboard.html'">
+      Dashboard
+    </button>
+
+  </div>
+
+  <div id="message">Select a white piece to play.</div>
+
 </div>
 
 <script type="module">
-import {initializeApp}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import {
- getDatabase,ref,get,set,update,onValue,runTransaction,
- remove
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { Chess } from
+"https://esm.sh/chess.js@1.4.0";
 
-import {
- getAuth,onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+let game = new Chess();
+let selected = null;
+let possibleMoves = [];
+let botThinking = false;
+let lastMove = null;
 
+const boardElement = document.getElementById("board");
+const statusElement = document.getElementById("status");
+const messageElement = document.getElementById("message");
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-  authDomain: "freedroid-cloud.firebaseapp.com",
-  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
-  projectId: "freedroid-cloud",
-  storageBucket: "freedroid-cloud.firebasestorage.app",
-  messagingSenderId: "909415918359",
-  appId: "1:909415918359:web:85da71cdd35a879fa86552",
-  measurementId: "G-HV2ELB7GS6"
+const pieces = {
+  w: {
+    k:"♔", q:"♕", r:"♖",
+    b:"♗", n:"♘", p:"♙"
+  },
+  b: {
+    k:"♚", q:"♛", r:"♜",
+    b:"♝", n:"♞", p:"♟"
+  }
 };
- 
 
-const app=initializeApp(firebaseConfig);
-const db=getDatabase(app);
-const auth=getAuth(app);
+function render() {
 
-let uid=null,room=null,player=null,selected=null;
-let unsubscribe=null,searching=false,matchRef=null;
-let board=[],turn="white",finished=false;
+  boardElement.innerHTML = "";
 
-const initial=[
-["♜","♞","♝","♛","♚","♝","♞","♜"],
-["♟","♟","♟","♟","♟","♟","♟","♟"],
-["","","","","","","",""],
-["","","","","","","",""],
-["","","","","","","",""],
-["","","","","","","",""],
-["♙","♙","♙","♙","♙","♙","♙","♙"],
-["♖","♘","♗","♕","♔","♗","♘","♖"]
-];
+  const files = "abcdefgh";
 
-const white="♙♖♘♗♕♔";
-const black="♟♜♝♛♚";
+  for(let r=0;r<8;r++) {
 
-function color(p){
- if(white.includes(p))return "white";
- if(black.includes(p))return "black";
- return null;
+    for(let c=0;c<8;c++) {
+
+      const square = files[c] + (8-r);
+      const piece = game.get(square);
+
+      const div = document.createElement("div");
+
+      div.className =
+        "square " + ((r+c)%2 ? "dark" : "light");
+
+      if(selected === square) {
+        div.classList.add("selected");
+      }
+
+      if(lastMove &&
+         (lastMove.from === square ||
+          lastMove.to === square)) {
+        div.classList.add("last-move");
+      }
+
+      if(piece) {
+
+        const span = document.createElement("span");
+
+        span.textContent = pieces[piece.color][piece.type];
+
+        span.className =
+          piece.color === "w" ?
+          "white-piece" : "black-piece";
+
+        div.appendChild(span);
+
+      }
+
+      if(possibleMoves.some(m=>m.to===square)) {
+
+        const marker = document.createElement("div");
+
+        if(piece) {
+          marker.className = "capture";
+        } else {
+          marker.className = "dot";
+        }
+
+        div.appendChild(marker);
+      }
+
+      if(c===0) {
+        const rank = document.createElement("span");
+        rank.className = "coordinates";
+        rank.textContent = 8-r;
+        div.appendChild(rank);
+      }
+
+      if(r===7) {
+        const file = document.createElement("span");
+        file.className = "coordinates";
+        file.textContent = files[c];
+        div.appendChild(file);
+      }
+
+      div.addEventListener("click",()=>clickSquare(square));
+
+      boardElement.appendChild(div);
+
+    }
+  }
+
+  updateStatus();
 }
 
-function status(t){
- document.getElementById("status").textContent=t;
- document.getElementById("gameStatus").textContent=t;
+function updateStatus() {
+
+  if(game.isCheckmate()) {
+    statusElement.textContent =
+      game.turn()==="w" ?
+      "Bot Wins!" : "You Win!";
+    messageElement.textContent = "Checkmate!";
+    return;
+  }
+
+  if(game.isStalemate()) {
+    statusElement.textContent = "Draw!";
+    messageElement.textContent = "Stalemate.";
+    return;
+  }
+
+  if(game.isDraw()) {
+    statusElement.textContent = "Draw!";
+    messageElement.textContent = "Game drawn.";
+    return;
+  }
+
+  if(game.isCheck()) {
+    statusElement.textContent = "Check!";
+  } else {
+    statusElement.textContent =
+      game.turn()==="w" ? "Your Turn" : "Bot's Turn";
+  }
+
 }
 
-onAuthStateChanged(auth,user=>{
- if(user){
-  uid=user.uid;
- }else{
-  location.replace("login.html");
- }
-});
+function clickSquare(square) {
 
-async function findOpponent(){
- if(!uid)return status("Please wait for login...");
- if(searching)return;
+  if(botThinking || game.isGameOver() ||
+     game.turn()!=="w") return;
 
- searching=true;
- document.getElementById("findBtn").disabled=true;
- status("Searching for opponent...");
+  const piece = game.get(square);
 
- try{
-  const queueRef=ref(db,"onlineQueue");
-  const result=await runTransaction(queueRef,current=>{
-   current=current||{};
-   const waiting=Object.keys(current).find(id=>
-    id!==uid&&current[id]?.status==="waiting"
-   );
+  if(selected === null) {
 
-   if(waiting){
-    current[waiting].status="matched";
-    current[waiting].opponent=uid;
-    current[uid]={status:"matched",opponent:waiting};
-   }else{
-    current[uid]={status:"waiting"};
-   }
-   return current;
+    if(piece && piece.color==="w") {
+      selected = square;
+      possibleMoves = game.moves({
+        square,
+        verbose:true
+      });
+      messageElement.textContent =
+        "Choose a highlighted square.";
+      render();
+    }
+
+    return;
+  }
+
+  if(piece && piece.color==="w") {
+
+    selected = square;
+    possibleMoves = game.moves({
+      square,
+      verbose:true
+    });
+
+    render();
+    return;
+  }
+
+  const valid = possibleMoves.some(m=>m.to===square);
+
+  if(!valid) {
+    selected = null;
+    possibleMoves = [];
+    render();
+    return;
+  }
+
+  try {
+
+    const move = game.move({
+      from:selected,
+      to:square,
+      promotion:"q"
+    });
+
+    lastMove = {
+      from:move.from,
+      to:move.to
+    };
+
+    selected = null;
+    possibleMoves = [];
+
+    render();
+
+    if(!game.isGameOver()) {
+      botThinking = true;
+      messageElement.textContent = "Bot is thinking...";
+      setTimeout(botMove,650);
+    }
+
+  } catch(error) {
+    messageElement.textContent = "Invalid move.";
+  }
+
+}
+
+function botMove() {
+
+  if(game.isGameOver()) {
+    botThinking = false;
+    render();
+    return;
+  }
+
+  const moves = game.moves({verbose:true});
+
+  if(moves.length===0) {
+    botThinking = false;
+    render();
+    return;
+  }
+
+  let chosen;
+
+  const difficulty =
+    document.getElementById("difficulty").value;
+
+  if(difficulty==="easy") {
+
+    chosen = moves[
+      Math.floor(Math.random()*moves.length)
+    ];
+
+  } else {
+
+    const captures = moves.filter(m=>m.captured);
+
+    chosen = captures.length &&
+      Math.random()<0.65 ?
+      captures[Math.floor(Math.random()*captures.length)] :
+      moves[Math.floor(Math.random()*moves.length)];
+
+  }
+
+  const move = game.move({
+    from:chosen.from,
+    to:chosen.to,
+    promotion:"q"
   });
 
-  const data=result.snapshot.val();
-  const entry=data[uid];
+  lastMove = {
+    from:move.from,
+    to:move.to
+  };
 
-  if(entry?.status==="matched"){
-   room=[uid,entry.opponent].sort().join("_");
-   player=uid===room.split("_")[0]?"white":"black";
-
-   matchRef=ref(db,"onlineMatches/"+room);
-
-   await runTransaction(matchRef,current=>{
-    if(current)return current;
-    return {
-     board:initial,
-     turn:"white",
-     players:{
-      white:room.split("_")[0],
-      black:room.split("_")[1]
-     },
-     status:"playing"
-    };
-   });
-
-   await remove(ref(db,"onlineQueue/"+uid));
-   await remove(ref(db,"onlineQueue/"+entry.opponent));
-
-   startGame();
-  }else{
-   status("Waiting for another player...");
-   watchQueue();
-  }
- }catch(e){
-  searching=false;
-  document.getElementById("findBtn").disabled=false;
-  status(e.message);
- }
-}
-
-function watchQueue(){
- const qref=ref(db,"onlineQueue/"+uid);
- unsubscribe=onValue(qref,snap=>{
-  const data=snap.val();
-  if(data?.status==="matched"&&searching){
-   searching=false;
-   room=[uid,data.opponent].sort().join("_");
-   player=uid===room.split("_")[0]?"white":"black";
-   matchRef=ref(db,"onlineMatches/"+room);
-   startGame();
-   remove(qref);
-  }
- });
-}
-
-async function cancelSearch(){
- searching=false;
- if(unsubscribe){unsubscribe();unsubscribe=null}
- await remove(ref(db,"onlineQueue/"+uid));
- document.getElementById("findBtn").disabled=false;
- status("Search cancelled");
-}
-
-function startGame(){
- document.getElementById("lobby").style.display="none";
- document.getElementById("game").style.display="block";
- document.getElementById("role").textContent="You are "+player;
-
- if(unsubscribe){unsubscribe();unsubscribe=null}
-
- unsubscribe=onValue(matchRef,snap=>{
-  if(!snap.exists())return;
-  const data=snap.val();
-  board=data.board;
-  turn=data.turn;
-  finished=data.status==="finished";
+  botThinking = false;
   render();
 
-  if(finished){
-   status(data.winner===player?"You won!":"You lost!");
-  }else{
-   status(turn===player?"Your turn":"Opponent's turn");
+  if(game.isCheckmate()) {
+    messageElement.textContent = "Bot wins!";
+  } else if(game.isDraw()) {
+    messageElement.textContent = "Game drawn!";
+  } else {
+    messageElement.textContent = "Your turn!";
   }
- });
+
 }
 
-function clearPath(sr,sc,r,c){
- const dr=Math.sign(r-sr),dc=Math.sign(c-sc);
- let x=sr+dr,y=sc+dc;
- while(x!==r||y!==c){
-  if(board[x][y])return false;
-  x+=dr;y+=dc;
- }
- return true;
+function newGame() {
+
+  game = new Chess();
+
+  selected = null;
+  possibleMoves = [];
+  botThinking = false;
+  lastMove = null;
+
+  messageElement.textContent =
+    "New game started. Your turn!";
+
+  render();
+
 }
 
-function legal(sr,sc,r,c){
- const p=board[sr][sc],t=board[r][c];
- if(!p||color(p)!==player||color(t)===player)return false;
- const dr=r-sr,dc=c-sc,ar=Math.abs(dr),ac=Math.abs(dc);
-
- if(p==="♙")return (dc===0&&!t&&dr===-1)||
- (dc===0&&sr===6&&dr===-2&&!board[5][sc])||
- (dr===-1&&ac===1&&color(t)==="black");
-
- if(p==="♟")return (dc===0&&!t&&dr===1)||
- (dc===0&&sr===1&&dr===2&&!board[2][sc])||
- (dr===1&&ac===1&&color(t)==="white");
-
- if(p==="♘"||p==="♞")return (ar===2&&ac===1)||(ar===1&&ac===2);
- if(p==="♖"||p==="♜")return (dr===0||dc===0)&&clearPath(sr,sc,r,c);
- if(p==="♗"||p==="♝")return ar===ac&&clearPath(sr,sc,r,c);
- if(p==="♕"||p==="♛")return (dr===0||dc===0||ar===ac)&&clearPath(sr,sc,r,c);
- if(p==="♔"||p==="♚")return ar<=1&&ac<=1&&(ar+ac>0);
- return false;
-}
-
-function render(){
- const el=document.getElementById("board");
- el.innerHTML="";
-
- for(let r=0;r<8;r++){
-  for(let c=0;c<8;c++){
-   const sq=document.createElement("div");
-   sq.className="square "+((r+c)%2?"dark":"light");
-   sq.textContent=board[r][c];
-   if(selected?.[0]===r&&selected?.[1]===c)
-    sq.classList.add("selected");
-   sq.onclick=()=>clickSquare(r,c);
-   el.appendChild(sq);
-  }
- }
-}
-
-async function clickSquare(r,c){
- if(finished||turn!==player)return;
-
- if(!selected){
-  if(color(board[r][c])===player){
-   selected=[r,c];render();
-  }
-  return;
- }
-
- const [sr,sc]=selected;
-
- if(sr===r&&sc===c){selected=null;render();return}
- if(color(board[r][c])===player){selected=[r,c];render();return}
- if(!legal(sr,sc,r,c))return;
-
- const newBoard=board.map(row=>[...row]);
- const captured=newBoard[r][c];
-
- newBoard[r][c]=newBoard[sr][sc];
- newBoard[sr][sc]="";
-
- if(newBoard[r][c]==="♙"&&r===0)newBoard[r][c]="♕";
- if(newBoard[r][c]==="♟"&&r===7)newBoard[r][c]="♛";
-
- const kingCaptured=captured==="♚"||captured==="♔";
- selected=null;
-
- try{
-  await runTransaction(matchRef,current=>{
-   if(!current||current.status!=="playing"||current.turn!==player)return;
-   current.board=newBoard;
-   if(kingCaptured){
-    current.status="finished";
-    current.winner=player;
-   }else{
-    current.turn=player==="white"?"black":"white";
-   }
-   return current;
-  });
- }catch(e){
-  status(e.message);
- }
-}
-
-document.getElementById("findBtn").onclick=findOpponent;
-document.getElementById("cancelBtn").onclick=cancelSearch;
+newGame();
 
 </script>
+
 </body>
-  </html>
-  
+ </html>
+ 
