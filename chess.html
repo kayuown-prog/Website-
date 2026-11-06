@@ -94,3 +94,6 @@ auth.onAuthStateChanged(user=>{
  uid=user?user.uid:'local';if(localMode){myColor='w';statusEl.textContent='Local two-player game — White 
 starts.';document.getElementById('findBtn').style.display='none'}
  draw();
+});
+window.addEventListener('beforeunload',cleanupQueue);
+</script></body></html>
