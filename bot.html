@@ -4,331 +4,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess vs Bot</title>
+<title>Chess Arena - Bot</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 15px;
-  background: #101820;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-}
-
-h1 {
-  color: #f5d76e;
-  margin: 12px 0;
-}
-
-.container {
-  max-width: 520px;
-  margin: auto;
-}
-
-.status {
-  background: #243442;
-  padding: 13px;
-  border-radius: 10px;
-  margin: 15px 0;
-  font-size: 16px;
-}
-
-.board {
-  width: min(92vw, 480px);
-  aspect-ratio: 1;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  margin: auto;
-  border: 4px solid #d5b16d;
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.square {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  cursor: pointer;
-  user-select: none;
-  aspect-ratio: 1;
-}
-
-.light {
-  background: #f0d9b5;
-}
-
-.dark {
-  background: #b58863;
-}
-
-.piece {
-  font-family: "DejaVu Sans", "Segoe UI Symbol", serif;
-  font-size: clamp(25px, 8vw, 48px);
-  line-height: 1;
-  font-weight: normal;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.white-piece {
-  color: #ffffff;
-  -webkit-text-stroke: 1px #333333;
-  text-shadow: 0 1px 2px #333;
-}
-
-.black-piece {
-  color: #171717;
-  -webkit-text-stroke: 0.5px #000;
-}
-
-.selected {
-  background: #e9d34c !important;
-}
-
-.possible::after {
-  content: "";
-  width: 25%;
-  height: 25%;
-  background: #267b45;
-  opacity: 0.75;
-  border-radius: 50%;
-  position: absolute;
-}
-
-.capture::after {
-  content: "";
-  position: absolute;
-  width: 85%;
-  height: 85%;
-  border: 4px solid #267b45;
-  border-radius: 50%;
-}
-
-.buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin: 18px 0;
-}
-
-button {
-  padding: 12px 20px;
-  border: none;
-  border-radius: 8px;
-  background: #e6c568;
-  color: #111;
-  font-size: 15px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.5;
-}
-
-.note {
-  color: #c6d2dc;
-  font-size: 13px;
-}
+*{box-sizing:border-box;font-family:Arial}
+body{margin:0;background:#10141c;color:white;text-align:center}
+header{padding:20px;background:#1b2431;color:#e7b75c;font-size:23px;font-weight:bold}
+.board{display:grid;grid-template-columns:repeat(8,1fr);width:min(94vw,450px);margin:20px auto;border:5px solid #d4aa65}
+.square{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:clamp(25px,8vw,45px);cursor:pointer;position:relative}
+.light{background:#f0d9b5}
+.dark{background:#b58863}
+.selected{background:#a9bd45!important}
+.possible:after{content:"";width:23%;height:23%;border-radius:50%;background:#455b37;opacity:.7}
+button{padding:13px 22px;margin:8px;border:0;border-radius:8px;background:#e7b75c;font-weight:bold;cursor:pointer}
+.back{background:#283344;color:white}
+#status{margin:20px;color:#e7b75c;font-weight:bold}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<header>♟ CHESS ARENA</header>
 
-<h1>♟ Chess vs Bot</h1>
+<h2>🤖 Play With Bot</h2>
+<p>Practice against Computer</p>
+<p>🏆 Bot matches give 0 points</p>
 
-<div class="status" id="status">
-Your turn — White
-</div>
-
+<div id="status">Your Turn (White)</div>
 <div class="board" id="board"></div>
 
-<div class="buttons">
-<button onclick="undoMove()">Undo</button>
-<button onclick="restartGame()">Restart</button>
-</div>
+<button onclick="newGame()">New Game</button>
+<button class="back" onclick="location.href='dashboard.html'">Dashboard</button>
 
-<p class="note">
-White pieces are yours. Black pieces are controlled by the computer.
-</p>
+<script type="module">
+import { Chess } from
+"https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
 
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-
-<script>
 const game = new Chess();
-
 const board = document.getElementById("board");
 const status = document.getElementById("status");
 
-let selected = null;
-let possible = [];
-
-const pieces = {
-  wk: "♔", wq: "♕", wr: "♖",
-  wb: "♗", wn: "♘", wp: "♙",
-  bk: "♚", bq: "♛", br: "♜",
-  bb: "♝", bn: "♞", bp: "♟"
+const symbols = {
+  wk:"♔",wq:"♕",wr:"♖",wb:"♗",wn:"♘",wp:"♙",
+  bk:"♚",bq:"♛",br:"♜",bb:"♝",bn:"♞",bp:"♟"
 };
 
-function renderBoard() {
+let selected = null;
+let possible = [];
+let botThinking = false;
+
+function render() {
   board.innerHTML = "";
+  const position = game.board();
 
-  const files = "abcdefgh";
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
 
-  for (let r = 7; r >= 0; r--) {
-    for (let f = 0; f < 8; f++) {
-      const square = files[f] + (r + 1);
-      const piece = game.get(square);
+      const name = "abcdefgh"[c] + (8-r);
+      const piece = position[r][c];
 
-      const div = document.createElement("div");
+      const cell = document.createElement("div");
+      cell.className = "square " +
+        ((r+c)%2===0 ? "light":"dark");
 
-      div.className =
-        "square " + ((r + f) % 2 === 0 ? "light" : "dark");
+      if(selected===name) cell.classList.add("selected");
+      if(possible.includes(name)) cell.classList.add("possible");
 
-      if (selected === square) {
-        div.classList.add("selected");
-      }
+      if(piece) cell.textContent = symbols[piece.color+piece.type];
 
-      if (possible.includes(square)) {
-        div.classList.add(
-          piece ? "capture" : "possible"
-        );
-      }
-
-      if (piece) {
-        const span = document.createElement("span");
-        span.className =
-          "piece " +
-          (piece.color === "w" ? "white-piece" : "black-piece");
-
-        span.textContent = pieces[piece.color + piece.type];
-        div.appendChild(span);
-      }
-
-      div.onclick = () => selectSquare(square);
-
-      board.appendChild(div);
+      cell.onclick = () => selectSquare(name);
+      board.appendChild(cell);
     }
   }
-
   updateStatus();
 }
 
+function updateStatus() {
+  if(game.isCheckmate()){
+    status.textContent = game.turn()==="w"
+      ? "Bot Wins! 🤖"
+      : "You Win! 🎉";
+  } else if(game.isDraw()){
+    status.textContent = "Game Draw!";
+  } else if(botThinking){
+    status.textContent = "Bot is thinking... 🤖";
+  } else if(game.isCheck()){
+    status.textContent = "Check! Your turn.";
+  } else {
+    status.textContent = game.turn()==="w"
+      ? "Your Turn (White)"
+      : "Bot's Turn (Black)";
+  }
+}
+
 function selectSquare(square) {
-  if (game.game_over() || game.turn() !== "w") return;
+  if(game.isGameOver() || botThinking || game.turn()!=="w") return;
+
+  if(selected && possible.includes(square)){
+    try {
+      game.move({
+        from:selected,
+        to:square,
+        promotion:"q"
+      });
+      selected=null;
+      possible=[];
+      render();
+      botMove();
+      return;
+    } catch(e) {}
+  }
 
   const piece = game.get(square);
 
-  if (selected && possible.includes(square)) {
-    makeMove(selected, square);
-    return;
-  }
-
-  if (piece && piece.color === "w") {
-    selected = square;
-
-    possible = game.moves({
-      square: square,
-      verbose: true
-    }).map(move => move.to);
+  if(piece && piece.color==="w"){
+    selected=square;
+    possible=game.moves({
+      square,
+      verbose:true
+    }).map(m=>m.to);
   } else {
-    selected = null;
-    possible = [];
+    selected=null;
+    possible=[];
   }
 
-  renderBoard();
-}
-
-function makeMove(from, to) {
-  let move = game.move({
-    from: from,
-    to: to,
-    promotion: "q"
-  });
-
-  selected = null;
-  possible = [];
-
-  if (!move) {
-    renderBoard();
-    return;
-  }
-
-  renderBoard();
-
-  if (!game.game_over()) {
-    status.textContent = "Computer is thinking...";
-    setTimeout(botMove, 450);
-  }
+  render();
 }
 
 function botMove() {
-  if (game.game_over()) {
-    updateStatus();
-    return;
-  }
+  if(game.isGameOver()) return;
 
-  const moves = game.moves();
+  botThinking=true;
+  render();
 
-  if (!moves.length) {
-    updateStatus();
-    return;
-  }
+  setTimeout(()=>{
+    const moves=game.moves();
 
-  const move = moves[Math.floor(Math.random() * moves.length)];
+    if(moves.length){
+      const move=moves[Math.floor(Math.random()*moves.length)];
+      game.move(move);
+    }
 
-  game.move(move);
-  renderBoard();
+    botThinking=false;
+    selected=null;
+    possible=[];
+    render();
+  },700);
 }
 
-function undoMove() {
-  if (game.history().length === 0) return;
-
-  game.undo();
-
-  if (game.turn() === "b" && game.history().length > 0) {
-    game.undo();
-  }
-
-  selected = null;
-  possible = [];
-  renderBoard();
-}
-
-function restartGame() {
+window.newGame=function(){
   game.reset();
-  selected = null;
-  possible = [];
-  renderBoard();
-}
+  selected=null;
+  possible=[];
+  botThinking=false;
+  render();
+};
 
-function updateStatus() {
-  if (game.in_checkmate()) {
-    status.textContent = "Checkmate! " +
-      (game.turn() === "w" ? "Black" : "White") + " wins!";
-  } else if (game.in_draw()) {
-    status.textContent = "Game Draw!";
-  } else if (game.in_check()) {
-    status.textContent =
-      (game.turn() === "w" ? "White" : "Black") + " is in check!";
-  } else {
-    status.textContent =
-      game.turn() === "w" ? "Your turn — White" : "Bot turn — Black";
-  }
-}
-
-renderBoard();
+render();
 </script>
 
 </body>
