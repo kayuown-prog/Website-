@@ -1,57 +1,132 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHESS MASTER - Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master - Login</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:
-#10141c;color:#fff;font-family:Arial}
-.card{width:min(92%,390px);background:#1c2431;padding:28px;border-radius:18px;box-shadow:0 15px 45px 
-#0007}
-h1{text-align:center;color:#e7b85c;margin:0 0 8px}.sub{text-align:center;color:#aab4c3;margin-bottom:
-22px}
-input{width:100%;padding:14px;margin:8px 0;border:1px solid #394557;border-radius:9px;background:#111923;
-color:white;font-size:16px}
-button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:9px;background:#e7b85c;color:
-#171717;font-weight:bold;font-size:16px;cursor:pointer}
-.alt{background:#344256;color:#fff}.links{display:flex;justify-content:space-between;margin-top:16px;gap:
-10px}
-a{color:#e7b85c;cursor:pointer;font-size:14px}#message{text-align:center;min-height:20px;color:#ffcf85;
-font-size:14px}
-</style></head>
-<body><main class="card">
-<h1>■ CHESS MASTER</h1><div class="sub">Play. Think. Win.</div>
-<input id="email" type="email" placeholder="Email address" autocomplete="email">
-<input id="password" type="password" placeholder="Password" autocomplete="current-password">
-<button id="loginBtn">LOGIN</button><button class="alt" id="signupBtn">CREATE ACCOUNT</button>
-<div class="links"><a id="forgotBtn">Forgot password?</a><a id="guestInfo">Help</a></div>
-<p id="message"></p>
-</main>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script>
-const emailEl=document.getElementById('email'), passEl=document.getElementById('password'), msg=document.
-getElementById('message');
-function message(t){msg.textContent=t}
-document.getElementById('loginBtn').onclick=async()=>{
- const email=emailEl.value.trim(), password=passEl.value;
- if(!email||!password)return message('Email aur password dono bharo.');
- try{await auth.signInWithEmailAndPassword(email,password);location.replace('dashboard.html')}
- catch(e){message(e.message)}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #10141c;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.login-box {
+  background: #1b2433;
+  padding: 35px 25px;
+  border-radius: 15px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  border: 1px solid #d6a84b;
+}
+
+h1 {
+  color: #f5c76a;
+  margin-bottom: 12px;
+}
+
+p {
+  color: #ccc;
+  margin-bottom: 25px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #d6a84b;
+  color: #10141c;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+#message {
+  margin-top: 18px;
+  font-size: 14px;
+  word-break: break-word;
+}
+</style>
+</head>
+
+<body>
+
+<div class="login-box">
+  <h1>♟ CHESS MASTER</h1>
+  <p>Login to continue playing</p>
+
+  <button id="googleBtn">Continue with Google</button>
+
+  <div id="message"></div>
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// APNA EXISTING FIREBASE CONFIG YAHAN PASTE KARO
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
-document.getElementById('signupBtn').onclick=async()=>{
- const email=emailEl.value.trim(), password=passEl.value;
- if(!email||password.length<6)return message('Valid email aur kam se kam 6-character password daalo.');
- try{await auth.createUserWithEmailAndPassword(email,password);location.replace('dashboard.html')}
- catch(e){message(e.message)}
-};
-document.getElementById('forgotBtn').onclick=async()=>{
- const email=emailEl.value.trim();if(!email)return message('Pehle email address likho.');
- try{await auth.sendPasswordResetEmail(email);message('Password reset email bhej diya.')}
- catch(e){message(e.message)}
-};
-document.getElementById('guestInfo').onclick=()=>message('Account banane ke liye email aur 6+ character 
-password bharo.');
-auth.onAuthStateChanged(user=>{if(user)location.replace('dashboard.html')});
-</script></body></html>
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const provider = new GoogleAuthProvider();
+const button = document.getElementById("googleBtn");
+const message = document.getElementById("message");
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    window.location.replace("dashboard.html");
+  }
+});
+
+button.addEventListener("click", async () => {
+  button.disabled = true;
+  message.textContent = "Please wait...";
+
+  try {
+    await signInWithPopup(auth, provider);
+    window.location.replace("dashboard.html");
+  } catch (error) {
+    message.textContent = error.message;
+    button.disabled = false;
+  }
+});
+
+</script>
+</body>
+</html>
