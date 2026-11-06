@@ -93,7 +93,7 @@ p{text-align:center;color:#9aabc5;font-size:13px}
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    message.textContent = "Login Successful!";
+window.location.href = "dashboard.html";
   } catch (error) {
     message.textContent = error.message;
   }
