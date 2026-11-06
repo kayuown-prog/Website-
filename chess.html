@@ -1,145 +1,207 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Arena - Play Chess</title>
+<title>Chess Game</title>
 
 <style>
 * {
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
 }
 
 body {
   margin: 0;
-  background: #10141c;
+  padding: 15px;
+  background: #101820;
   color: white;
+  font-family: Arial, sans-serif;
   text-align: center;
 }
 
-header {
-  background: #1b2431;
-  padding: 20px;
-  color: #e7b75c;
-  font-size: 23px;
-  font-weight: bold;
+h1 {
+  color: #f5d76e;
+  margin: 12px 0 18px;
 }
 
 .container {
-  padding: 20px 10px;
+  max-width: 520px;
+  margin: auto;
 }
 
-#status {
-  margin: 18px auto;
-  color: #e7b75c;
-  font-size: 18px;
+.status {
+  background: #243442;
+  padding: 14px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-size: 16px;
   font-weight: bold;
 }
 
 .board {
+  width: min(94vw, 480px);
+  aspect-ratio: 1;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  width: min(94vw, 480px);
-  margin: 20px auto;
-  border: 5px solid #d4aa65;
+  margin: auto;
+  border: 4px solid #d5b16d;
   border-radius: 5px;
   overflow: hidden;
 }
 
 .square {
-  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(25px, 8vw, 48px);
-  cursor: pointer;
   position: relative;
+  aspect-ratio: 1;
+  cursor: pointer;
   user-select: none;
 }
 
 .light {
-  background: #ffffff;
+  background: #f0d9b5;
 }
 
 .dark {
-  background: #222222;
+  background: #b58863;
+}
+
+.piece {
+  font-family: "DejaVu Sans", "Segoe UI Symbol", serif;
+  font-size: clamp(25px, 8vw, 49px);
+  line-height: 1;
+  font-weight: normal;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.white-piece {
+  color: #ffffff;
+  -webkit-text-stroke: 1px #333333;
+  text-shadow: 0 1px 2px #333;
+}
+
+.black-piece {
+  color: #171717;
+  -webkit-text-stroke: 0.5px #000;
 }
 
 .selected {
-  background: #a9bd45 !important;
+  background: #e9d34c !important;
 }
 
 .possible::after {
   content: "";
-  position: absolute;
-  width: 23%;
-  height: 23%;
+  width: 25%;
+  height: 25%;
+  background: #267b45;
+  opacity: .8;
   border-radius: 50%;
-  background: #455b37;
-  opacity: .7;
+  position: absolute;
+}
+
+.capture::after {
+  content: "";
+  position: absolute;
+  width: 85%;
+  height: 85%;
+  border: 4px solid #267b45;
+  border-radius: 50%;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0;
 }
 
 button {
+  padding: 12px 20px;
   border: none;
-  padding: 13px 22px;
   border-radius: 8px;
-  background: #e7b75c;
+  background: #e6c568;
+  color: #111;
+  font-size: 15px;
   font-weight: bold;
   cursor: pointer;
-  margin: 8px;
 }
 
-.back {
-  background: #283344;
-  color: white;
-}
-  .white-piece {
-  color: #ffffff !important;
-  fill: #ffffff !important;
+button:disabled {
+  opacity: .5;
 }
 
-.black-piece {
-  color: #000000 !important;
-  fill: #000000 !important;
+.promotion {
+  display: none;
+  background: #243442;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 12px;
+}
+
+.promotion button {
+  margin: 5px;
+}
+
+.note {
+  color: #c6d2dc;
+  font-size: 13px;
 }
 </style>
 </head>
 
 <body>
 
-<header>♟ CHESS ARENA</header>
-
 <div class="container">
 
-<h2>Play Chess</h2>
+<h1>♟ Chess Game</h1>
 
-<p>White vs Black</p>
-
-<div id="status">Loading Chess...</div>
+<div class="status" id="status">
+White's Turn
+</div>
 
 <div class="board" id="board"></div>
 
-<button onclick="newGame()">New Game</button>
+<div class="promotion" id="promotion">
+  <p>Choose promotion piece</p>
+  <button onclick="promote('q')">Queen ♕</button>
+  <button onclick="promote('r')">Rook ♖</button>
+  <button onclick="promote('b')">Bishop ♗</button>
+  <button onclick="promote('n')">Knight ♘</button>
+  <button onclick="cancelPromotion()">Cancel</button>
+</div>
 
-<button class="back" onclick="location.href='dashboard.html'">
-Dashboard
-</button>
+<div class="buttons">
+  <button onclick="undoMove()">Undo</button>
+  <button onclick="restartGame()">Restart</button>
+</div>
+
+<p class="note">
+Two Player Mode · White vs Black
+</p>
 
 </div>
 
-<script type="module">
-import { Chess } from
-"https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+
+<script>
+if (typeof Chess === "undefined") {
+  document.getElementById("status").textContent =
+    "Chess library failed to load. Check your internet connection.";
+  throw new Error("Chess.js failed to load");
+}
 
 const game = new Chess();
 
 const board = document.getElementById("board");
 const status = document.getElementById("status");
+const promotionBox = document.getElementById("promotion");
 
 let selected = null;
-let possibleMoves = [];
+let possible = [];
+let pendingMove = null;
 
 const pieces = {
   wk: "♔", wq: "♕", wr: "♖",
@@ -151,129 +213,194 @@ const pieces = {
 function renderBoard() {
   board.innerHTML = "";
 
-  const position = game.board();
+  const files = "abcdefgh";
 
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
+  for (let r = 7; r >= 0; r--) {
+    for (let f = 0; f < 8; f++) {
 
-      const squareName =
-        "abcdefgh"[c] + (8 - r);
+      const square = files[f] + (r + 1);
+      const piece = game.get(square);
 
-      const piece = position[r][c];
+      const div = document.createElement("div");
 
-      const square = document.createElement("div");
+      div.className =
+        "square " + ((r + f) % 2 === 0 ? "light" : "dark");
 
-      square.className =
-        "square " +
-        ((r + c) % 2 === 0 ? "light" : "dark");
-
-      if (selected === squareName) {
-        square.classList.add("selected");
+      if (selected === square) {
+        div.classList.add("selected");
       }
 
-      if (possibleMoves.includes(squareName)) {
-        square.classList.add("possible");
+      if (possible.includes(square)) {
+        div.classList.add(
+          piece ? "capture" : "possible"
+        );
       }
 
       if (piece) {
-        square.textContent =
-          pieces[piece.color + piece.type];
+        const span = document.createElement("span");
+
+        span.className =
+          "piece " +
+          (piece.color === "w"
+            ? "white-piece"
+            : "black-piece");
+
+        span.textContent = pieces[piece.color + piece.type];
+
+        div.appendChild(span);
       }
 
-      square.addEventListener("click", () => {
-        handleSquare(squareName);
-      });
+      div.onclick = () => selectSquare(square);
 
-      board.appendChild(square);
+      board.appendChild(div);
     }
   }
 
   updateStatus();
 }
 
-function handleSquare(square) {
+function selectSquare(square) {
 
-  if (game.isGameOver()) return;
-
-  if (selected && possibleMoves.includes(square)) {
-
-    try {
-      game.move({
-        from: selected,
-        to: square,
-        promotion: "q"
-      });
-
-      selected = null;
-      possibleMoves = [];
-
-      renderBoard();
-      return;
-
-    } catch (error) {
-      selected = null;
-      possibleMoves = [];
-      renderBoard();
-      return;
-    }
-  }
+  if (game.game_over() || pendingMove) return;
 
   const piece = game.get(square);
+
+  if (selected && possible.includes(square)) {
+    makeMove(selected, square);
+    return;
+  }
 
   if (piece && piece.color === game.turn()) {
 
     selected = square;
 
-    possibleMoves = game.moves({
+    possible = game.moves({
       square: square,
       verbose: true
     }).map(move => move.to);
 
   } else {
+
     selected = null;
-    possibleMoves = [];
+    possible = [];
   }
+
+  renderBoard();
+}
+
+function makeMove(from, to) {
+
+  const piece = game.get(from);
+
+  if (
+    piece &&
+    piece.type === "p" &&
+    (to[1] === "8" || to[1] === "1")
+  ) {
+    pendingMove = { from, to };
+    promotionBox.style.display = "block";
+    return;
+  }
+
+  const move = game.move({
+    from: from,
+    to: to
+  });
+
+  if (!move) return;
+
+  selected = null;
+  possible = [];
+
+  renderBoard();
+}
+
+function promote(type) {
+
+  if (!pendingMove) return;
+
+  const move = game.move({
+    from: pendingMove.from,
+    to: pendingMove.to,
+    promotion: type
+  });
+
+  pendingMove = null;
+  promotionBox.style.display = "none";
+
+  selected = null;
+  possible = [];
+
+  renderBoard();
+}
+
+function cancelPromotion() {
+  pendingMove = null;
+  promotionBox.style.display = "none";
+  selected = null;
+  possible = [];
+  renderBoard();
+}
+
+function undoMove() {
+
+  if (game.history().length === 0) return;
+
+  game.undo();
+
+  selected = null;
+  possible = [];
+  pendingMove = null;
+
+  promotionBox.style.display = "none";
+
+  renderBoard();
+}
+
+function restartGame() {
+
+  game.reset();
+
+  selected = null;
+  possible = [];
+  pendingMove = null;
+
+  promotionBox.style.display = "none";
 
   renderBoard();
 }
 
 function updateStatus() {
 
-  if (game.isCheckmate()) {
+  if (game.in_checkmate()) {
+
     status.textContent =
       "Checkmate! " +
       (game.turn() === "w" ? "Black" : "White") +
       " Wins!";
-  }
 
-  else if (game.isDraw()) {
+  } else if (game.in_draw()) {
+
     status.textContent = "Game Draw!";
-  }
 
-  else if (game.isCheck()) {
+  } else if (game.in_check()) {
+
     status.textContent =
       (game.turn() === "w" ? "White" : "Black") +
       " is in Check!";
-  }
 
-  else {
+  } else {
+
     status.textContent =
-      (game.turn() === "w" ? "White" : "Black") +
-      "'s Turn";
+      game.turn() === "w"
+        ? "White's Turn"
+        : "Black's Turn";
   }
 }
 
-window.newGame = function() {
-  game.reset();
-  selected = null;
-  possibleMoves = [];
-  renderBoard();
-};
-
 renderBoard();
-
 </script>
 
 </body>
-  </html>
-  
+</html>
+
