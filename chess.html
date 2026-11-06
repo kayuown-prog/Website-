@@ -1,269 +1,96 @@
-
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Arena - Play Chess</title>
-
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-
+scale=1">
+<title>CHESS MASTER - Online</title>
 <style>
-* {
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
+*{box-sizing:border-box}body{margin:0;background:#10141c;color:#fff;font-family:Arial;text-align:center;
+padding:16px}
+h1{color:#e7b85c}.board{width:min(92vw,520px);aspect-ratio:1;margin:18px auto;display:grid;grid-template-
+columns:repeat(8,1fr);border:4px solid #394557}
+.sq{display:grid;place-items:center;font-size:clamp(23px,7vw,48px);cursor:pointer;user-select:none}
+.light{background:#f0d9b5;color:#111}.dark{background:#779556;color:#111}.selected{outline:4px solid 
+#f5c451;outline-offset:-4px}
+button,a{padding:12px 18px;margin:5px;border:0;border-radius:8px;background:#e7b85c;color:#111;font-
+weight:bold;text-decoration:none;cursor:pointer}
+#status{min-height:24px;color:#ffd27a}
+</style></head><body><h1>■ ONLINE CHESS</h1><p id="status">Connecting...</p><div id="board" 
+class="board"></div>
+<button id="findBtn">FIND MATCH</button><button id="cancelBtn" style="display:none">CANCEL</button><a 
+href="dashboard.html">DASHBOARD</a>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const game=new Chess(), board=document.getElementById('board'), statusEl=document.getElementById(
+'status');
+const glyph={wk:'■',wq:'■',wr:'■',wb:'■',wn:'■',wp:'■',bk:'■',bq:'■',br:'■',bb:'■',bn:'■',bp:'■'};
+let uid=null,roomId=null,myColor=null,selected=null,queueRef=null,roomRef=null,roomListener=null,
+localMode=new URLSearchParams(location.search).has('local');
+function draw(){
+ board.innerHTML='';const b=game.board();
+ b.forEach((row,r)=>row.forEach((p,c)=>{
+ const sq=document.createElement('div');sq.className='sq '+((r+c)%2?'dark':'light');
+ const square='abcdefgh'[c]+(8-r);if(selected===square)sq.classList.add('selected');
+ sq.textContent=p?glyph[p.color+p.type]:'';
+ sq.onclick=()=>tap(square);board.appendChild(sq);
+ }));
+ if(game.game_over())statusEl.textContent=game.in_checkmate()?'Checkmate! '+(game.turn()==='w'?'Black':
+'White')+' wins.':'Draw game.';
 }
-
-body {
-  margin: 0;
-  background: #10141c;
-  color: white;
-  text-align: center;
+function tap(sq){
+ if(localMode){makeMove(sq);return}
+ if(!roomId||game.turn()!==myColor||game.game_over())return;
+ makeMove(sq);
 }
-
-header {
-  background: #1b2431;
-  padding: 20px;
-  color: #e7b75c;
-  font-size: 23px;
-  font-weight: bold;
+function makeMove(sq){
+ if(selected){const m=game.move({from:selected,to:sq,promotion:'q'});selected=null;
+ if(m){draw();if(!localMode&&roomRef)roomRef.update({fen:game.fen(),lastMove:m.san,updatedAt:firebase.
+database.ServerValue.TIMESTAMP});return}
+ }
+ const p=game.get(sq);selected=p&&p.color===game.turn()?sq:null;draw();
 }
-
-.container {
-  padding: 20px 10px;
+function cleanupQueue(){if(queueRef)queueRef.remove().catch(()=>{});queueRef=null}
+async function findMatch(){
+ const user=auth.currentUser;if(!user){location.replace('login.html');return}
+ document.getElementById('findBtn').style.display='none';document.getElementById('cancelBtn').style.
+display='inline-block';
+ statusEl.textContent='Searching for opponent...';
+ // Atomic waiting-slot transaction. First player waits; next player creates the room.
+ const waiting=db.ref('matchmaking/waiting');
+ const result=await waiting.transaction(current=>{
+ if(!current||current.uid===uid)return {uid:uid,createdAt:Date.now()};
+ return current;
+ });
+ const slot=result.snapshot.val();
+ if(slot&&slot.uid===uid){queueRef=waiting;waiting.on('value',async snap=>{
+ const v=snap.val();if(v&&v.uid!==uid){waiting.off();await createRoom(v.uid,'b');}
+ });}
+ else if(slot&&slot.uid!==uid){await createRoom(slot.uid,'w');}
 }
-
-#status {
-  margin: 18px auto;
-  color: #e7b75c;
-  font-size: 18px;
-  font-weight: bold;
+async function createRoom(opponentUid,color){
+ const room=db.ref('rooms').push();roomId=room.key;roomRef=room;myColor=color;
+ await room.set({players:{w:color==='w'?uid:opponentUid,b:color==='b'?uid:opponentUid},fen:game.fen(),
+status:'active',createdAt:Date.now()});
+ cleanupQueue();statusEl.textContent='Match found! You are '+(color==='w'?'White':'Black')+'.';
+ document.getElementById('cancelBtn').style.display='none';watchRoom();
 }
-
-.board {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  width: min(94vw, 480px);
-  margin: 20px auto;
-  border: 5px solid #d4aa65;
-  border-radius: 5px;
-  overflow: hidden;
+function watchRoom(){
+ if(roomListener)roomRef.off('value',roomListener);
+ roomListener=roomRef.on('value',snap=>{
+ const data=snap.val();if(!data)return;
+ if(data.fen&&data.fen!==game.fen()){game.load(data.fen);selected=null;draw()}
+ if(data.status==='active'&&!game.game_over())statusEl.textContent='You are '+(myColor==='w'?'White':
+'Black')+' — '+(game.turn()===myColor?'Your turn':'Opponent turn');
+ });
 }
-
-.square {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(25px, 8vw, 48px);
-  cursor: pointer;
-  position: relative;
-  user-select: none;
-}
-
-.light {
-  background: #f0d9b5;
-}
-
-.dark {
-  background: #b58863;
-}
-
-.selected {
-  background: #a9bd45 !important;
-}
-
-.possible::after {
-  content: "";
-  position: absolute;
-  width: 23%;
-  height: 23%;
-  border-radius: 50%;
-  background: #455b37;
-  opacity: .7;
-}
-
-button {
-  border: none;
-  padding: 13px 22px;
-  border-radius: 8px;
-  background: #e7b75c;
-  font-weight: bold;
-  cursor: pointer;
-  margin: 8px;
-}
-
-.back {
-  background: #283344;
-  color: white;
-}
-</style>
-</head>
-
-<body>
-
-<header>♟ CHESS ARENA</header>
-
-<div class="container">
-
-<h2>Play Chess</h2>
-
-<p>White vs Black</p>
-
-<div id="status">Loading Chess...</div>
-
-<div class="board" id="board"></div>
-
-<button onclick="newGame()">New Game</button>
-
-<button class="back" onclick="location.href='dashboard.html'">
-Dashboard
-</button>
-
-</div>
-
-<script type="module">
-import { Chess } from
-"https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
-
-const game = new Chess();
-
-const board = document.getElementById("board");
-const status = document.getElementById("status");
-
-let selected = null;
-let possibleMoves = [];
-
-const pieces = {
-  wk: "♔", wq: "♕", wr: "♖",
-  wb: "♗", wn: "♘", wp: "♙",
-  bk: "♚", bq: "♛", br: "♜",
-  bb: "♝", bn: "♞", bp: "♟"
-};
-
-function renderBoard() {
-  board.innerHTML = "";
-
-  const position = game.board();
-
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-
-      const squareName =
-        "abcdefgh"[c] + (8 - r);
-
-      const piece = position[r][c];
-
-      const square = document.createElement("div");
-
-      square.className =
-        "square " +
-        ((r + c) % 2 === 0 ? "light" : "dark");
-
-      if (selected === squareName) {
-        square.classList.add("selected");
-      }
-
-      if (possibleMoves.includes(squareName)) {
-        square.classList.add("possible");
-      }
-
-      if (piece) {
-        square.textContent =
-          pieces[piece.color + piece.type];
-      }
-
-      square.addEventListener("click", () => {
-        handleSquare(squareName);
-      });
-
-      board.appendChild(square);
-    }
-  }
-
-  updateStatus();
-}
-
-function handleSquare(square) {
-
-  if (game.isGameOver()) return;
-
-  if (selected && possibleMoves.includes(square)) {
-
-    try {
-      game.move({
-        from: selected,
-        to: square,
-        promotion: "q"
-      });
-
-      selected = null;
-      possibleMoves = [];
-
-      renderBoard();
-      return;
-
-    } catch (error) {
-      selected = null;
-      possibleMoves = [];
-      renderBoard();
-      return;
-    }
-  }
-
-  const piece = game.get(square);
-
-  if (piece && piece.color === game.turn()) {
-
-    selected = square;
-
-    possibleMoves = game.moves({
-      square: square,
-      verbose: true
-    }).map(move => move.to);
-
-  } else {
-    selected = null;
-    possibleMoves = [];
-  }
-
-  renderBoard();
-}
-
-function updateStatus() {
-
-  if (game.isCheckmate()) {
-    status.textContent =
-      "Checkmate! " +
-      (game.turn() === "w" ? "Black" : "White") +
-      " Wins!";
-  }
-
-  else if (game.isDraw()) {
-    status.textContent = "Game Draw!";
-  }
-
-  else if (game.isCheck()) {
-    status.textContent =
-      (game.turn() === "w" ? "White" : "Black") +
-      " is in Check!";
-  }
-
-  else {
-    status.textContent =
-      (game.turn() === "w" ? "White" : "Black") +
-      "'s Turn";
-  }
-}
-
-window.newGame = function() {
-  game.reset();
-  selected = null;
-  possibleMoves = [];
-  renderBoard();
-};
-
-renderBoard();
-
-</script>
-
-</body>
-</html>
+document.getElementById('findBtn').onclick=()=>findMatch().catch(e=>statusEl.textContent=e.message);
+document.getElementById('cancelBtn').onclick=()=>{cleanupQueue();document.getElementById('findBtn').
+style.display='inline-block';document.getElementById('cancelBtn').style.display='none';statusEl.
+textContent='Search cancelled.'};
+auth.onAuthStateChanged(user=>{
+ if(!user&&!localMode){location.replace('login.html');return}
+ uid=user?user.uid:'local';if(localMode){myColor='w';statusEl.textContent='Local two-player game — White 
+starts.';document.getElementById('findBtn').style.display='none'}
+ draw();
