@@ -44,5 +44,36 @@ p{text-align:center;color:#9aabc5;font-size:13px}
 <p>Authentication is not connected yet.</p>
 <a href="index.html" style="color:#55d6ff">Back to Home</a>
 </div>
+ 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+    authDomain: "freedroid-cloud.firebaseapp.com",
+    projectId: "freedroid-cloud",
+    storageBucket: "freedroid-cloud.firebasestorage.app",
+    messagingSenderId: "909415918359",
+    appId: "1:909415918359:web:85da71cdd35a879fa86552",
+    measurementId: "G-HV2ELB7GS6"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  window.firebaseAuth = {
+    auth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    onAuthStateChanged
+  };
+</script>
+ 
 </body>
 </html>
