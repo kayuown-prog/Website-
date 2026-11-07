@@ -2,838 +2,622 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Master - 3D Wooden Chess</title><style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+<title>Chess Master - Wooden Chess</title><style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+ min-height:100vh;
+ background:radial-gradient(ellipse at center,#07565a,#00272d 80%);
+ color:white;
+ font-family:Arial,sans-serif;
+ text-align:center;
+ padding-bottom:20px;
 }
 
-:root {
-  --gold: #f4c64e;
-  --wood: #71300f;
-  --teal: #003c40;
-  --cream: #f2e3c9;
+.top-header{
+ height:105px;
+ padding:15px 22px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:repeating-linear-gradient(175deg,transparent,#ffffff08 8px,transparent 18px),linear-gradient(145deg,#4b1d08,#8b3d12,#4a1d08);
+ border-bottom:5px solid #e5a72e;
+ box-shadow:0 5px 15px #0008;
 }
 
-body {
-  min-height: 100vh;
-  background:
-    radial-gradient(ellipse at center, #07565a, #002c31 75%);
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding-bottom: 25px;
+.profile{
+ width:72px;height:72px;
+ border-radius:50%;
+ border:5px solid #f5c44a;
+ background:radial-gradient(circle,#24445c,#081323);
+ display:flex;align-items:center;justify-content:center;
+ font-size:43px;
+ box-shadow:0 0 0 3px #542308;
 }
 
-/* WOODEN HEADER */
-
-.top-header {
-  height: 112px;
-  padding: 15px 22px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background:
-    repeating-linear-gradient(
-      175deg,
-      transparent 0px,
-      #ffffff08 8px,
-      transparent 18px
-    ),
-    linear-gradient(145deg,#4b1d08,#8b3d12,#4a1d08);
-  border-bottom: 5px solid #e5a72e;
-  box-shadow: 0 5px 15px #0008;
+.settings{
+ width:60px;height:65px;
+ border:0;
+ background:linear-gradient(#e62817,#a90000);
+ color:#ffdb56;font-size:27px;
+ cursor:pointer;
 }
 
-.profile {
-  width: 75px;
-  height: 75px;
-  border-radius: 50%;
-  border: 5px solid #f5c44a;
-  background: radial-gradient(circle,#24445c,#081323);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 43px;
-  box-shadow: 0 0 0 3px #542308;
+.level-area{
+ padding:25px 10px;
+ background:linear-gradient(110deg,#003137,#00464a,#002e33);
+ border-bottom:3px solid #9d5723;
+ display:flex;align-items:center;justify-content:center;
 }
 
-.settings {
-  width: 65px;
-  height: 72px;
-  border: none;
-  background: linear-gradient(#e62817,#a90000);
-  clip-path: polygon(0 0,100% 0,100% 80%,50% 100%,0 80%);
-  font-size: 28px;
-  color: #ffdb56;
-  cursor: pointer;
+.level-arrow{font-size:40px;color:#f2bd35}
+.level-info{flex:1}
+.level-info h2{font-size:25px;color:#ffcf35}
+.level-info p{margin-top:7px;font-weight:bold}
+
+.difficulty-area{padding:12px;background:#003b40}
+
+#difficulty{
+ padding:9px 20px;
+ background:#164c50;color:white;
+ border:1px solid #b98a3b;
+ border-radius:8px;font-size:14px;
 }
 
-/* LEVEL AREA */
-
-.level-area {
-  padding: 30px 10px 24px;
-  background: linear-gradient(110deg,#003137,#00464a,#002e33);
-  border-bottom: 3px solid #9d5723;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
+.board-wrapper{
+ width:100%;
+ padding:0 5px;
+ background:linear-gradient(#72340f,#301507);
+ border-top:5px solid #a95b23;
+ border-bottom:5px solid #a95b23;
+ box-shadow:0 5px 12px #0009;
 }
 
-.level-arrow {
-  font-size: 46px;
-  color: #f2bd35;
-  font-weight: bold;
+#board{
+ width:100%;
+ aspect-ratio:1;
+ display:grid;
+ grid-template-columns:repeat(8,minmax(0,1fr));
+ border:4px solid #8b4b1d;
+ overflow:hidden;
 }
 
-.level-info {
-  flex: 1;
+.square{
+ aspect-ratio:1;
+ position:relative;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ cursor:pointer;
+ user-select:none;
+ overflow:hidden;
+ -webkit-tap-highlight-color:transparent;
 }
 
-.level-info h2 {
-  font-size: 25px;
-  color: #ffcf35;
-  text-shadow: 0 2px 4px #000;
+.light{
+ background:linear-gradient(140deg,#fff5e3,#e8d5b8);
 }
 
-.level-info p {
-  margin-top: 7px;
-  font-size: 17px;
-  font-weight: bold;
+.dark{
+ background:repeating-linear-gradient(160deg,transparent,#ffffff05 4px,transparent 9px),linear-gradient(140deg,#171717,#080808);
 }
 
-/* DIFFICULTY */
-
-.difficulty-area {
-  padding: 12px;
-  background: #003b40;
+.piece{
+ font-family:"DejaVu Sans","Segoe UI Symbol",serif;
+ font-size:clamp(34px,9.5vw,66px);
+ line-height:1;
+ z-index:2;
+ display:block;
+ transform:scale(1.08);
+ pointer-events:none;
 }
 
-#difficulty {
-  padding: 9px 20px;
-  background: linear-gradient(#164c50,#062d32);
-  color: white;
-  border: 1px solid #b98a3b;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
+.white-piece{
+ color:#fffdf5;
+ -webkit-text-stroke:1px #777;
+ text-shadow:0 2px 1px #777,0 4px 2px #555,0 6px 3px #333,0 0 7px #fff9;
 }
 
-/* CHESS BOARD */
-
-.board-wrapper {
-  width: 100%;
-  padding: 0 5px;
-  background: linear-gradient(#72340f,#301507);
-  border-top: 5px solid #a95b23;
-  border-bottom: 5px solid #a95b23;
-  box-shadow: 0 5px 12px #0009;
+.black-piece{
+ color:#151a28;
+ -webkit-text-stroke:1px #718096;
+ text-shadow:0 2px 1px #000,0 4px 2px #000,0 6px 3px #000,0 0 6px #aab8d880;
 }
 
-#board {
-  width: 100%;
-  aspect-ratio: 1;
-  display: grid;
-  grid-template-columns: repeat(8,minmax(0,1fr));
-  border: 4px solid #8b4b1d;
-  overflow: hidden;
+.selected{
+ background:#c9d64c!important;
+ box-shadow:inset 0 0 0 4px #fff1a0;
 }
 
-.square {
-  aspect-ratio: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
+.last-move{background:#b6c957!important}
+
+.hint-square{
+ background:#e3bf36!important;
+ box-shadow:inset 0 0 0 4px #fff4a3;
 }
 
-.light {
-  background:
-    linear-gradient(140deg,#fff5e3,#e8d5b8);
+.dot{
+ width:25%;height:25%;
+ border-radius:50%;
+ background:#138d51;
+ position:absolute;z-index:3;
+ opacity:.8;pointer-events:none;
 }
 
-.dark {
-  background:
-    repeating-linear-gradient(
-      160deg,
-      transparent 0px,
-      #ffffff05 4px,
-      transparent 9px
-    ),
-    linear-gradient(140deg,#171717,#080808);
+.capture{
+ position:absolute;inset:3px;
+ border:4px solid #138d51;
+ border-radius:50%;
+ z-index:3;pointer-events:none;
 }
 
-/* 3D STYLE PIECES */
-
-.piece {
-  font-family: "DejaVu Sans","Segoe UI Symbol",serif;
-  font-size: clamp(34px,9.5vw,66px);
-  line-height: 1;
-  z-index: 2;
-  display: block;
-  transform: scale(1.08);
-  pointer-events: none;
+.coordinates{
+ position:absolute;z-index:4;
+ font-size:10px;font-weight:bold;
+ pointer-events:none;
 }
 
-.white-piece {
-  color: #fffdf5;
-  -webkit-text-stroke: 1px #777;
-  text-shadow:
-    0 2px 1px #777,
-    0 4px 2px #555,
-    0 6px 3px #333,
-    0 0 7px #fff9;
+.rank{top:2px;left:3px}
+.file{bottom:2px;right:4px}
+.light .coordinates{color:#292929}
+.dark .coordinates{color:#fff}
+
+#captured{
+ display:none;
+ padding:12px;margin:12px 10px;
+ background:#00292e;
+ border:1px solid #b78c42;
+ border-radius:12px;
+ font-size:22px;
 }
 
-.black-piece {
-  color: #151a28;
-  -webkit-text-stroke: 1px #718096;
-  text-shadow:
-    0 2px 1px #000,
-    0 4px 2px #000,
-    0 6px 3px #000,
-    0 0 6px #aab8d880;
+#captured.show{display:block}
+
+.captured-row{
+ display:flex;
+ justify-content:space-between;
+ padding:5px;
+ gap:5px;
 }
 
-.selected {
-  background: #c9d64c !important;
-  box-shadow: inset 0 0 0 4px #fff1a0;
+.bottom-controls{
+ padding:22px 8px 12px;
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:8px;
 }
 
-.last-move {
-  background: #b6c957 !important;
+.action{
+ background:none;border:none;
+ color:white;cursor:pointer;
+ min-width:0;
 }
 
-.hint-square {
-  background: #e3bf36 !important;
-  box-shadow: inset 0 0 0 4px #fff4a3;
+.action-circle{
+ width:clamp(60px,17vw,92px);
+ height:clamp(60px,17vw,92px);
+ max-width:92px;
+ margin:auto;
+ border-radius:50%;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:clamp(28px,8vw,44px);
+ background:repeating-linear-gradient(175deg,transparent,#ffffff08 6px,transparent 12px),radial-gradient(circle at 35% 25%,#a65c20,#61290d 65%,#321405);
+ border:5px solid #e8ac3a;
+ box-shadow:0 3px 0 #361607,inset 0 0 10px #f9d18a80,0 0 8px #000;
 }
 
-.dot {
-  width: 25%;
-  height: 25%;
-  border-radius: 50%;
-  background: #138d51;
-  position: absolute;
-  z-index: 3;
-  opacity: .8;
-  pointer-events: none;
+.action:active .action-circle{transform:scale(.94)}
+
+.action-label{
+ display:block;margin-top:10px;
+ font-size:clamp(10px,2.8vw,14px);
+ font-weight:900;color:white;
 }
 
-.capture {
-  position: absolute;
-  inset: 3px;
-  border: 4px solid #138d51;
-  border-radius: 50%;
-  z-index: 3;
-  pointer-events: none;
+#message{
+ padding:12px;
+ min-height:45px;
+ color:#fff2c9;
+ font-size:15px;
+ font-weight:bold;
+ background:#00343a;
 }
 
-.coordinates {
-  position: absolute;
-  z-index: 4;
-  font-size: 10px;
-  font-weight: bold;
-  pointer-events: none;
+@media(min-width:600px){
+ .board-wrapper{max-width:650px;margin:auto;padding:5px}
+ .level-area{padding:35px}
 }
 
-.rank {
-  top: 2px;
-  left: 3px;
+@media(max-width:360px){
+ .bottom-controls{gap:3px;padding-left:3px;padding-right:3px}
+ .action-label{font-size:10px}
+ .coordinates{font-size:8px}
 }
-
-.file {
-  bottom: 2px;
-  right: 4px;
-}
-
-.light .coordinates {
-  color: #292929;
-}
-
-.dark .coordinates {
-  color: #fff;
-}
-
-/* CAPTURED PIECES */
-
-#captured {
-  display: none;
-  padding: 12px;
-  margin: 12px 10px;
-  background: #00292e;
-  border: 1px solid #b78c42;
-  border-radius: 12px;
-  font-size: 22px;
-}
-
-#captured.show {
-  display: block;
-}
-
-.captured-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 5px;
-}
-
-/* BOTTOM BUTTONS */
-
-.bottom-controls {
-  padding: 22px 8px 12px;
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 8px;
-}
-
-.action {
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
-  min-width: 0;
-}
-
-.action-circle {
-  width: clamp(60px,17vw,92px);
-  height: clamp(60px,17vw,92px);
-  max-width: 92px;
-  margin: auto;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: clamp(28px,8vw,44px);
-  background:
-    repeating-linear-gradient(
-      175deg,
-      transparent,
-      #ffffff08 6px,
-      transparent 12px
-    ),
-    radial-gradient(circle at 35% 25%,#a65c20,#61290d 65%,#321405);
-  border: 5px solid #e8ac3a;
-  box-shadow:
-    0 3px 0 #361607,
-    inset 0 0 10px #f9d18a80,
-    0 0 8px #000;
-}
-
-.action:active .action-circle {
-  transform: scale(.94);
-}
-
-.action-label {
-  display: block;
-  margin-top: 10px;
-  font-size: clamp(10px,2.8vw,14px);
-  font-weight: 900;
-  color: white;
-}
-
-#message {
-  padding: 12px;
-  min-height: 45px;
-  color: #fff2c9;
-  font-size: 15px;
-  font-weight: bold;
-  background: #00343a;
-}
-
-@media(min-width:600px) {
-  .board-wrapper {
-    max-width: 650px;
-    margin: auto;
-    padding: 5px;
-  }
-
-  .level-area {
-    padding: 35px;
-  }
-}
-
-@media(max-width:360px) {
-  .bottom-controls {
-    gap: 3px;
-    padding-left: 3px;
-    padding-right: 3px;
-  }
-
-  .action-label {
-    font-size: 10px;
-  }
-
-  .coordinates {
-    font-size: 8px;
-  }
-}
-</style></head><body><div class="top-header">  <div class="profile">♞</div><button class="settings"
-onclick="location.href='dashboard.html'">
-⚙
-</button>
-
-</div><div class="level-area">  <div class="level-arrow">❮</div>  <div class="level-info">
-    <h2>LEVEL 2</h2>
-    <p id="levelName">NORMAL</p>
-  </div>  <div style="width:46px"></div></div><div class="difficulty-area">
-  <select id="difficulty">
-    <option value="easy">Easy Bot</option>
-    <option value="normal" selected>Normal Bot</option>
-  </select>
+</style></head><body><div class="top-header">
+ <div class="profile">♞</div>
+ <button class="settings" onclick="location.href='dashboard.html'">⚙</button>
+</div><div class="level-area">
+ <div class="level-arrow">❮</div>
+ <div class="level-info">
+  <h2>LEVEL 2</h2>
+  <p id="levelName">NORMAL</p>
+ </div>
+ <div style="width:40px"></div>
+</div><div class="difficulty-area">
+ <select id="difficulty">
+  <option value="easy">Easy Bot</option>
+  <option value="normal" selected>Normal Bot</option>
+ </select>
 </div><div class="board-wrapper">
-  <div id="board"></div>
+ <div id="board"></div>
 </div><div id="captured">
-  <div class="captured-row">
-    <span>Black captured:</span>
-    <span id="blackCaptured"></span>
-  </div>
-  <div class="captured-row">
-    <span>White captured:</span>
-    <span id="whiteCaptured"></span>
-  </div>
-</div><div class="bottom-controls">  <button class="action" onclick="newGame()">
-    <span class="action-circle">⟳</span>
-    <span class="action-label">RESTART</span>
-  </button>  <button class="action" onclick="togglePieces()">
-    <span class="action-circle">♜</span>
-    <span class="action-label">PIECES</span>
-  </button>  <button class="action" onclick="undoMove()">
-    <span class="action-circle">↶</span>
-    <span class="action-label">UNDO</span>
-  </button>  <button class="action" onclick="showHint()">
-    <span class="action-circle">💡</span>
-    <span class="action-label">HINT</span>
-  </button></div><div id="message">Your turn! Select a white piece.</div><script type="module">
+ <div class="captured-row">
+  <span>Black captured:</span>
+  <span id="blackCaptured">—</span>
+ </div>
+ <div class="captured-row">
+  <span>White captured:</span>
+  <span id="whiteCaptured">—</span>
+ </div>
+</div><div class="bottom-controls"> <button class="action" id="restartBtn">
+  <span class="action-circle">⟳</span>
+  <span class="action-label">RESTART</span>
+ </button> <button class="action" id="piecesBtn">
+  <span class="action-circle">♜</span>
+  <span class="action-label">PIECES</span>
+ </button> <button class="action" id="undoBtn">
+  <span class="action-circle">↶</span>
+  <span class="action-label">UNDO</span>
+ </button> <button class="action" id="hintBtn">
+  <span class="action-circle">💡</span>
+  <span class="action-label">HINT</span>
+ </button></div><div id="message">Your turn! Select a white piece.</div><script type="module">
 
-import { Chess } from
-"https://esm.sh/chess.js@1.4.0";
+import { Chess } from "https://esm.sh/chess.js@1.4.0";
 
-let game = new Chess();
+let game=new Chess();
+let selected=null;
+let possibleMoves=[];
+let botThinking=false;
+let lastMove=null;
+let hintMove=null;
+let botTimer=null;
 
-let selected = null;
-let possibleMoves = [];
-let botThinking = false;
-let lastMove = null;
-let hintMove = null;
-let botTimer = null;
+const board=document.getElementById("board");
+const message=document.getElementById("message");
+const status=document.getElementById("levelName");
 
-const board = document.getElementById("board");
-const status = document.getElementById("levelName");
-const message = document.getElementById("message");
-
-const pieces = {
-  w: {
-    k:"♔",q:"♕",r:"♖",
-    b:"♗",n:"♘",p:"♙"
-  },
-  b: {
-    k:"♚",q:"♛",r:"♜",
-    b:"♝",n:"♞",p:"♟︎"
-  }
+const pieces={
+ w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
+ b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟︎"}
 };
 
-function clearSelection() {
-  selected = null;
-  possibleMoves = [];
-  hintMove = null;
+function clearSelection(){
+ selected=null;
+ possibleMoves=[];
+ hintMove=null;
 }
 
-function render() {
+function render(){
 
-  board.innerHTML = "";
+ board.innerHTML="";
+ const files="abcdefgh";
 
-  const files = "abcdefgh";
+ for(let r=0;r<8;r++){
+  for(let c=0;c<8;c++){
 
-  for(let r=0;r<8;r++) {
+   const square=files[c]+(8-r);
+   const piece=game.get(square);
+   const div=document.createElement("div");
 
-    for(let c=0;c<8;c++) {
+   div.className="square "+((r+c)%2?"dark":"light");
 
-      const square = files[c] + (8-r);
-      const piece = game.get(square);
+   if(selected===square)div.classList.add("selected");
 
-      const div = document.createElement("div");
+   if(lastMove&&(lastMove.from===square||lastMove.to===square)){
+    div.classList.add("last-move");
+   }
 
-      div.className =
-        "square " + ((r+c)%2 ? "dark" : "light");
+   if(hintMove&&(hintMove.from===square||hintMove.to===square)){
+    div.classList.add("hint-square");
+   }
 
-      if(selected === square) {
-        div.classList.add("selected");
-      }
+   if(piece){
+    const span=document.createElement("span");
+    span.className="piece "+(piece.color==="w"?"white-piece":"black-piece");
+    span.textContent=pieces[piece.color][piece.type];
+    div.appendChild(span);
+   }
 
-      if(lastMove &&
-        (lastMove.from===square ||
-         lastMove.to===square)) {
-        div.classList.add("last-move");
-      }
+   if(possibleMoves.some(m=>m.to===square)){
+    const marker=document.createElement("div");
+    marker.className=piece?"capture":"dot";
+    div.appendChild(marker);
+   }
 
-      if(hintMove &&
-        (hintMove.from===square ||
-         hintMove.to===square)) {
-        div.classList.add("hint-square");
-      }
+   if(c===0){
+    const rank=document.createElement("span");
+    rank.className="coordinates rank";
+    rank.textContent=8-r;
+    div.appendChild(rank);
+   }
 
-      if(piece) {
+   if(r===7){
+    const file=document.createElement("span");
+    file.className="coordinates file";
+    file.textContent=files[c];
+    div.appendChild(file);
+   }
 
-        const span = document.createElement("span");
-
-        span.className =
-          "piece " +
-          (piece.color==="w" ?
-          "white-piece":"black-piece");
-
-        span.textContent =
-          pieces[piece.color][piece.type];
-
-        div.appendChild(span);
-      }
-
-      if(possibleMoves.some(m=>m.to===square)) {
-
-        const marker = document.createElement("div");
-
-        marker.className =
-          piece ? "capture":"dot";
-
-        div.appendChild(marker);
-      }
-
-      if(c===0) {
-        const rank = document.createElement("span");
-        rank.className = "coordinates rank";
-        rank.textContent = 8-r;
-        div.appendChild(rank);
-      }
-
-      if(r===7) {
-        const file = document.createElement("span");
-        file.className = "coordinates file";
-        file.textContent = files[c];
-        div.appendChild(file);
-      }
-
-      div.addEventListener("click",()=>clickSquare(square));
-
-      board.appendChild(div);
-    }
+   div.addEventListener("click",()=>clickSquare(square));
+   board.appendChild(div);
   }
+ }
 
-  updateStatus();
-  updateCaptured();
+ updateStatus();
+ updateCaptured();
 }
 
-function updateStatus() {
+function updateStatus(){
 
-  if(game.isCheckmate()) {
-    status.textContent = "GAME OVER";
-    message.textContent =
-      game.turn()==="w" ? "Bot Wins!" : "You Win!";
-    return;
-  }
+ if(game.isCheckmate()){
+  status.textContent="GAME OVER";
+  message.textContent=game.turn()==="w"?"Bot Wins!":"You Win!";
+  return;
+ }
 
-  if(game.isDraw()) {
-    status.textContent = "DRAW";
-    message.textContent = "Game drawn!";
-    return;
-  }
+ if(game.isDraw()){
+  status.textContent="DRAW";
+  message.textContent="Game drawn!";
+  return;
+ }
 
-  if(game.isCheck()) {
-    message.textContent = "CHECK!";
-  }
+ if(game.isCheck()){
+  status.textContent="CHECK";
+  message.textContent=game.turn()==="w"?"Your king is in check!":"Bot is in check!";
+  return;
+ }
 
-  if(botThinking) {
-    message.textContent = "Bot is thinking...";
-  } else if(game.turn()==="w") {
-    message.textContent = "Your turn! Make your move.";
-  } else {
-    message.textContent = "Bot's turn.";
-  }
+ if(botThinking){
+  status.textContent="THINKING";
+  message.textContent="Bot is thinking...";
+ }else{
+  status.textContent=game.turn()==="w"?"YOUR TURN":"BOT TURN";
+  message.textContent=game.turn()==="w"?"Your turn! Make your move.":"Bot's turn.";
+ }
 }
 
-function updateCaptured() {
+function updateCaptured(){
 
-  const history = game.history({verbose:true});
+ const history=game.history({verbose:true});
+ let white=[];
+ let black=[];
 
-  let white = [];
-  let black = [];
+ history.forEach(move=>{
+  if(!move.captured)return;
 
-  history.forEach(move=>{
+  const color=move.color==="w"?"b":"w";
+  const symbol=pieces[color][move.captured];
 
-    if(!move.captured) return;
+  if(color==="w")white.push(symbol);
+  else black.push(symbol);
+ });
 
-    const capturedColor =
-      move.color==="w" ? "b":"w";
+ document.getElementById("whiteCaptured").textContent=white.join(" ")||"—";
+ document.getElementById("blackCaptured").textContent=black.join(" ")||"—";
+}
 
-    const symbol =
-      pieces[capturedColor][move.captured];
+function clickSquare(square){
 
-    if(capturedColor==="w") white.push(symbol);
-    else black.push(symbol);
+ if(botThinking||game.isGameOver()||game.turn()!=="w")return;
 
+ hintMove=null;
+
+ const piece=game.get(square);
+
+ if(selected===null){
+  if(piece&&piece.color==="w"){
+   selected=square;
+   possibleMoves=game.moves({square,verbose:true});
+   render();
+  }
+  return;
+ }
+
+ if(piece&&piece.color==="w"){
+  selected=square;
+  possibleMoves=game.moves({square,verbose:true});
+  render();
+  return;
+ }
+
+ const valid=possibleMoves.some(m=>m.to===square);
+
+ if(!valid){
+  clearSelection();
+  render();
+  return;
+ }
+
+ try{
+  const move=game.move({
+   from:selected,
+   to:square,
+   promotion:"q"
   });
 
-  document.getElementById("whiteCaptured").textContent =
-    white.join(" ") || "—";
-
-  document.getElementById("blackCaptured").textContent =
-    black.join(" ") || "—";
-}
-
-function clickSquare(square) {
-
-  if(botThinking || game.isGameOver() ||
-     game.turn()!=="w") return;
-
-  hintMove = null;
-
-  const piece = game.get(square);
-
-  if(selected===null) {
-
-    if(piece && piece.color==="w") {
-
-      selected = square;
-
-      possibleMoves = game.moves({
-        square,
-        verbose:true
-      });
-
-      render();
-    }
-
-    return;
-  }
-
-  if(piece && piece.color==="w") {
-
-    selected = square;
-
-    possibleMoves = game.moves({
-      square,
-      verbose:true
-    });
-
-    render();
-    return;
-  }
-
-  const valid =
-    possibleMoves.some(m=>m.to===square);
-
-  if(!valid) {
-    clearSelection();
-    render();
-    return;
-  }
-
-  try {
-
-    const move = game.move({
-      from:selected,
-      to:square,
-      promotion:"q"
-    });
-
-    lastMove = {
-      from:move.from,
-      to:move.to
-    };
-
-    clearSelection();
-    render();
-
-    if(!game.isGameOver()) {
-
-      botThinking = true;
-      render();
-
-      botTimer = setTimeout(botMove,650);
-    }
-
-  } catch(error) {
-    message.textContent = "Invalid move.";
-  }
-}
-
-function botMove() {
-
-  botTimer = null;
-
-  if(game.isGameOver() || game.turn()!=="b") {
-    botThinking = false;
-    render();
-    return;
-  }
-
-  const moves = game.moves({verbose:true});
-
-  if(!moves.length) {
-    botThinking = false;
-    render();
-    return;
-  }
-
-  let chosen;
-
-  const difficulty =
-    document.getElementById("difficulty").value;
-
-  if(difficulty==="easy") {
-
-    chosen = moves[
-      Math.floor(Math.random()*moves.length)
-    ];
-
-  } else {
-
-    const checking = moves.filter(m=>m.san.includes("+"));
-    const captures = moves.filter(m=>m.captured);
-
-    if(checking.length && Math.random()<0.5) {
-      chosen = checking[
-        Math.floor(Math.random()*checking.length)
-      ];
-    } else if(captures.length && Math.random()<0.65) {
-      chosen = captures[
-        Math.floor(Math.random()*captures.length)
-      ];
-    } else {
-      chosen = moves[
-        Math.floor(Math.random()*moves.length)
-      ];
-    }
-  }
-
-  const move = game.move({
-    from:chosen.from,
-    to:chosen.to,
-    promotion:"q"
-  });
-
-  lastMove = {
-    from:move.from,
-    to:move.to
-  };
-
-  botThinking = false;
-  render();
-}
-
-function newGame() {
-
-  if(botTimer!==null) {
-    clearTimeout(botTimer);
-    botTimer = null;
-  }
-
-  game = new Chess();
-
+  lastMove={from:move.from,to:move.to};
   clearSelection();
 
-  botThinking = false;
-  lastMove = null;
-
-  message.textContent =
-    "New game started. Your turn!";
-
-  render();
-}
-
-function undoMove() {
-
-  if(botTimer!==null) {
-    clearTimeout(botTimer);
-    botTimer = null;
+  if(!game.isGameOver()){
+   botThinking=true;
+   render();
+   botTimer=setTimeout(botMove,650);
+  }else{
+   render();
   }
 
-  botThinking = false;
-  clearSelection();
+ }catch(error){
+  message.textContent="Invalid move.";
+ }
+}
 
-  if(game.history().length===0) {
-    message.textContent = "No move to undo.";
-    return;
-  }
+function botMove(){
 
-  // If it is White's turn, undo the bot and player moves.
-  if(game.turn()==="w") {
-    game.undo();
-    if(game.history().length) game.undo();
-  } else {
-    game.undo();
-  }
+ botTimer=null;
 
-  const history = game.history({verbose:true});
-
-  lastMove = history.length ?
-    {
-      from:history[history.length-1].from,
-      to:history[history.length-1].to
-    } : null;
-
-  message.textContent = "Move undone.";
+ if(game.isGameOver()||game.turn()!=="b"){
+  botThinking=false;
   render();
-}
+  return;
+ }
 
-function showHint() {
+ const moves=game.moves({verbose:true});
 
-  if(botThinking || game.isGameOver() ||
-     game.turn()!=="w") return;
-
-  const moves = game.moves({verbose:true});
-
-  if(!moves.length) return;
-
-  // Prefer a checking move or capture.
-  const preferred = moves.filter(m=>
-    m.san.includes("+") || m.captured
-  );
-
-  const choices = preferred.length ? preferred : moves;
-
-  const move = choices[
-    Math.floor(Math.random()*choices.length)
-  ];
-
-  clearSelection();
-
-  hintMove = {
-    from:move.from,
-    to:move.to
-  };
-
-  message.textContent =
-    "Hint: Try moving " + move.from + " to " + move.to;
-
+ if(!moves.length){
+  botThinking=false;
   render();
+  return;
+ }
+
+ let chosen;
+ const difficulty=document.getElementById("difficulty").value;
+
+ if(difficulty==="easy"){
+  chosen=moves[Math.floor(Math.random()*moves.length)];
+ }else{
+
+  const checks=moves.filter(m=>m.san.includes("+"));
+  const captures=moves.filter(m=>m.captured);
+
+  if(checks.length&&Math.random()<0.5){
+   chosen=checks[Math.floor(Math.random()*checks.length)];
+  }else if(captures.length&&Math.random()<0.65){
+   chosen=captures[Math.floor(Math.random()*captures.length)];
+  }else{
+   chosen=moves[Math.floor(Math.random()*moves.length)];
+  }
+ }
+
+ const move=game.move({
+  from:chosen.from,
+  to:chosen.to,
+  promotion:"q"
+ });
+
+ lastMove={from:move.from,to:move.to};
+ botThinking=false;
+ render();
 }
 
-function togglePieces() {
+function newGame(){
 
-  const panel = document.getElementById("captured");
+ if(botTimer!==null){
+  clearTimeout(botTimer);
+  botTimer=null;
+ }
 
-  panel.classList.toggle("show");
+ game=new Chess();
+ clearSelection();
+ botThinking=false;
+ lastMove=null;
 
-  message.textContent =
-    panel.classList.contains("show") ?
-    "Captured pieces information." :
-    "Captured pieces hidden.";
+ message.textContent="New game started!";
+ render();
 }
+
+function undoMove(){
+
+ if(botTimer!==null){
+  clearTimeout(botTimer);
+  botTimer=null;
+ }
+
+ botThinking=false;
+ clearSelection();
+
+ const history=game.history();
+
+ if(!history.length){
+  message.textContent="No move to undo.";
+  return;
+ }
+
+ // Undo bot and player moves if the bot has already played.
+ if(game.turn()==="w"){
+  game.undo();
+  if(game.history().length)game.undo();
+ }else{
+  game.undo();
+ }
+
+ const remaining=game.history({verbose:true});
+
+ lastMove=remaining.length?
+  {from:remaining[remaining.length-1].from,to:remaining[remaining.length-1].to}
+  :null;
+
+ render();
+ message.textContent="Move undone!";
+}
+
+function showHint(){
+
+ if(botThinking||game.isGameOver()||game.turn()!=="w"){
+  message.textContent="Wait for your turn!";
+  return;
+ }
+
+ const moves=game.moves({verbose:true});
+
+ if(!moves.length)return;
+
+ const preferred=moves.filter(m=>m.san.includes("+")||m.captured);
+ const choices=preferred.length?preferred:moves;
+
+ const move=choices[Math.floor(Math.random()*choices.length)];
+
+ clearSelection();
+
+ hintMove={from:move.from,to:move.to};
+
+ message.textContent="Hint: Try "+move.from+" to "+move.to;
+
+ render();
+}
+
+function togglePieces(){
+
+ const panel=document.getElementById("captured");
+
+ panel.classList.toggle("show");
+
+ message.textContent=panel.classList.contains("show")
+  ?"Captured pieces information."
+  :"Captured pieces hidden.";
+}
+
+// BUTTON EVENTS
+document.getElementById("restartBtn")
+.addEventListener("click",newGame);
+
+document.getElementById("piecesBtn")
+.addEventListener("click",togglePieces);
+
+document.getElementById("undoBtn")
+.addEventListener("click",undoMove);
+
+document.getElementById("hintBtn")
+.addEventListener("click",showHint);
 
 document.getElementById("difficulty")
 .addEventListener("change",function(){
-
-  status.textContent =
-    this.value==="easy" ? "EASY":"NORMAL";
-
+ status.textContent=this.value==="easy"?"EASY":"NORMAL";
 });
 
 newGame();
 
 </script></body>
-  </html>
+    </html>
