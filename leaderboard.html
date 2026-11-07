@@ -87,6 +87,12 @@ header h1 {
   margin-top: 5px;
 }
 
+#myStats {
+  color: #aaa;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
 .podium {
   display: grid;
   grid-template-columns: repeat(3,1fr);
@@ -140,6 +146,7 @@ header h1 {
 
 table {
   width: 100%;
+  min-width: 420px;
   border-collapse: collapse;
   text-align: center;
 }
@@ -196,9 +203,11 @@ tr.me {
   .player-card {
     padding: 12px 3px;
   }
+
   .player-name {
     font-size: 12px;
   }
+
   td, th {
     font-size: 12px;
   }
@@ -224,6 +233,7 @@ tr.me {
     <h3>YOUR RANK</h3>
     <div id="myRank">--</div>
     <div id="myPoints">Loading points...</div>
+    <div id="myStats">Loading stats...</div>
   </div>
 
   <div class="podium" id="podium"></div>
@@ -240,6 +250,7 @@ tr.me {
           <th>Player</th>
           <th>Points</th>
           <th>Wins</th>
+          <th>Losses</th>
         </tr>
       </thead>
       <tbody id="rankingBody"></tbody>
@@ -257,21 +268,21 @@ tr.me {
 
 <script type="module">
 
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getAuth,
   onAuthStateChanged
-} from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
   getDatabase,
   ref,
   onValue
-} from
-"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
@@ -295,30 +306,32 @@ const table = document.getElementById("rankingTable");
 const message = document.getElementById("message");
 
 let currentUser = null;
+let stopLeaderboard = null;
 
 function makePodium(players) {
 
   podium.innerHTML = "";
 
-  if (!players.length) return;
+  const positions = [
+    { index: 1, medal: "🥈" },
+    { index: 0, medal: "🥇" },
+    { index: 2, medal: "🥉" }
+  ];
 
-  const medals = ["🥇", "🥈", "🥉"];
+  positions.forEach(position => {
 
-  const order = [1, 0, 2];
-
-  order.forEach(index => {
-
-    const player = players[index];
+    const player = players[position.index];
     if (!player) return;
 
     const card = document.createElement("div");
 
     card.className =
-      "player-card " + (index === 0 ? "first" : "");
+      "player-card " +
+      (position.index === 0 ? "first" : "");
 
     const medal = document.createElement("div");
     medal.className = "medal";
-    medal.textContent = medals[index];
+    medal.textContent = position.medal;
 
     const name = document.createElement("div");
     name.className = "player-name";
@@ -335,46 +348,73 @@ function makePodium(players) {
 
 function renderLeaderboard(data) {
 
-  const players = Object.entries(data || {}).map(([uid, p]) => ({
-    uid,
-    name: p.name || p.displayName ||
-          (p.email ? p.email.split("@")[0] : "Player"),
-    points: Number(p.points) || 0,
-    wins: Number(p.wins) || 0
-  }));
+  const players = Object.entries(data || {})
+    .map(([uid, p]) => ({
 
-  players.sort((a, b) => b.points - a.points);
+      uid,
+
+      name: p.name ||
+            p.displayName ||
+            (p.email ? p.email.split("@")[0] : "Player"),
+
+      points: Math.max(0, Number(p.points) || 0),
+
+      wins: Math.max(0, Number(p.wins) || 0),
+
+      losses: Math.max(0, Number(p.losses) || 0)
+
+    }));
+
+  players.sort((a, b) =>
+    b.points - a.points || b.wins - a.wins
+  );
 
   loading.style.display = "none";
   table.style.display = "table";
   body.innerHTML = "";
+  message.textContent = "";
 
   if (!players.length) {
+
     document.getElementById("myRank").textContent = "--";
+
     document.getElementById("myPoints").textContent =
       "No points available yet.";
+
+    document.getElementById("myStats").textContent = "";
+
     message.textContent =
       "No players found. Play matches to appear here.";
+
     podium.innerHTML = "";
     return;
   }
-
-  message.textContent = "";
 
   const myIndex = players.findIndex(
     p => p.uid === currentUser.uid
   );
 
   if (myIndex !== -1) {
+
+    const me = players[myIndex];
+
     document.getElementById("myRank").textContent =
       "#" + (myIndex + 1);
 
     document.getElementById("myPoints").textContent =
-      players[myIndex].points + " Points";
+      me.points + " Points";
+
+    document.getElementById("myStats").textContent =
+      "Wins: " + me.wins + " | Losses: " + me.losses;
+
   } else {
+
     document.getElementById("myRank").textContent = "--";
+
     document.getElementById("myPoints").textContent =
       "You are not ranked yet.";
+
+    document.getElementById("myStats").textContent = "";
   }
 
   makePodium(players.slice(0, 3));
@@ -391,14 +431,18 @@ function renderLeaderboard(data) {
       "#" + (index + 1),
       player.name,
       player.points,
-      player.wins
+      player.wins,
+      player.losses
     ];
 
     values.forEach((value, i) => {
+
       const td = document.createElement("td");
       td.textContent = value;
 
-      if (i === 0) td.className = "rank";
+      if (i === 0) {
+        td.className = "rank";
+      }
 
       tr.appendChild(td);
     });
@@ -410,23 +454,44 @@ function renderLeaderboard(data) {
 onAuthStateChanged(auth, user => {
 
   if (!user) {
+
     window.location.replace("login.html");
     return;
   }
 
   currentUser = user;
 
-  onValue(ref(db, "leaderboard"), snapshot => {
-    renderLeaderboard(snapshot.val());
-  }, error => {
-    loading.textContent = "Could not load leaderboard.";
-    message.textContent = error.message;
-  });
+  if (stopLeaderboard) {
+    stopLeaderboard();
+  }
+
+  loading.style.display = "block";
+  loading.textContent = "Loading leaderboard...";
+  table.style.display = "none";
+
+  stopLeaderboard = onValue(
+    ref(db, "leaderboard"),
+
+    snapshot => {
+      renderLeaderboard(snapshot.val());
+    },
+
+    error => {
+
+      loading.style.display = "block";
+      loading.textContent =
+        "Could not load leaderboard.";
+
+      table.style.display = "none";
+      message.textContent = error.message;
+
+      console.error("Leaderboard error:", error);
+    }
+  );
 
 });
 
 </script>
 
 </body>
-  </html>
-    
+</html>
