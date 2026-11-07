@@ -1,0 +1,494 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chess Master - Multiplayer</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  background:#10141c;
+  color:white;
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+
+.container{
+  width:100%;
+  max-width:420px;
+  text-align:center;
+}
+
+.logo{
+  color:#f1c66b;
+  font-size:34px;
+  font-weight:bold;
+  margin-bottom:45px;
+}
+
+h2{
+  font-size:27px;
+  margin-bottom:15px;
+}
+
+.subtitle{
+  color:#aaa;
+  margin-bottom:35px;
+  line-height:1.5;
+}
+
+button{
+  width:100%;
+  padding:17px;
+  border:none;
+  border-radius:12px;
+  background:#d9aa4c;
+  color:#111;
+  font-size:19px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:12px;
+}
+
+button:disabled{
+  opacity:.5;
+}
+
+.cancel{
+  background:#303744;
+  color:white;
+}
+
+.status{
+  margin-top:30px;
+  padding:20px;
+  background:#1b2330;
+  border-radius:14px;
+  display:none;
+}
+
+.loader{
+  width:42px;
+  height:42px;
+  border:4px solid #444;
+  border-top:4px solid #e5b653;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:15px auto;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+#message{
+  color:#f1c66b;
+  margin-top:15px;
+  font-size:14px;
+}
+
+.player{
+  background:#252f3e;
+  padding:15px;
+  border-radius:10px;
+  margin-top:12px;
+  text-align:left;
+}
+
+.hidden{
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="logo">♟ CHESS MASTER</div>
+
+  <h2>Multiplayer Chess</h2>
+
+  <p class="subtitle">
+    Play chess with random players from anywhere.
+  </p>
+
+  <div id="searchSection">
+    <button id="findBtn">FIND MATCH</button>
+  </div>
+
+  <div class="status" id="searchStatus">
+    <div class="loader"></div>
+    <h3>Finding Opponent...</h3>
+    <p style="color:#aaa;margin-top:10px">
+      Please wait while we find a player.
+    </p>
+    <button class="cancel" id="cancelBtn">CANCEL</button>
+  </div>
+
+  <div class="status" id="matchStatus">
+    <h2 style="color:#f1c66b">MATCH FOUND!</h2>
+    <p style="margin-top:15px">Your opponent is ready.</p>
+
+    <div class="player" id="whitePlayer"></div>
+    <div class="player" id="blackPlayer"></div>
+
+    <button id="startBtn">OPEN CHESS BOARD</button>
+  </div>
+
+  <p id="message"></p>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  runTransaction,
+  set,
+  get,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// FIREBASE CONFIG
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  authDomain: "freedroid-cloud.firebaseapp.com",
+  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
+  projectId: "freedroid-cloud",
+  storageBucket: "freedroid-cloud.firebasestorage.app",
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const findBtn = document.getElementById("findBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const startBtn = document.getElementById("startBtn");
+
+const searchStatus = document.getElementById("searchStatus");
+const matchStatus = document.getElementById("matchStatus");
+const searchSection = document.getElementById("searchSection");
+const message = document.getElementById("message");
+
+let currentUser = null;
+let searching = false;
+let currentMatch = null;
+let queueListener = null;
+let matchListener = null;
+
+const queueRef = ref(db,"onlineQueue");
+
+function showMessage(text){
+  message.textContent = text;
+}
+
+function showSearching(){
+  searchSection.style.display="none";
+  searchStatus.style.display="block";
+  matchStatus.style.display="none";
+}
+
+function showFound(match){
+  currentMatch=match;
+
+  searchSection.style.display="none";
+  searchStatus.style.display="none";
+  matchStatus.style.display="block";
+
+  document.getElementById("whitePlayer").textContent =
+    "♔ White: "+match.players.white.name;
+
+  document.getElementById("blackPlayer").textContent =
+    "♚ Black: "+match.players.black.name;
+
+  showMessage("Your match is ready!");
+}
+
+function listenForMatch(matchId){
+  const gameRef=ref(db,"onlineMatches/"+matchId);
+
+  if(matchListener) matchListener();
+
+  matchListener=onValue(gameRef,snapshot=>{
+    if(!snapshot.exists()) return;
+
+    const match=snapshot.val();
+
+    if(match.status==="ready"){
+      showFound(match);
+    }
+  });
+}
+
+// FIND MATCH
+
+async function findMatch(){
+
+  if(!currentUser || searching) return;
+
+  searching=true;
+  currentMatch=null;
+
+  showSearching();
+  showMessage("Connecting to matchmaking...");
+
+  const uid=currentUser.uid;
+  const name=currentUser.displayName ||
+             currentUser.email.split("@")[0];
+
+  const matchId=push(ref(db,"onlineMatches")).key;
+  const now=Date.now();
+
+  try{
+
+    const result=await runTransaction(queueRef,queue=>{
+
+      queue=queue||{};
+
+      // Remove old waiting entries
+      Object.keys(queue).forEach(id=>{
+        const player=queue[id];
+
+        if(player.status==="waiting" &&
+           now-player.joinedAt>120000){
+          delete queue[id];
+        }
+      });
+
+      // Find another waiting player
+      const opponents=Object.entries(queue)
+        .filter(([id,p])=>
+          id!==uid &&
+          p.status==="waiting"
+        )
+        .sort((a,b)=>a[1].joinedAt-b[1].joinedAt);
+
+      if(opponents.length){
+
+        const [opponentId,opponent]=opponents[0];
+
+        // First player gets White
+        queue[opponentId]={
+          ...opponent,
+          status:"matched",
+          matchId:matchId,
+          color:"white"
+        };
+
+        // Second player gets Black
+        queue[uid]={
+          uid:uid,
+          name:name,
+          status:"matched",
+          matchId:matchId,
+          color:"black",
+          joinedAt:now
+        };
+
+      }else{
+
+        queue[uid]={
+          uid:uid,
+          name:name,
+          status:"waiting",
+          joinedAt:now
+        };
+
+      }
+
+      return queue;
+
+    });
+
+    if(!result.committed){
+      throw new Error("Could not join matchmaking.");
+    }
+
+    const myEntry=result.snapshot.val()?.[uid];
+
+    if(!myEntry){
+      throw new Error("Matchmaking entry missing.");
+    }
+
+    if(myEntry.status==="matched"){
+
+      const opponentId=Object.keys(result.snapshot.val())
+        .find(id=>id!==uid &&
+          result.snapshot.val()[id].matchId===matchId);
+
+      const opponent=result.snapshot.val()[opponentId];
+
+      // Only the player who creates the match writes it.
+      if(opponent){
+
+        await set(ref(db,"onlineMatches/"+matchId),{
+          players:{
+            white:{
+              uid:opponent.uid,
+              name:opponent.name
+            },
+            black:{
+              uid:uid,
+              name:name
+            }
+          },
+          status:"ready",
+          createdAt:now
+        });
+
+      }
+
+      listenForMatch(matchId);
+
+    }else{
+
+      showMessage("Waiting for another player...");
+
+      if(queueListener) queueListener();
+
+      queueListener=onValue(
+        ref(db,"onlineQueue/"+uid),
+        snapshot=>{
+
+          const data=snapshot.val();
+
+          if(data?.status==="matched" && data.matchId){
+            searching=false;
+            listenForMatch(data.matchId);
+          }
+
+        }
+      );
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    searching=false;
+    searchStatus.style.display="none";
+    searchSection.style.display="block";
+
+    showMessage("Error: "+error.message);
+
+  }
+}
+
+// CANCEL SEARCH
+
+async function cancelSearch(){
+
+  if(!currentUser) return;
+
+  try{
+
+    const userQueueRef=ref(
+      db,"onlineQueue/"+currentUser.uid
+    );
+
+    await runTransaction(userQueueRef,current=>{
+      if(current?.status==="waiting"){
+        return null;
+      }
+      return;
+    });
+
+    if(queueListener){
+      queueListener();
+      queueListener=null;
+    }
+
+    searching=false;
+
+    searchStatus.style.display="none";
+    searchSection.style.display="block";
+
+    showMessage("Matchmaking cancelled.");
+
+  }catch(error){
+
+    showMessage("Cancel failed: "+error.message);
+
+  }
+}
+
+// OPEN CHESS BOARD
+
+startBtn.addEventListener("click",()=>{
+
+  if(!currentMatch) return;
+
+  const uid=currentUser.uid;
+
+  const color=currentMatch.players.white.uid===uid
+    ?"white":"black";
+
+  const matchId=currentMatch.matchId ||
+    new URLSearchParams(location.search).get("matchId");
+
+  if(!matchId){
+    showMessage("Match ID not found.");
+    return;
+  }
+
+  window.location.href=
+    "chess.html?matchId="+encodeURIComponent(matchId)+
+    "&color="+color;
+
+});
+
+// AUTH CHECK
+
+onAuthStateChanged(auth,user=>{
+
+  if(user){
+
+    currentUser=user;
+    showMessage("Welcome, "+
+      (user.displayName || user.email));
+
+  }else{
+
+    window.location.href="login.html";
+
+  }
+
+});
+
+findBtn.addEventListener("click",findMatch);
+cancelBtn.addEventListener("click",cancelSearch);
+
+</script>
+
+</body>
+  </html>
+  
