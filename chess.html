@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,11 +25,7 @@ h1{color:#f5c76a;margin:8px 0 15px}
   padding:12px;
   margin:10px 0;
 }
-.players{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
+.players{display:flex;justify-content:space-between;gap:10px}
 .player{
   flex:1;
   background:#26364a;
@@ -41,15 +36,20 @@ h1{color:#f5c76a;margin:8px 0 15px}
 .name{font-size:14px;color:#cbd5e1}
 .clock{font-size:25px;font-weight:bold;margin-top:5px}
 #status{font-weight:bold;color:#f5d58b}
+
+/* BOT STYLE CHESS BOARD */
 #board{
   width:min(94vw,480px);
-  height:min(94vw,480px);
+  aspect-ratio:1/1;
   margin:14px auto;
   display:grid;
   grid-template-columns:repeat(8,1fr);
-  border:5px solid #4a3525;
+  grid-template-rows:repeat(8,1fr);
+  border:5px solid #79512e;
   border-radius:5px;
   overflow:hidden;
+  background:#79512e;
+  box-shadow:0 8px 25px #0008;
 }
 .square{
   position:relative;
@@ -58,28 +58,40 @@ h1{color:#f5c76a;margin:8px 0 15px}
   align-items:center;
   border:0;
   padding:0;
-  font-size:clamp(28px,9vw,52px);
+  font-size:clamp(28px,9vw,55px);
   cursor:pointer;
   user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
 .light{background:#f0d9b5}
 .dark{background:#b58863}
+
 .whitePiece{
   color:#fffdf4;
   text-shadow:1px 2px 2px #222;
+  font-family:"DejaVu Sans","Segoe UI Symbol",serif;
+  -webkit-text-stroke:1px #282828;
 }
 .blackPiece{
   color:#171717;
   text-shadow:1px 1px 1px #eee;
+  font-family:"DejaVu Sans","Segoe UI Symbol",serif;
 }
-.square.selected{background:#e8cf42!important}
-.square.last{box-shadow:inset 0 0 0 5px #70a84d}
+
+.square.selected{
+  background:#e8cf42!important;
+  box-shadow:inset 0 0 0 3px #fff1a0;
+}
+.square.last{
+  background:#baca44!important;
+}
 .dot{
-  width:24%;
-  height:24%;
+  width:25%;
+  height:25%;
   border-radius:50%;
   background:#286c3c;
   opacity:.75;
+  pointer-events:none;
 }
 .capture{
   position:absolute;
@@ -88,6 +100,7 @@ h1{color:#f5c76a;margin:8px 0 15px}
   border-radius:50%;
   pointer-events:none;
 }
+
 button.action{
   border:0;
   border-radius:9px;
@@ -164,9 +177,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 </div>
 
 <div id="status" class="panel">Connecting to match...</div>
-
 <div id="board"></div>
-
 <div id="message"></div>
 
 <div class="panel">
@@ -222,8 +233,9 @@ const firebaseConfig = {
   databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
   projectId: "freedroid-cloud",
   storageBucket: "freedroid-cloud.firebasestorage.app",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -308,22 +320,23 @@ function updateInfo(){
     (colorTurn()==="white"?"White to move":"Black to move");
 }
 
+/* UPDATED BOT STYLE BOARD */
 function renderBoard(){
   const board=$("board");
   board.innerHTML="";
 
   let squares=[];
-  for(let r=0;r<8;r++){
-    for(let c=0;c<8;c++){
-      const file="abcdefgh"[c];
-      const rank=8-r;
-      squares.push(file+rank);
+
+  for(let r=8;r>=1;r--){
+    for(let f=0;f<8;f++){
+      squares.push("abcdefgh"[f]+r);
     }
   }
 
   if(myColor==="black") squares.reverse();
 
   for(const sq of squares){
+
     const file=sq.charCodeAt(0)-97;
     const rank=Number(sq[1]);
     const row=8-rank;
@@ -331,18 +344,26 @@ function renderBoard(){
     const piece=game.get(sq);
 
     const button=document.createElement("button");
-    button.className="square "+((row+col)%2===0?"light":"dark");
+
+    button.className="square "+
+      ((row+col)%2===0?"light":"dark");
+
     button.dataset.square=sq;
 
     if(sq===selected) button.classList.add("selected");
-    if(lastMove && (sq===lastMove.from || sq===lastMove.to)){
+
+    if(lastMove &&
+      (sq===lastMove.from || sq===lastMove.to)){
       button.classList.add("last");
     }
 
     if(piece){
       const key=(piece.color==="w"?"w":"b")+piece.type;
       const span=document.createElement("span");
-      span.className=piece.color==="w"?"whitePiece":"blackPiece";
+
+      span.className=
+        piece.color==="w"?"whitePiece":"blackPiece";
+
       span.textContent=pieces[key];
       button.appendChild(span);
     }
@@ -368,6 +389,7 @@ function renderBoard(){
 
 function squareClick(sq){
   if(!matchData || matchData.status==="completed" || busy) return;
+
   if(colorTurn()!==myColor){
     $("message").textContent="Wait for your turn.";
     return;
@@ -377,11 +399,13 @@ function squareClick(sq){
 
   if(selected && legalTargets.includes(sq)){
     const moving=game.get(selected);
+
     if(moving?.type==="p" && (sq[1]==="1"||sq[1]==="8")){
       pendingMove={from:selected,to:sq};
       $("promotion").style.display="flex";
       return;
     }
+
     makeMove(selected,sq);
     return;
   }
@@ -394,11 +418,13 @@ function squareClick(sq){
     selected=null;
     legalTargets=[];
   }
+
   renderBoard();
 }
 
 window.choosePromotion=function(piece){
   if(!pendingMove)return;
+
   const move=pendingMove;
   pendingMove=null;
   $("promotion").style.display="none";
@@ -525,6 +551,7 @@ function showGameOver(data){
 function goDashboard(){
   location.href="./dashboard.html";
 }
+
 window.goDashboard=goDashboard;
 $("dashboardBtn").addEventListener("click",goDashboard);
 
@@ -543,6 +570,7 @@ async function checkTimeout(){
         white:Number(current.clocks?.white ?? 600000),
         black:Number(current.clocks?.black ?? 600000)
       };
+
       const elapsed=Date.now()-Number(current.turnStartedAt || Date.now());
       clocks[active]-=elapsed;
 
@@ -553,6 +581,7 @@ async function checkTimeout(){
         current.result="Time out";
         return current;
       }
+
       return;
     });
   }catch(error){
@@ -562,8 +591,10 @@ async function checkTimeout(){
 
 function startClock(){
   if(clockInterval)clearInterval(clockInterval);
+
   clockInterval=setInterval(()=>{
     if(!matchData || matchData.status==="completed")return;
+
     updateInfo();
     checkTimeout();
   },1000);
@@ -589,6 +620,7 @@ async function initializeMatch(){
   }
 
   const player=data.players?.[myColor];
+
   if(!player || player.uid!==user.uid){
     $("status").textContent="You are not a player in this match.";
     return;
@@ -603,12 +635,15 @@ async function initializeMatch(){
     }
 
     if(!current.turn)current.turn="white";
+
     if(!current.clocks){
       current.clocks={white:600000,black:600000};
     }
+
     if(!current.turnStartedAt){
       current.turnStartedAt=Date.now();
     }
+
     if(current.status==="ready")current.status="playing";
 
     return current;
@@ -667,4 +702,4 @@ onAuthStateChanged(auth,async currentUser=>{
 });
 </script>
 </body>
-</html>
+  </html>
