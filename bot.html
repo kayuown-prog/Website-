@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Master - Premium Bot</title><style>
+<title>Chess Master - 3D Wooden Chess</title><style>
 * {
   box-sizing: border-box;
   margin: 0;
@@ -10,339 +10,443 @@
 }
 
 :root {
-  --blue: #00aaff;
-  --cyan: #22d3ee;
-  --gold: #f5c451;
-  --navy: #050d1b;
-  --panel: #0b1930;
+  --gold: #f4c64e;
+  --wood: #71300f;
+  --teal: #003c40;
+  --cream: #f2e3c9;
 }
 
 body {
   min-height: 100vh;
-  padding: 15px;
-  text-align: center;
-  font-family: Arial, sans-serif;
-  color: #f5f8ff;
   background:
-    radial-gradient(ellipse at 50% 15%, #123c70 0%, transparent 45%),
-    radial-gradient(ellipse at 0% 65%, #073c65 0%, transparent 40%),
-    radial-gradient(ellipse at 100% 75%, #102b64 0%, transparent 40%),
-    linear-gradient(145deg, #020714, #07182e 55%, #020817);
-  overflow-x: hidden;
+    radial-gradient(ellipse at center, #07565a, #002c31 75%);
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding-bottom: 25px;
 }
 
-header {
-  padding: 18px 5px 22px;
-  font-size: clamp(25px, 6vw, 38px);
-  font-weight: 900;
-  letter-spacing: 1px;
-  color: var(--gold);
-  text-shadow: 0 0 15px #d99c28;
-}
+/* WOODEN HEADER */
 
-header small {
-  display: block;
-  margin-top: 7px;
-  font-size: 11px;
-  letter-spacing: 5px;
-  color: var(--cyan);
-}
-
-.game-container {
-  width: 100%;
-  max-width: 570px;
-  margin: auto;
-  padding: 14px;
-  border-radius: 23px;
-  background: linear-gradient(145deg, #102442, #071326 75%);
-  border: 1px solid #168dce;
-  box-shadow:
-    0 0 12px #008cff55,
-    0 0 35px #005caa35,
-    inset 0 0 22px #0077bb18;
-}
-
-.info {
+.top-header {
+  height: 112px;
+  padding: 15px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
-  padding: 15px 12px;
-  margin-bottom: 14px;
-  border-radius: 13px;
-  background: linear-gradient(110deg, #071426, #102744);
-  border: 1px solid #146ca6;
-  box-shadow: 0 0 12px #008cff25;
-  font-size: clamp(13px, 3.5vw, 17px);
+  background:
+    repeating-linear-gradient(
+      175deg,
+      transparent 0px,
+      #ffffff08 8px,
+      transparent 18px
+    ),
+    linear-gradient(145deg,#4b1d08,#8b3d12,#4a1d08);
+  border-bottom: 5px solid #e5a72e;
+  box-shadow: 0 5px 15px #0008;
+}
+
+.profile {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  border: 5px solid #f5c44a;
+  background: radial-gradient(circle,#24445c,#081323);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 43px;
+  box-shadow: 0 0 0 3px #542308;
+}
+
+.settings {
+  width: 65px;
+  height: 72px;
+  border: none;
+  background: linear-gradient(#e62817,#a90000);
+  clip-path: polygon(0 0,100% 0,100% 80%,50% 100%,0 80%);
+  font-size: 28px;
+  color: #ffdb56;
+  cursor: pointer;
+}
+
+/* LEVEL AREA */
+
+.level-area {
+  padding: 30px 10px 24px;
+  background: linear-gradient(110deg,#003137,#00464a,#002e33);
+  border-bottom: 3px solid #9d5723;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.level-arrow {
+  font-size: 46px;
+  color: #f2bd35;
   font-weight: bold;
 }
 
-#status {
-  color: var(--gold);
-  text-shadow: 0 0 9px #ffbd4380;
+.level-info {
+  flex: 1;
+}
+
+.level-info h2 {
+  font-size: 25px;
+  color: #ffcf35;
+  text-shadow: 0 2px 4px #000;
+}
+
+.level-info p {
+  margin-top: 7px;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+/* DIFFICULTY */
+
+.difficulty-area {
+  padding: 12px;
+  background: #003b40;
+}
+
+#difficulty {
+  padding: 9px 20px;
+  background: linear-gradient(#164c50,#062d32);
+  color: white;
+  border: 1px solid #b98a3b;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* CHESS BOARD */
+
+.board-wrapper {
+  width: 100%;
+  padding: 0 5px;
+  background: linear-gradient(#72340f,#301507);
+  border-top: 5px solid #a95b23;
+  border-bottom: 5px solid #a95b23;
+  box-shadow: 0 5px 12px #0009;
 }
 
 #board {
   width: 100%;
   aspect-ratio: 1;
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  border: 5px solid #a87935;
-  border-radius: 12px;
+  grid-template-columns: repeat(8,minmax(0,1fr));
+  border: 4px solid #8b4b1d;
   overflow: hidden;
-  box-shadow:
-    0 0 0 2px #f5d48a,
-    0 0 20px #00aaff55,
-    0 0 35px #000;
 }
 
 .square {
+  aspect-ratio: 1;
   position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  font-size: clamp(29px, 8.2vw, 56px);
+  justify-content: center;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
   overflow: hidden;
-  transition: background .12s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .light {
-  background: linear-gradient(140deg, #fff5df, #dfd1b2);
+  background:
+    linear-gradient(140deg,#fff5e3,#e8d5b8);
 }
 
 .dark {
-  background: linear-gradient(140deg, #267d8c, #12465d);
+  background:
+    repeating-linear-gradient(
+      160deg,
+      transparent 0px,
+      #ffffff05 4px,
+      transparent 9px
+    ),
+    linear-gradient(140deg,#171717,#080808);
 }
 
-.square:active {
-  filter: brightness(1.18);
+/* 3D STYLE PIECES */
+
+.piece {
+  font-family: "DejaVu Sans","Segoe UI Symbol",serif;
+  font-size: clamp(34px,9.5vw,66px);
+  line-height: 1;
+  z-index: 2;
+  display: block;
+  transform: scale(1.08);
+  pointer-events: none;
 }
 
 .white-piece {
-  color: #ffffff;
-  font-family: "DejaVu Sans", "Segoe UI Symbol", serif;
-  font-weight: normal;
-  line-height: 1;
-  z-index: 2;
-  transform: translateY(-1px);
-  -webkit-text-stroke: 1px #39485b;
+  color: #fffdf5;
+  -webkit-text-stroke: 1px #777;
   text-shadow:
-    0 2px 1px #14202d,
-    1px 3px 2px #14202d,
-    0 0 7px #ffffffb0,
-    0 0 13px #dcefff75;
+    0 2px 1px #777,
+    0 4px 2px #555,
+    0 6px 3px #333,
+    0 0 7px #fff9;
 }
 
 .black-piece {
-  color: #080d17;
-  font-family: "DejaVu Sans", "Segoe UI Symbol", serif;
-  font-weight: normal;
-  line-height: 1;
-  z-index: 2;
-  transform: translateY(-1px);
-  -webkit-text-stroke: 1px #65748b;
+  color: #151a28;
+  -webkit-text-stroke: 1px #718096;
   text-shadow:
     0 2px 1px #000,
-    1px 3px 3px #000,
-    0 0 6px #9bb4d1;
+    0 4px 2px #000,
+    0 6px 3px #000,
+    0 0 6px #aab8d880;
 }
 
 .selected {
-  background: #e9c94b !important;
-  box-shadow: inset 0 0 0 4px #fff0a0;
+  background: #c9d64c !important;
+  box-shadow: inset 0 0 0 4px #fff1a0;
 }
 
 .last-move {
-  background: #a5cf43 !important;
+  background: #b6c957 !important;
+}
+
+.hint-square {
+  background: #e3bf36 !important;
+  box-shadow: inset 0 0 0 4px #fff4a3;
 }
 
 .dot {
-  width: 23%;
-  height: 23%;
+  width: 25%;
+  height: 25%;
   border-radius: 50%;
-  background: #00b77c;
-  opacity: .75;
+  background: #138d51;
   position: absolute;
   z-index: 3;
-  box-shadow: 0 0 9px #00ffad;
+  opacity: .8;
   pointer-events: none;
 }
 
 .capture {
   position: absolute;
-  inset: 4px;
-  border: 4px solid #00c58b;
+  inset: 3px;
+  border: 4px solid #138d51;
   border-radius: 50%;
-  opacity: .8;
   z-index: 3;
   pointer-events: none;
 }
 
 .coordinates {
   position: absolute;
-  font-size: clamp(8px, 2vw, 11px);
-  font-weight: 900;
   z-index: 4;
+  font-size: 10px;
+  font-weight: bold;
   pointer-events: none;
 }
 
-.rank-coordinate {
-  top: 3px;
-  left: 4px;
+.rank {
+  top: 2px;
+  left: 3px;
 }
 
-.file-coordinate {
+.file {
   bottom: 2px;
   right: 4px;
 }
 
 .light .coordinates {
-  color: #35445a;
+  color: #292929;
 }
 
 .dark .coordinates {
-  color: #e8f5ff;
+  color: #fff;
 }
 
-.controls {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 9px;
-}
+/* CAPTURED PIECES */
 
-button, #difficulty {
-  min-width: 0;
-  width: 100%;
-  min-height: 48px;
-  padding: 10px 6px;
+#captured {
+  display: none;
+  padding: 12px;
+  margin: 12px 10px;
+  background: #00292e;
+  border: 1px solid #b78c42;
   border-radius: 12px;
-  font-size: clamp(11px, 3vw, 15px);
-  font-weight: bold;
+  font-size: 22px;
+}
+
+#captured.show {
+  display: block;
+}
+
+.captured-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+}
+
+/* BOTTOM BUTTONS */
+
+.bottom-controls {
+  padding: 22px 8px 12px;
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+}
+
+.action {
+  background: none;
+  border: none;
+  color: white;
   cursor: pointer;
-  transition: .2s ease;
+  min-width: 0;
 }
 
-#difficulty {
+.action-circle {
+  width: clamp(60px,17vw,92px);
+  height: clamp(60px,17vw,92px);
+  max-width: 92px;
+  margin: auto;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(28px,8vw,44px);
+  background:
+    repeating-linear-gradient(
+      175deg,
+      transparent,
+      #ffffff08 6px,
+      transparent 12px
+    ),
+    radial-gradient(circle at 35% 25%,#a65c20,#61290d 65%,#321405);
+  border: 5px solid #e8ac3a;
+  box-shadow:
+    0 3px 0 #361607,
+    inset 0 0 10px #f9d18a80,
+    0 0 8px #000;
+}
+
+.action:active .action-circle {
+  transform: scale(.94);
+}
+
+.action-label {
+  display: block;
+  margin-top: 10px;
+  font-size: clamp(10px,2.8vw,14px);
+  font-weight: 900;
   color: white;
-  background: linear-gradient(145deg, #102d4f, #07172b);
-  border: 1px solid #168dce;
-  outline: none;
-}
-
-button {
-  color: white;
-  background: linear-gradient(145deg, #123b68, #07172e);
-  border: 1px solid #00aaff;
-  box-shadow: 0 0 10px #008cff35;
-}
-
-button:hover {
-  filter: brightness(1.25);
-  box-shadow: 0 0 17px #00aaff80;
-}
-
-button:active {
-  transform: scale(.97);
-}
-
-.controls button:first-of-type {
-  color: #16100a;
-  background: linear-gradient(145deg, #ffe38b, #d79a23);
-  border: 1px solid #fff0a5;
-  box-shadow: 0 0 15px #f4bd4d70;
 }
 
 #message {
-  color: #dcecff;
-  margin-top: 19px;
-  min-height: 24px;
-  font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 0 8px #008cff55;
+  padding: 12px;
+  min-height: 45px;
+  color: #fff2c9;
+  font-size: 15px;
+  font-weight: bold;
+  background: #00343a;
 }
 
-@media(max-width:400px) {
-  body {
-    padding: 7px;
+@media(min-width:600px) {
+  .board-wrapper {
+    max-width: 650px;
+    margin: auto;
+    padding: 5px;
   }
 
-  header {
-    padding: 13px 5px 17px;
-  }
-
-  .game-container {
-    padding: 9px;
-    border-radius: 17px;
-  }
-
-  .info {
-    padding: 12px 8px;
-  }
-
-  #board {
-    border-width: 3px;
-  }
-
-  .controls {
-    gap: 6px;
-  }
-
-  button, #difficulty {
-    min-height: 45px;
-    border-radius: 9px;
+  .level-area {
+    padding: 35px;
   }
 }
-</style></head><body><header>
-  ♞ CHESS MASTER
-  <small>PLAY • THINK • WIN</small>
-</header><div class="game-container">  <div class="info">
-    <span>♙ YOU - WHITE</span>
-    <span id="status">Your Turn</span>
-  </div>  <div id="board"></div>  <div class="controls"><select id="difficulty">
-  <option value="easy">Easy Bot</option>
-  <option value="normal" selected>Normal Bot</option>
-</select>
 
-<button onclick="newGame()">New Game</button>
+@media(max-width:360px) {
+  .bottom-controls {
+    gap: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+  }
 
-<button onclick="location.href='dashboard.html'">
-  Dashboard
+  .action-label {
+    font-size: 10px;
+  }
+
+  .coordinates {
+    font-size: 8px;
+  }
+}
+</style></head><body><div class="top-header">  <div class="profile">♞</div><button class="settings"
+onclick="location.href='dashboard.html'">
+⚙
 </button>
 
-  </div>  <div id="message">Select a white piece to play.</div></div><script type="module">
+</div><div class="level-area">  <div class="level-arrow">❮</div>  <div class="level-info">
+    <h2>LEVEL 2</h2>
+    <p id="levelName">NORMAL</p>
+  </div>  <div style="width:46px"></div></div><div class="difficulty-area">
+  <select id="difficulty">
+    <option value="easy">Easy Bot</option>
+    <option value="normal" selected>Normal Bot</option>
+  </select>
+</div><div class="board-wrapper">
+  <div id="board"></div>
+</div><div id="captured">
+  <div class="captured-row">
+    <span>Black captured:</span>
+    <span id="blackCaptured"></span>
+  </div>
+  <div class="captured-row">
+    <span>White captured:</span>
+    <span id="whiteCaptured"></span>
+  </div>
+</div><div class="bottom-controls">  <button class="action" onclick="newGame()">
+    <span class="action-circle">⟳</span>
+    <span class="action-label">RESTART</span>
+  </button>  <button class="action" onclick="togglePieces()">
+    <span class="action-circle">♜</span>
+    <span class="action-label">PIECES</span>
+  </button>  <button class="action" onclick="undoMove()">
+    <span class="action-circle">↶</span>
+    <span class="action-label">UNDO</span>
+  </button>  <button class="action" onclick="showHint()">
+    <span class="action-circle">💡</span>
+    <span class="action-label">HINT</span>
+  </button></div><div id="message">Your turn! Select a white piece.</div><script type="module">
 
 import { Chess } from
 "https://esm.sh/chess.js@1.4.0";
 
 let game = new Chess();
+
 let selected = null;
 let possibleMoves = [];
 let botThinking = false;
 let lastMove = null;
+let hintMove = null;
 let botTimer = null;
 
-const boardElement = document.getElementById("board");
-const statusElement = document.getElementById("status");
-const messageElement = document.getElementById("message");
+const board = document.getElementById("board");
+const status = document.getElementById("levelName");
+const message = document.getElementById("message");
 
 const pieces = {
   w: {
-    k:"♔", q:"♕", r:"♖",
-    b:"♗", n:"♘", p:"♙"
+    k:"♔",q:"♕",r:"♖",
+    b:"♗",n:"♘",p:"♙"
   },
   b: {
-    k:"♚", q:"♛", r:"♜",
-    b:"♝", n:"♞", p:"♟︎"
+    k:"♚",q:"♛",r:"♜",
+    b:"♝",n:"♞",p:"♟︎"
   }
 };
 
+function clearSelection() {
+  selected = null;
+  possibleMoves = [];
+  hintMove = null;
+}
+
 function render() {
 
-  boardElement.innerHTML = "";
+  board.innerHTML = "";
 
   const files = "abcdefgh";
 
@@ -363,86 +467,121 @@ function render() {
       }
 
       if(lastMove &&
-         (lastMove.from === square ||
-          lastMove.to === square)) {
+        (lastMove.from===square ||
+         lastMove.to===square)) {
         div.classList.add("last-move");
+      }
+
+      if(hintMove &&
+        (hintMove.from===square ||
+         hintMove.to===square)) {
+        div.classList.add("hint-square");
       }
 
       if(piece) {
 
         const span = document.createElement("span");
 
-        span.textContent = pieces[piece.color][piece.type];
-
         span.className =
-          piece.color === "w" ?
-          "white-piece" : "black-piece";
+          "piece " +
+          (piece.color==="w" ?
+          "white-piece":"black-piece");
+
+        span.textContent =
+          pieces[piece.color][piece.type];
 
         div.appendChild(span);
-
       }
 
       if(possibleMoves.some(m=>m.to===square)) {
 
         const marker = document.createElement("div");
 
-        marker.className = piece ? "capture" : "dot";
+        marker.className =
+          piece ? "capture":"dot";
 
         div.appendChild(marker);
       }
 
       if(c===0) {
         const rank = document.createElement("span");
-        rank.className = "coordinates rank-coordinate";
+        rank.className = "coordinates rank";
         rank.textContent = 8-r;
         div.appendChild(rank);
       }
 
       if(r===7) {
         const file = document.createElement("span");
-        file.className = "coordinates file-coordinate";
+        file.className = "coordinates file";
         file.textContent = files[c];
         div.appendChild(file);
       }
 
       div.addEventListener("click",()=>clickSquare(square));
 
-      boardElement.appendChild(div);
-
+      board.appendChild(div);
     }
   }
 
   updateStatus();
+  updateCaptured();
 }
 
 function updateStatus() {
 
   if(game.isCheckmate()) {
-    statusElement.textContent =
+    status.textContent = "GAME OVER";
+    message.textContent =
       game.turn()==="w" ? "Bot Wins!" : "You Win!";
-    messageElement.textContent = "Checkmate!";
-    return;
-  }
-
-  if(game.isStalemate()) {
-    statusElement.textContent = "Draw!";
-    messageElement.textContent = "Stalemate.";
     return;
   }
 
   if(game.isDraw()) {
-    statusElement.textContent = "Draw!";
-    messageElement.textContent = "Game drawn.";
+    status.textContent = "DRAW";
+    message.textContent = "Game drawn!";
     return;
   }
 
   if(game.isCheck()) {
-    statusElement.textContent = "Check!";
-  } else {
-    statusElement.textContent =
-      game.turn()==="w" ? "Your Turn" : "Bot's Turn";
+    message.textContent = "CHECK!";
   }
 
+  if(botThinking) {
+    message.textContent = "Bot is thinking...";
+  } else if(game.turn()==="w") {
+    message.textContent = "Your turn! Make your move.";
+  } else {
+    message.textContent = "Bot's turn.";
+  }
+}
+
+function updateCaptured() {
+
+  const history = game.history({verbose:true});
+
+  let white = [];
+  let black = [];
+
+  history.forEach(move=>{
+
+    if(!move.captured) return;
+
+    const capturedColor =
+      move.color==="w" ? "b":"w";
+
+    const symbol =
+      pieces[capturedColor][move.captured];
+
+    if(capturedColor==="w") white.push(symbol);
+    else black.push(symbol);
+
+  });
+
+  document.getElementById("whiteCaptured").textContent =
+    white.join(" ") || "—";
+
+  document.getElementById("blackCaptured").textContent =
+    black.join(" ") || "—";
 }
 
 function clickSquare(square) {
@@ -450,18 +589,21 @@ function clickSquare(square) {
   if(botThinking || game.isGameOver() ||
      game.turn()!=="w") return;
 
+  hintMove = null;
+
   const piece = game.get(square);
 
-  if(selected === null) {
+  if(selected===null) {
 
     if(piece && piece.color==="w") {
+
       selected = square;
+
       possibleMoves = game.moves({
         square,
         verbose:true
       });
-      messageElement.textContent =
-        "Choose a highlighted square.";
+
       render();
     }
 
@@ -471,6 +613,7 @@ function clickSquare(square) {
   if(piece && piece.color==="w") {
 
     selected = square;
+
     possibleMoves = game.moves({
       square,
       verbose:true
@@ -480,11 +623,11 @@ function clickSquare(square) {
     return;
   }
 
-  const valid = possibleMoves.some(m=>m.to===square);
+  const valid =
+    possibleMoves.some(m=>m.to===square);
 
   if(!valid) {
-    selected = null;
-    possibleMoves = [];
+    clearSelection();
     render();
     return;
   }
@@ -502,21 +645,20 @@ function clickSquare(square) {
       to:move.to
     };
 
-    selected = null;
-    possibleMoves = [];
-
+    clearSelection();
     render();
 
     if(!game.isGameOver()) {
+
       botThinking = true;
-      messageElement.textContent = "Bot is thinking...";
+      render();
+
       botTimer = setTimeout(botMove,650);
     }
 
   } catch(error) {
-    messageElement.textContent = "Invalid move.";
+    message.textContent = "Invalid move.";
   }
-
 }
 
 function botMove() {
@@ -531,7 +673,7 @@ function botMove() {
 
   const moves = game.moves({verbose:true});
 
-  if(moves.length===0) {
+  if(!moves.length) {
     botThinking = false;
     render();
     return;
@@ -550,13 +692,22 @@ function botMove() {
 
   } else {
 
+    const checking = moves.filter(m=>m.san.includes("+"));
     const captures = moves.filter(m=>m.captured);
 
-    chosen = captures.length &&
-      Math.random()<0.65 ?
-      captures[Math.floor(Math.random()*captures.length)] :
-      moves[Math.floor(Math.random()*moves.length)];
-
+    if(checking.length && Math.random()<0.5) {
+      chosen = checking[
+        Math.floor(Math.random()*checking.length)
+      ];
+    } else if(captures.length && Math.random()<0.65) {
+      chosen = captures[
+        Math.floor(Math.random()*captures.length)
+      ];
+    } else {
+      chosen = moves[
+        Math.floor(Math.random()*moves.length)
+      ];
+    }
   }
 
   const move = game.move({
@@ -572,37 +723,115 @@ function botMove() {
 
   botThinking = false;
   render();
-
-  if(game.isCheckmate()) {
-    messageElement.textContent = "Bot wins!";
-  } else if(game.isDraw()) {
-    messageElement.textContent = "Game drawn!";
-  } else {
-    messageElement.textContent = "Your turn!";
-  }
-
 }
 
 function newGame() {
 
-  if(botTimer !== null) {
+  if(botTimer!==null) {
     clearTimeout(botTimer);
     botTimer = null;
   }
 
   game = new Chess();
 
-  selected = null;
-  possibleMoves = [];
+  clearSelection();
+
   botThinking = false;
   lastMove = null;
 
-  messageElement.textContent =
+  message.textContent =
     "New game started. Your turn!";
 
   render();
-
 }
+
+function undoMove() {
+
+  if(botTimer!==null) {
+    clearTimeout(botTimer);
+    botTimer = null;
+  }
+
+  botThinking = false;
+  clearSelection();
+
+  if(game.history().length===0) {
+    message.textContent = "No move to undo.";
+    return;
+  }
+
+  // If it is White's turn, undo the bot and player moves.
+  if(game.turn()==="w") {
+    game.undo();
+    if(game.history().length) game.undo();
+  } else {
+    game.undo();
+  }
+
+  const history = game.history({verbose:true});
+
+  lastMove = history.length ?
+    {
+      from:history[history.length-1].from,
+      to:history[history.length-1].to
+    } : null;
+
+  message.textContent = "Move undone.";
+  render();
+}
+
+function showHint() {
+
+  if(botThinking || game.isGameOver() ||
+     game.turn()!=="w") return;
+
+  const moves = game.moves({verbose:true});
+
+  if(!moves.length) return;
+
+  // Prefer a checking move or capture.
+  const preferred = moves.filter(m=>
+    m.san.includes("+") || m.captured
+  );
+
+  const choices = preferred.length ? preferred : moves;
+
+  const move = choices[
+    Math.floor(Math.random()*choices.length)
+  ];
+
+  clearSelection();
+
+  hintMove = {
+    from:move.from,
+    to:move.to
+  };
+
+  message.textContent =
+    "Hint: Try moving " + move.from + " to " + move.to;
+
+  render();
+}
+
+function togglePieces() {
+
+  const panel = document.getElementById("captured");
+
+  panel.classList.toggle("show");
+
+  message.textContent =
+    panel.classList.contains("show") ?
+    "Captured pieces information." :
+    "Captured pieces hidden.";
+}
+
+document.getElementById("difficulty")
+.addEventListener("change",function(){
+
+  status.textContent =
+    this.value==="easy" ? "EASY":"NORMAL";
+
+});
 
 newGame();
 
