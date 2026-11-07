@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master Admin Setup</title>
+
+<style>
+*{box-sizing:border-box;font-family:Arial}
+body{
+ margin:0;min-height:100vh;background:#10141c;color:white;
+ display:flex;align-items:center;justify-content:center;padding:20px
+}
+.box{
+ width:100%;max-width:420px;background:#1b2433;
+ padding:28px;border-radius:16px;text-align:center;
+ border:1px solid #d6a84b
+}
+h2{color:#f5c76a}
+input{
+ width:100%;padding:14px;margin:10px 0;
+ border:1px solid #555;border-radius:8px;
+ background:#10141c;color:white
+}
+button{
+ width:100%;padding:14px;margin-top:12px;
+ background:#d6a84b;border:0;border-radius:8px;
+ font-weight:bold;cursor:pointer
+}
+#message{margin-top:18px;overflow-wrap:anywhere}
+</style>
+</head>
+
+<body>
+<div class="box">
+<h2>♟ CHESS MASTER</h2>
+<h3>Admin Password Setup</h3>
+
+<button id="googleBtn">Login with Google</button>
+
+<div id="setupArea" style="display:none">
+<p>Set your new Admin Password</p>
+
+<input id="password" type="password"
+placeholder="New Secret Password">
+
+<input id="confirm" type="password"
+placeholder="Confirm Secret Password">
+
+<button id="saveBtn">Save Admin Password</button>
+</div>
+
+<p id="message">Login with your Owner Google Account.</p>
+</div>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+ getAuth,
+ GoogleAuthProvider,
+ signInWithPopup,
+ onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+ getDatabase,
+ ref,
+ get,
+ set
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+ authDomain: "freedroid-cloud.firebaseapp.com",
+ databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
+ projectId: "freedroid-cloud",
+ storageBucket: "freedroid-cloud.firebasestorage.app",
+ messagingSenderId: "909415918359",
+ appId: "1:909415918359:web:85da71cdd35a879fa86552",
+ measurementId: "G-HV2ELB7GS6"
+};
+
+const OWNER_UID = "rDUXxSYOPchI8eKuIPlyLy0dJdU2";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+
+const message = document.getElementById("message");
+const setupArea = document.getElementById("setupArea");
+const googleBtn = document.getElementById("googleBtn");
+
+let ownerVerified = false;
+
+googleBtn.onclick = async () => {
+ try {
+  message.textContent = "Google login checking...";
+
+  const result = await signInWithPopup(auth, provider);
+
+  if(result.user.uid !== OWNER_UID){
+   ownerVerified = false;
+   setupArea.style.display = "none";
+   message.textContent = "Access Denied: Not Admin Account.";
+   return;
+  }
+
+  ownerVerified = true;
+  googleBtn.style.display = "none";
+
+  const snap = await get(ref(db, "adminData/password"));
+
+  if(snap.exists()){
+   setupArea.style.display = "none";
+   message.textContent = "Admin password already configured. Setup is locked.";
+   return;
+  }
+
+  setupArea.style.display = "block";
+  message.textContent = "Owner verified. Set your new password.";
+
+ } catch(error) {
+  message.textContent = "Login Error: " + error.message;
+ }
+};
+
+function toBase64(bytes){
+ let binary = "";
+ bytes.forEach(b => binary += String.fromCharCode(b));
+ return btoa(binary);
+}
+
+async function makeHash(password, salt){
+ const encoder = new TextEncoder();
+
+ const key = await crypto.subtle.importKey(
+  "raw",
+  encoder.encode(password),
+  "PBKDF2",
+  false,
+  ["deriveBits"]
+ );
+
+ const bits = await crypto.subtle.deriveBits({
+  name:"PBKDF2",
+  salt:salt,
+  iterations:310000,
+  hash:"SHA-256"
+ },key,256);
+
+ return new Uint8Array(bits);
+}
+
+document.getElementById("saveBtn").onclick = async () => {
+ if(!ownerVerified || auth.currentUser?.uid !== OWNER_UID){
+  message.textContent = "Admin verification required.";
+  return;
+ }
+
+ const password = document.getElementById("password").value;
+ const confirm = document.getElementById("confirm").value;
+
+ if(password.length < 12){
+  message.textContent = "Use at least 12 characters.";
+  return;
+ }
+
+ if(password !== confirm){
+  message.textContent = "Passwords do not match.";
+  return;
+ }
+
+ try {
+  const passwordRef = ref(db,"adminData/password");
+  const existing = await get(passwordRef);
+
+  if(existing.exists()){
+   message.textContent = "Password already configured.";
+   return;
+  }
+
+  document.getElementById("saveBtn").disabled = true;
+  message.textContent = "Saving securely...";
+
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const hash = await makeHash(password,salt);
+
+  await set(passwordRef,{
+   algorithm:"PBKDF2-SHA256",
+   iterations:310000,
+   salt:toBase64(salt),
+   hash:toBase64(hash),
+   createdAt:Date.now()
+  });
+
+  document.getElementById("password").value = "";
+  document.getElementById("confirm").value = "";
+  setupArea.style.display = "none";
+
+  message.textContent = "Admin password saved successfully!";
+
+ } catch(error) {
+  message.textContent = "Error: " + error.message;
+  document.getElementById("saveBtn").disabled = false;
+ }
+};
+
+onAuthStateChanged(auth,user=>{
+ if(user && user.uid !== OWNER_UID){
+  setupArea.style.display = "none";
+  message.textContent = "Access Denied.";
+ }
+});
+
+</script>
+</body>
+  </html>
+  
