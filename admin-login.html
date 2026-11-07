@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chess Master - Admin Login</title>
-
 <style>
 *{box-sizing:border-box;font-family:Arial,sans-serif}
 body{
@@ -15,8 +14,7 @@ body{
 .login-box{
  width:100%;max-width:400px;background:#1b2433;
  padding:30px;border-radius:16px;text-align:center;
- border:1px solid #d6a84b;
- box-shadow:0 10px 35px #0008
+ border:1px solid #d6a84b;box-shadow:0 10px 35px #0008
 }
 h1{color:#f5c76a;margin-bottom:10px}
 h3{margin:20px 0;color:#ddd}
@@ -36,246 +34,180 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .small{color:#aaa;font-size:12px;margin-top:15px}
 </style>
 </head>
-
 <body>
 
 <div class="login-box">
+ <h1>♟ CHESS MASTER</h1>
+ <p>Private Administration</p>
+ <h3>Admin Login</h3>
 
-<h1>♟ CHESS MASTER</h1>
-<p>Private Administration</p>
+ <button id="googleBtn">Continue with Google</button>
 
-<h3>Admin Login</h3>
+ <div id="passwordArea" style="display:none">
+  <input id="password" type="password"
+   placeholder="Enter Secret Password"
+   autocomplete="current-password">
+  <button id="loginBtn">Unlock Admin Panel</button>
+ </div>
 
-<button id="googleBtn">Continue with Google</button>
-
-<div id="passwordArea" style="display:none">
-
-<input
- id="password"
- type="password"
- placeholder="Enter Secret Password"
- autocomplete="current-password"
->
-
-<button id="loginBtn">Unlock Admin Panel</button>
-
-</div>
-
-<p id="message">Login with your Owner Google Account.</p>
-
-<p class="small">Authorized Admin Only</p>
-
+ <p id="message">Login with your Owner Google Account.</p>
+ <p class="small">Authorized Admin Only</p>
 </div>
 
 <script type="module">
-
 import {initializeApp}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
- getAuth,
- GoogleAuthProvider,
- signInWithPopup
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+ getAuth,GoogleAuthProvider,signInWithPopup,
+ signOut,setPersistence,browserLocalPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
- getDatabase,
- ref,
- get
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+ getDatabase,ref,get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig = {
- apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
- authDomain: "freedroid-cloud.firebaseapp.com",
- databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
- projectId: "freedroid-cloud",
- storageBucket: "freedroid-cloud.firebasestorage.app",
- messagingSenderId: "909415918359",
- appId: "1:909415918359:web:85da71cdd35a879fa86552",
- measurementId: "G-HV2ELB7GS6"
+const firebaseConfig={
+ apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+ authDomain:"freedroid-cloud.firebaseapp.com",
+ databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
+ projectId:"freedroid-cloud",
+ storageBucket:"freedroid-cloud.firebasestorage.app",
+ messagingSenderId:"909415918359",
+ appId:"1:909415918359:web:85da71cdd35a879fa86552",
+ measurementId:"G-HV2ELB7GS6"
 };
 
-const OWNER_UID = "rDUXxSYOPchI8eKuIPlyLy0dJdU2";
+const OWNER_UID="rDUXxSYOPchI8eKuIPlyLy0dJdU2";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const provider = new GoogleAuthProvider();
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+const provider=new GoogleAuthProvider();
 
-const googleBtn = document.getElementById("googleBtn");
-const passwordArea = document.getElementById("passwordArea");
-const passwordInput = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
-const message = document.getElementById("message");
+provider.setCustomParameters({prompt:"select_account"});
 
-let ownerUser = null;
+const $=id=>document.getElementById(id);
+
+let ownerUser=null;
 
 function fromBase64(value){
- return Uint8Array.from(
-  atob(value),
-  c => c.charCodeAt(0)
- );
+ return Uint8Array.from(atob(value),c=>c.charCodeAt(0));
 }
 
 async function makeHash(password,salt,iterations){
-
- const key = await crypto.subtle.importKey(
-  "raw",
-  new TextEncoder().encode(password),
-  "PBKDF2",
-  false,
-  ["deriveBits"]
+ const key=await crypto.subtle.importKey(
+  "raw",new TextEncoder().encode(password),
+  "PBKDF2",false,["deriveBits"]
  );
 
- const bits = await crypto.subtle.deriveBits({
-  name:"PBKDF2",
-  salt:salt,
-  iterations:iterations,
-  hash:"SHA-256"
+ const bits=await crypto.subtle.deriveBits({
+  name:"PBKDF2",salt,iterations,hash:"SHA-256"
  },key,256);
 
  return new Uint8Array(bits);
 }
 
 function compareHash(a,b){
- if(a.length !== b.length) return false;
-
- let result = 0;
-
- for(let i=0;i<a.length;i++){
-  result |= a[i] ^ b[i];
- }
-
- return result === 0;
+ if(a.length!==b.length)return false;
+ let result=0;
+ for(let i=0;i<a.length;i++)result|=a[i]^b[i];
+ return result===0;
 }
 
-// Google verification
+// GOOGLE OWNER LOGIN
 
-googleBtn.addEventListener("click",async()=>{
-
+$("googleBtn").addEventListener("click",async()=>{
  try{
+  $("googleBtn").disabled=true;
+  $("message").textContent="Checking Google Account...";
 
-  googleBtn.disabled = true;
-  message.textContent = "Checking Google Account...";
+  await setPersistence(auth,browserLocalPersistence);
 
-  const result = await signInWithPopup(auth,provider);
+  const result=await signInWithPopup(auth,provider);
 
-  if(result.user.uid !== OWNER_UID){
-
-   ownerUser = null;
-   passwordArea.style.display = "none";
-   message.textContent = "Access Denied: Unauthorized Google Account.";
-
-   googleBtn.disabled = false;
+  if(result.user.uid!==OWNER_UID){
+   ownerUser=null;
+   $("passwordArea").style.display="none";
+   $("message").textContent="Access Denied: Unauthorized Google Account.";
+   await signOut(auth);
+   $("googleBtn").disabled=false;
    return;
   }
 
-  ownerUser = result.user;
-
-  googleBtn.style.display = "none";
-  passwordArea.style.display = "block";
-
-  message.textContent = "Owner verified. Enter Secret Password.";
+  ownerUser=result.user;
+  $("googleBtn").style.display="none";
+  $("passwordArea").style.display="block";
+  $("message").textContent="Owner verified. Enter Secret Password.";
 
  }catch(error){
-
-  message.textContent = "Google Login Error: " + error.message;
-  googleBtn.disabled = false;
-
+  $("message").textContent="Google Login Error: "+error.message;
+  $("googleBtn").disabled=false;
  }
-
 });
 
-// Secret Password verification
+// SECRET PASSWORD LOGIN
 
-loginBtn.addEventListener("click",async()=>{
-
- if(!ownerUser || auth.currentUser?.uid !== OWNER_UID){
-  message.textContent = "Owner verification required.";
+$("loginBtn").addEventListener("click",async()=>{
+ if(!ownerUser||auth.currentUser?.uid!==OWNER_UID){
+  $("message").textContent="Owner verification required.";
   return;
  }
 
- const password = passwordInput.value;
-
+ const password=$("password").value;
  if(!password){
-  message.textContent = "Enter your Secret Password.";
+  $("message").textContent="Enter your Secret Password.";
   return;
  }
 
  try{
+  $("loginBtn").disabled=true;
+  $("message").textContent="Verifying Secret Password...";
 
-  loginBtn.disabled = true;
-  message.textContent = "Verifying Secret Password...";
+  const snapshot=await get(ref(db,"adminData/password"));
 
-  const snapshot = await get(
-   ref(db,"adminData/password")
-  );
+  if(!snapshot.exists())
+   throw new Error("Admin password setup not found.");
 
-  if(!snapshot.exists()){
-   message.textContent = "Admin password setup not found.";
-   loginBtn.disabled = false;
-   return;
-  }
-
-  const data = snapshot.val();
+  const data=snapshot.val();
 
   if(
-   data.algorithm !== "PBKDF2-SHA256" ||
-   !Number.isInteger(data.iterations) ||
-   data.iterations !== 310000 ||
-   !data.salt ||
-   !data.hash
+   data.algorithm!=="PBKDF2-SHA256"||
+   !Number.isInteger(data.iterations)||
+   data.iterations!==310000||
+   !data.salt||!data.hash
   ){
    throw new Error("Invalid password configuration.");
   }
 
-  const salt = fromBase64(data.salt);
-  const savedHash = fromBase64(data.hash);
-
-  const enteredHash = await makeHash(
-   password,
-   salt,
-   data.iterations
-  );
+  const salt=fromBase64(data.salt);
+  const savedHash=fromBase64(data.hash);
+  const enteredHash=await makeHash(password,salt,data.iterations);
 
   if(!compareHash(savedHash,enteredHash)){
-
-   passwordInput.value = "";
-   message.textContent = "Incorrect Secret Password.";
-
-   loginBtn.disabled = false;
+   $("password").value="";
+   $("message").textContent="Incorrect Secret Password.";
+   $("loginBtn").disabled=false;
    return;
   }
 
-  if(auth.currentUser?.uid !== OWNER_UID){
+  if(auth.currentUser?.uid!==OWNER_UID)
    throw new Error("Owner account verification failed.");
-  }
 
-  sessionStorage.setItem(
-   "chessMasterAdminSession",
-   JSON.stringify({
-    uid:OWNER_UID,
-    verifiedAt:Date.now()
-   })
-  );
+  sessionStorage.setItem("chessMasterAdminSession",JSON.stringify({
+   uid:OWNER_UID,
+   verifiedAt:Date.now()
+  }));
 
-  message.textContent = "Login Successful! Opening Admin Panel...";
+  $("message").textContent="Login Successful! Opening Admin Panel...";
 
-  window.location.replace("admin.html");
+  window.location.replace("./admin.html");
 
  }catch(error){
-
-  message.textContent = "Error: " + error.message;
-  loginBtn.disabled = false;
-
+  $("message").textContent="Error: "+error.message;
+  $("loginBtn").disabled=false;
  }
-
 });
-
 </script>
-
 </body>
-  </html>
-  
+</html>
