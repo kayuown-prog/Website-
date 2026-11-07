@@ -15,56 +15,54 @@
 }
 
 body {
+  min-height: 100vh;
   background: #10141c;
   color: white;
-  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 }
 
 .login-box {
-  background: #1b2433;
-  padding: 35px 25px;
-  border-radius: 15px;
-  width: 100%;
+  width: 90%;
   max-width: 380px;
+  background: #1b2330;
+  padding: 35px 25px;
+  border-radius: 18px;
   text-align: center;
-  border: 1px solid #d6a84b;
+  box-shadow: 0 8px 30px #0008;
 }
 
 h1 {
-  color: #f5c76a;
+  color: #f0c65b;
   margin-bottom: 12px;
 }
 
 p {
-  color: #ccc;
+  color: #b9c2d0;
   margin-bottom: 25px;
 }
 
 button {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   border: none;
-  border-radius: 8px;
-  background: #d6a84b;
-  color: #10141c;
-  font-weight: bold;
+  border-radius: 10px;
+  background: white;
+  color: #222;
   font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
 }
 
 button:disabled {
   opacity: 0.6;
-  cursor: wait;
 }
 
 #message {
   margin-top: 18px;
   font-size: 14px;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 </style>
 </head>
@@ -75,40 +73,47 @@ button:disabled {
   <h1>♟ CHESS MASTER</h1>
   <p>Login to continue playing</p>
 
-  <button id="googleBtn">Continue with Google</button>
+  <button id="googleBtn">
+    Continue with Google
+  </button>
 
   <div id="message"></div>
 </div>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
   authDomain: "freedroid-cloud.firebaseapp.com",
-  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
   projectId: "freedroid-cloud",
   storageBucket: "freedroid-cloud.firebasestorage.app",
   messagingSenderId: "909415918359",
   appId: "1:909415918359:web:85da71cdd35a879fa86552",
   measurementId: "G-HV2ELB7GS6"
 };
-  
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
-const button = document.getElementById("googleBtn");
+provider.setCustomParameters({
+  prompt: "select_account"
+});
+
+const googleBtn = document.getElementById("googleBtn");
 const message = document.getElementById("message");
 
 onAuthStateChanged(auth, (user) => {
@@ -117,19 +122,43 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-button.addEventListener("click", async () => {
-  button.disabled = true;
-  message.textContent = "Please wait...";
+try {
+  await getRedirectResult(auth);
+} catch (error) {
+  message.textContent = error.message;
+}
+
+googleBtn.addEventListener("click", async () => {
+
+  googleBtn.disabled = true;
+  message.textContent = "Connecting to Google...";
 
   try {
     await signInWithPopup(auth, provider);
     window.location.replace("dashboard.html");
+
   } catch (error) {
-    message.textContent = error.message;
-    button.disabled = false;
+
+    if (
+      error.code === "auth/popup-blocked" ||
+      error.code === "auth/popup-closed-by-user" ||
+      error.code === "auth/operation-not-supported-in-this-environment"
+    ) {
+      try {
+        await signInWithRedirect(auth, provider);
+        return;
+      } catch (redirectError) {
+        message.textContent = redirectError.message;
+      }
+    } else {
+      message.textContent = error.message;
+    }
+
+    googleBtn.disabled = false;
   }
 });
 
 </script>
+
 </body>
 </html>
