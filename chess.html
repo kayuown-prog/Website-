@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Master - Multiplayer</title>
+<title>Chess Master Multiplayer</title>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -14,225 +14,145 @@ body{
   background:radial-gradient(ellipse at center,#07565a,#00272d 85%);
   color:white;
   font-family:Arial,sans-serif;
-  padding:15px;
-}
-
-header{
-  text-align:center;
   padding:12px;
-  margin-bottom:15px;
 }
 
-header h1{
-  font-size:27px;
-  color:#fff;
-}
+header{text-align:center;padding:12px;margin-bottom:12px}
+header h1{color:#f5c76a;font-size:27px}
+header p{color:#b9dddd;margin-top:5px;font-size:13px}
 
-header p{
-  color:#b9dddd;
-  margin-top:5px;
-  font-size:13px;
-}
-
-.container{
-  width:100%;
-  max-width:650px;
-  margin:auto;
-}
-
-.panel{
-  background:#092f35;
-  border:1px solid #17636a;
-  border-radius:14px;
-  padding:13px;
-  margin-bottom:12px;
-}
-
-.players{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.player{
-  flex:1;
-  background:#10434a;
-  border-radius:10px;
-  padding:12px;
-  min-width:0;
-}
-
-.player.active{
-  border:2px solid #35e0a1;
-}
-
-.player-name{
-  font-weight:bold;
-  overflow-wrap:anywhere;
-}
-
-.player-info{
-  font-size:13px;
-  color:#c2e2e2;
-  margin-top:7px;
-}
-
-.lives{
-  color:#ffcf5a;
-  font-size:19px;
-  margin-top:5px;
-  letter-spacing:2px;
-}
-
-#timerBox{
-  text-align:center;
-  padding:10px;
-  margin-bottom:12px;
-  background:#092f35;
-  border:1px solid #17636a;
-  border-radius:12px;
-}
-
-#timer{
-  font-size:30px;
-  font-weight:bold;
-  color:#35e0a1;
-}
-
-#timerText{
-  font-size:13px;
-  color:#c2e2e2;
-  margin-top:3px;
-}
+.container{width:100%;max-width:650px;margin:auto}
 
 #loading{
-  text-align:center;
-  padding:18px;
-  color:#ffe08a;
-  background:#092f35;
-  border-radius:10px;
-  margin-bottom:12px;
+  text-align:center;padding:18px;color:#ffe08a;
+  background:#092f35;border-radius:10px;
   overflow-wrap:anywhere;
 }
 
 #gameArea{display:none}
 
+.panel{
+  background:#092f35;border:1px solid #17636a;
+  border-radius:14px;padding:12px;margin-bottom:12px;
+}
+
+.players{display:flex;gap:10px}
+.player{
+  flex:1;min-width:0;background:#10434a;
+  border-radius:10px;padding:12px;
+}
+.player.active{border:2px solid #35e0a1}
+.player-name{font-weight:bold;overflow-wrap:anywhere}
+.player-info{font-size:12px;color:#c2e2e2;margin-top:6px}
+.lives{color:#ffcf5a;font-size:19px;margin-top:5px}
+
+#timerBox{
+  text-align:center;padding:10px;margin-bottom:12px;
+  background:#092f35;border:1px solid #17636a;border-radius:12px;
+}
+#timer{font-size:30px;font-weight:bold;color:#35e0a1}
+#timerText{font-size:13px;color:#c2e2e2;margin-top:3px}
+
 .board-wrap{
-  width:100%;
-  max-width:560px;
-  margin:auto;
-  padding:5px;
-  background:#172c2c;
-  border-radius:8px;
+  width:100%;max-width:560px;margin:auto;
+  padding:5px;background:#172c2c;border-radius:8px;
 }
-
 #board{
-  display:grid;
-  grid-template-columns:repeat(8,1fr);
-  width:100%;
-  aspect-ratio:1;
-  border:3px solid #172c2c;
+  display:grid;grid-template-columns:repeat(8,1fr);
+  width:100%;aspect-ratio:1;border:3px solid #172c2c;
 }
-
 .square{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  aspect-ratio:1;
-  cursor:pointer;
-  user-select:none;
-  font-family:"Arial Unicode MS",Arial,sans-serif;
-  font-size:clamp(25px,7.2vw,51px);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;aspect-ratio:1;cursor:pointer;
+  user-select:none;font-size:clamp(25px,7.2vw,51px);
   line-height:1;
 }
-
 .light{background:#e9d6b5}
 .dark{background:#759b78}
-
 .white-piece{
   color:#fff;
-  text-shadow:
-    1px 1px 2px #222,
-    -1px -1px 2px #222,
-    1px -1px 2px #222,
-    -1px 1px 2px #222;
+  text-shadow:1px 1px 2px #222,-1px -1px 2px #222,
+  1px -1px 2px #222,-1px 1px 2px #222;
 }
-
-.black-piece{
-  color:#17201d;
-  text-shadow:0 1px 1px #fff;
+.black-piece{color:#17201d;text-shadow:0 1px 1px #fff}
+.selected{background:#d6c94a!important}
+.legal:after{
+  content:"";position:absolute;width:25%;height:25%;
+  border-radius:50%;background:#174d42;opacity:.65;
 }
-
-.selected{
-  background:#d6c94a!important;
-}
-
-.legal::after{
-  content:"";
-  position:absolute;
-  width:25%;
-  height:25%;
-  border-radius:50%;
-  background:#174d42;
-  opacity:.65;
-}
-
-.last-move{
-  background:#b8b65c!important;
-}
+.last-move{background:#b8b65c!important}
 
 #message{
-  text-align:center;
-  margin-top:12px;
-  color:#ffe08a;
-  min-height:20px;
-  font-size:14px;
+  text-align:center;margin-top:12px;color:#ffe08a;
+  min-height:20px;font-size:14px;
 }
-
-.controls{
-  display:flex;
-  gap:10px;
-  margin-top:12px;
-}
+.controls{display:flex;gap:10px;margin-top:12px}
 
 button{
-  flex:1;
-  border:0;
-  border-radius:9px;
-  padding:13px;
-  font-size:14px;
-  font-weight:bold;
-  cursor:pointer;
-  background:#20bd8a;
-  color:#002c25;
+  flex:1;border:0;border-radius:9px;padding:13px;
+  font-size:14px;font-weight:bold;cursor:pointer;
+  background:#20bd8a;color:#002c25;
 }
 
-button:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
+button:disabled{opacity:.5;cursor:not-allowed}
 
 #gameOver{
-  display:none;
-  text-align:center;
-  background:#10434a;
-  border:1px solid #35e0a1;
-  padding:17px;
-  border-radius:12px;
-  margin-top:12px;
+  display:none;position:relative;overflow:hidden;
+  text-align:center;padding:25px 15px;margin-top:15px;
+  border-radius:16px;
 }
 
-#gameOver h2{
-  color:#35e0a1;
-  margin-bottom:8px;
+#gameOver.win{
+  background:linear-gradient(135deg,#174d37,#092f35);
+  border:2px solid #ffd45c;
+  animation:winGlow 1.5s infinite alternate;
+}
+#gameOver.lose{
+  background:linear-gradient(135deg,#55252b,#241c2b);
+  border:2px solid #ff6868;
+  animation:loseShake .5s ease;
+}
+#gameOver.draw{
+  background:linear-gradient(135deg,#34445c,#092f35);
+  border:2px solid #8dcfff;
 }
 
-.small{
-  color:#b9dddd;
-  font-size:12px;
-  text-align:center;
-  margin-top:12px;
+.result-icon{font-size:55px;margin-bottom:10px;animation:resultPop .7s}
+#resultTitle{font-size:30px;margin-bottom:10px}
+#gameOver.win #resultTitle{color:#ffd45c}
+#gameOver.lose #resultTitle{color:#ff7777}
+#gameOver.draw #resultTitle{color:#8dcfff}
+#resultText{color:white;margin-bottom:18px}
+
+.dashboardBtn{
+  width:100%;max-width:260px;
+  background:#ffd45c;color:#25200c;
+  padding:14px;border-radius:10px;font-weight:bold;
+}
+
+.confetti{
+  position:absolute;top:-15px;width:9px;height:14px;
+  animation:confettiFall 2.5s linear infinite;
+  pointer-events:none;
+}
+
+.small{color:#b9dddd;font-size:12px;text-align:center;margin-top:12px}
+
+@keyframes confettiFall{
+  to{transform:translateY(350px) rotate(720deg)}
+}
+@keyframes winGlow{
+  from{box-shadow:0 0 5px #ffd45c}
+  to{box-shadow:0 0 25px #ffd45c}
+}
+@keyframes resultPop{
+  from{transform:scale(.3);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+@keyframes loseShake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}
 }
 
 @media(max-width:400px){
@@ -257,7 +177,6 @@ button:disabled{
   <div id="gameArea">
 
     <div class="panel players">
-
       <div class="player" id="whitePlayer">
         <div class="player-name" id="whiteName">White</div>
         <div class="player-info">WHITE</div>
@@ -269,7 +188,6 @@ button:disabled{
         <div class="player-info">BLACK</div>
         <div class="lives" id="blackLives">♥ ♥ ♥</div>
       </div>
-
     </div>
 
     <div id="timerBox">
@@ -289,8 +207,13 @@ button:disabled{
     </div>
 
     <div id="gameOver">
-      <h2 id="resultTitle">Game Over</h2>
+      <div class="result-icon" id="resultIcon">🏆</div>
+      <h2 id="resultTitle">GAME OVER</h2>
       <p id="resultText"></p>
+      <button class="dashboardBtn"
+        onclick="location.href='dashboard.html'">
+        🏠 BACK TO DASHBOARD
+      </button>
     </div>
 
     <div class="small">
@@ -300,355 +223,289 @@ button:disabled{
   </div>
 </div>
 
-<!-- Error display -->
 <script>
-window.addEventListener("error", function(e){
-  const box = document.getElementById("loading");
-  if(box && box.style.display !== "none"){
-    box.textContent = "ERROR: " + (e.message || "Script failed to load");
+window.addEventListener("error",function(e){
+  const box=document.getElementById("loading");
+  if(box && box.style.display!=="none"){
+    box.textContent="ERROR: "+(e.message||"Script failed");
   }
-}, true);
+},true);
 
-window.addEventListener("unhandledrejection", function(e){
-  const box = document.getElementById("loading");
-  if(box && box.style.display !== "none"){
-    box.textContent = "ERROR: " + String(e.reason);
+window.addEventListener("unhandledrejection",function(e){
+  const box=document.getElementById("loading");
+  if(box && box.style.display!=="none"){
+    box.textContent="ERROR: "+String(e.reason);
   }
 });
 </script>
 
 <script type="module">
 
-import { initializeApp } from
+import {initializeApp} from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import {
-  getAuth,
-  onAuthStateChanged
-} from
+import {getAuth,onAuthStateChanged} from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  getDatabase,
-  ref,
-  get,
-  onValue,
-  runTransaction
+  getDatabase,ref,get,onValue,runTransaction
 } from
 "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import { Chess } from
+import {Chess} from
 "https://esm.sh/chess.js@1.4.0";
 
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-  authDomain: "freedroid-cloud.firebaseapp.com",
-  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
-  projectId: "freedroid-cloud",
-  storageBucket: "freedroid-cloud.firebasestorage.app",
-  messagingSenderId: "909415918359",
-  appId: "1:909415918359:web:85da71cdd35a879fa86552",
-  measurementId: "G-HV2ELB7GS6"
+const firebaseConfig={
+  apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0",
+  authDomain:"freedroid-cloud.firebaseapp.com",
+  databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
+  projectId:"freedroid-cloud",
+  storageBucket:"freedroid-cloud.firebasestorage.app",
+  messagingSenderId:"909415918359",
+  appId:"1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId:"G-HV2ELB7GS6"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
 
-const params = new URLSearchParams(location.search);
-const matchId = params.get("matchId");
-const myColor = params.get("color");
+const params=new URLSearchParams(location.search);
+const matchId=params.get("matchId");
+const myColor=params.get("color");
 
-const loading = document.getElementById("loading");
-const gameArea = document.getElementById("gameArea");
-const boardElement = document.getElementById("board");
+const loading=document.getElementById("loading");
+const gameArea=document.getElementById("gameArea");
+const boardElement=document.getElementById("board");
 
-const START_FEN =
+const START_FEN=
 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-const pieceSymbols = {
-  wp:"♙", wr:"♖", wn:"♘", wb:"♗", wq:"♕", wk:"♔",
-  bp:"♟", br:"♜", bn:"♞", bb:"♝", bq:"♛", bk:"♚"
+const pieceSymbols={
+  wp:"♙",wr:"♖",wn:"♘",wb:"♗",wq:"♕",wk:"♔",
+  bp:"♟",br:"♜",bn:"♞",bb:"♝",bq:"♛",bk:"♚"
 };
 
-let user = null;
-let gameData = null;
-let selectedSquare = null;
-let legalTargets = [];
-let flipped = false;
-let unsubscribe = null;
-let timerInterval = null;
-let timeoutBusy = false;
-let lastRenderedFen = "";
+let user=null;
+let gameData=null;
+let selectedSquare=null;
+let legalTargets=[];
+let flipped=false;
+let unsubscribe=null;
+let timerInterval=null;
+let timeoutBusy=false;
+let serverTimeOffset=0;
 
-const gameRef = ref(db, "matchmaking/matches/" + matchId);
-
-function showError(message){
-  loading.style.display = "block";
-  loading.textContent = "ERROR: " + message;
-}
+const gameRef=ref(db,"matchmaking/matches/"+matchId);
 
 function serverNow(){
-  return Date.now() + (window.serverTimeOffset || 0);
+  return Date.now()+serverTimeOffset;
+}
+
+function showError(message){
+  loading.style.display="block";
+  loading.textContent="ERROR: "+message;
 }
 
 function getPlayerName(color){
-  return gameData?.players?.[color]?.name ||
-         (color === "white" ? "White Player" : "Black Player");
-}
-
-function getPlayerUid(color){
-  return gameData?.players?.[color]?.uid || null;
-}
-
-function getCurrentColor(){
-  return gameData?.turn || "white";
+  return gameData?.players?.[color]?.name||
+    (color==="white"?"White Player":"Black Player");
 }
 
 function getLives(color){
-  const value = gameData?.lives?.[color];
-  return Number.isInteger(value) ? value : 3;
+  const value=gameData?.lives?.[color];
+  return Number.isInteger(value)?value:3;
+}
+
+function currentColor(){
+  return gameData?.turn||"white";
 }
 
 function showMessage(message){
-  document.getElementById("message").textContent = message;
+  document.getElementById("message").textContent=message;
 }
 
 function updatePlayers(){
-  document.getElementById("whiteName").textContent =
-    getPlayerName("white");
+  document.getElementById("whiteName").textContent=getPlayerName("white");
+  document.getElementById("blackName").textContent=getPlayerName("black");
 
-  document.getElementById("blackName").textContent =
-    getPlayerName("black");
+  document.getElementById("whiteLives").textContent=
+    "♥ ".repeat(getLives("white"))||"No lives";
 
-  document.getElementById("whiteLives").textContent =
-    "♥ ".repeat(getLives("white")) || "No lives";
-
-  document.getElementById("blackLives").textContent =
-    "♥ ".repeat(getLives("black")) || "No lives";
+  document.getElementById("blackLives").textContent=
+    "♥ ".repeat(getLives("black"))||"No lives";
 
   document.getElementById("whitePlayer").classList.toggle(
-    "active", getCurrentColor() === "white"
+    "active",currentColor()==="white"
   );
 
   document.getElementById("blackPlayer").classList.toggle(
-    "active", getCurrentColor() === "black"
+    "active",currentColor()==="black"
   );
 }
 
 function updateTimer(){
-  if(!gameData || gameData.status === "finished"){
-    document.getElementById("timer").textContent = "—";
-    document.getElementById("timerText").textContent = "Game finished";
+  const timer=document.getElementById("timer");
+  const text=document.getElementById("timerText");
+
+  if(!gameData||gameData.status==="finished"){
+    timer.textContent="—";
+    text.textContent="Game finished";
     return;
   }
 
-  const timer = document.getElementById("timer");
-  const timerText = document.getElementById("timerText");
-
-  if(getCurrentColor() !== myColor){
-    timer.textContent = "—";
-    timerText.textContent = "Opponent's turn";
+  if(currentColor()!==myColor){
+    timer.textContent="—";
+    text.textContent="Opponent's turn";
     return;
   }
 
-  const deadline = Number(gameData.turnDeadline || 0);
-  const remaining = Math.max(
-    0,
-    Math.ceil((deadline - serverNow()) / 1000)
-  );
+  const deadline=Number(gameData.turnDeadline||0);
+  const remaining=Math.max(0,Math.ceil((deadline-serverNow())/1000));
 
-  timer.textContent = remaining;
-  timer.style.color = remaining <= 10 ? "#ff6969" : "#35e0a1";
-  timerText.textContent = "Your turn - make a move!";
+  timer.textContent=remaining;
+  timer.style.color=remaining<=10?"#ff6969":"#35e0a1";
+  text.textContent="Your turn - make a move!";
 }
 
 function renderBoard(){
-  if(!gameData) return;
+  if(!gameData)return;
 
-  const chess = new Chess(gameData.fen || START_FEN);
-  const board = chess.board();
+  const chess=new Chess(gameData.fen||START_FEN);
+  const board=chess.board();
 
-  boardElement.innerHTML = "";
+  boardElement.innerHTML="";
 
-  const rows = flipped
-    ? [7,6,5,4,3,2,1,0]
-    : [0,1,2,3,4,5,6,7];
-
-  const cols = flipped
-    ? [7,6,5,4,3,2,1,0]
-    : [0,1,2,3,4,5,6,7];
+  const rows=flipped?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
+  const cols=flipped?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
 
   for(const r of rows){
     for(const c of cols){
+      const squareName="abcdefgh"[c]+(8-r);
+      const piece=board[r][c];
 
-      const squareName =
-        "abcdefgh"[c] + (8-r);
-
-      const piece = board[r][c];
-
-      const square = document.createElement("div");
-
-      square.className =
-        "square " + ((r+c)%2===0 ? "light" : "dark");
-
-      square.dataset.square = squareName;
+      const square=document.createElement("div");
+      square.className="square "+((r+c)%2===0?"light":"dark");
+      square.dataset.square=squareName;
 
       if(piece){
-        const symbol =
-          pieceSymbols[piece.color + piece.type];
-
-        const span = document.createElement("span");
-        span.textContent = symbol;
-        span.className =
-          piece.color === "w" ? "white-piece" : "black-piece";
-
+        const span=document.createElement("span");
+        span.textContent=pieceSymbols[piece.color+piece.type];
+        span.className=piece.color==="w"?"white-piece":"black-piece";
         square.appendChild(span);
       }
 
-      if(selectedSquare === squareName){
-        square.classList.add("selected");
-      }
+      if(selectedSquare===squareName)square.classList.add("selected");
+      if(legalTargets.includes(squareName))square.classList.add("legal");
 
-      if(legalTargets.includes(squareName)){
-        square.classList.add("legal");
-      }
-
-      if(gameData.lastMove &&
-         (gameData.lastMove.from === squareName ||
-          gameData.lastMove.to === squareName)){
+      if(gameData.lastMove&&
+        (gameData.lastMove.from===squareName||
+         gameData.lastMove.to===squareName)){
         square.classList.add("last-move");
       }
 
-      square.addEventListener("click", () => {
-        handleSquareClick(squareName);
-      });
-
+      square.addEventListener("click",()=>handleSquareClick(squareName));
       boardElement.appendChild(square);
     }
   }
-
-  lastRenderedFen = gameData.fen || START_FEN;
 }
 
 function clearSelection(){
-  selectedSquare = null;
-  legalTargets = [];
+  selectedSquare=null;
+  legalTargets=[];
   renderBoard();
 }
 
 function handleSquareClick(square){
-  if(!gameData || gameData.status === "finished") return;
+  if(!gameData||gameData.status==="finished")return;
 
-  if(getCurrentColor() !== myColor){
+  if(currentColor()!==myColor){
     showMessage("Please wait for your turn.");
     return;
   }
 
-  if(getPlayerUid(myColor) !== user.uid){
+  if(gameData.players?.[myColor]?.uid!==user.uid){
     showMessage("You are not assigned to this player.");
     return;
   }
 
-  const chess = new Chess(gameData.fen || START_FEN);
+  const chess=new Chess(gameData.fen||START_FEN);
 
   if(selectedSquare){
-
-    const move = chess.moves({
-      square: selectedSquare,
-      verbose:true
-    }).find(m => m.to === square);
+    const move=chess.moves({
+      square:selectedSquare,verbose:true
+    }).find(m=>m.to===square);
 
     if(move){
-      makeMove(selectedSquare, square, move.promotion);
+      makeMove(selectedSquare,square,move.promotion);
       clearSelection();
       return;
     }
   }
 
-  const piece = chess.get(square);
+  const piece=chess.get(square);
 
-  if(piece && piece.color === (myColor === "white" ? "w" : "b")){
-    selectedSquare = square;
-
-    legalTargets = chess.moves({
-      square:square,
-      verbose:true
-    }).map(m => m.to);
-
+  if(piece&&piece.color===(myColor==="white"?"w":"b")){
+    selectedSquare=square;
+    legalTargets=chess.moves({
+      square:square,verbose:true
+    }).map(m=>m.to);
     renderBoard();
   }else{
     clearSelection();
   }
 }
 
-async function makeMove(from, to, promotion){
-  if(!gameData || gameData.status === "finished") return;
-
-  const moveRef = gameRef;
+async function makeMove(from,to,promotion){
+  if(!gameData||gameData.status==="finished")return;
 
   try{
-    const result = await runTransaction(moveRef, data => {
+    const result=await runTransaction(gameRef,data=>{
+      if(!data||data.status==="finished")return;
+      if(data.turn!==myColor)return;
+      if(data.players?.[myColor]?.uid!==user.uid)return;
 
-      if(!data || data.status === "finished") return;
-
-      if(data.turn !== myColor) return;
-
-      if(data.players?.[myColor]?.uid !== user.uid) return;
-
-      const chess = new Chess(data.fen || START_FEN);
-
+      const chess=new Chess(data.fen||START_FEN);
       let move;
 
       try{
-        move = chess.move({
-          from,
-          to,
-          promotion: promotion || "q"
+        move=chess.move({
+          from,to,promotion:promotion||"q"
         });
       }catch(e){
         return;
       }
 
-      if(!move) return;
+      if(!move)return;
 
-      const nextTurn =
-        myColor === "white" ? "black" : "white";
+      const nextTurn=myColor==="white"?"black":"white";
 
-      data.fen = chess.fen();
-      data.turn = nextTurn;
-      data.moveCount = (data.moveCount || 0) + 1;
+      data.fen=chess.fen();
+      data.turn=nextTurn;
+      data.moveCount=(data.moveCount||0)+1;
+      data.moves=data.moves||{};
 
-      data.moves = data.moves || {};
-
-      data.moves[data.moveCount] = {
-        from:move.from,
-        to:move.to,
-        san:move.san,
-        color:myColor,
-        time:serverNow()
+      data.moves[data.moveCount]={
+        from:move.from,to:move.to,san:move.san,
+        color:myColor,time:serverNow()
       };
 
-      data.lastMove = {
-        from:move.from,
-        to:move.to
-      };
+      data.lastMove={from:move.from,to:move.to};
 
       if(chess.isGameOver()){
-        data.status = "finished";
-        data.turnDeadline = null;
+        data.status="finished";
+        data.turnDeadline=null;
 
         if(chess.isCheckmate()){
-          data.winner = myColor;
-          data.result = "checkmate";
+          data.winner=myColor;
+          data.result="checkmate";
         }else{
-          data.winner = "draw";
-          data.result = "draw";
+          data.winner="draw";
+          data.result="draw";
         }
       }else{
-        data.turnStartedAt = serverNow();
-        data.turnDeadline = serverNow() + 30000;
+        data.turnStartedAt=serverNow();
+        data.turnDeadline=serverNow()+30000;
       }
 
       return data;
@@ -659,40 +516,26 @@ async function makeMove(from, to, promotion){
     }else{
       showMessage("Move played successfully.");
     }
-
   }catch(error){
-    showMessage("Move error: " + error.message);
+    showMessage("Move error: "+error.message);
   }
 }
 
 async function initializeClock(){
-  await runTransaction(gameRef, data => {
-    if(!data || data.status === "finished") return;
+  await runTransaction(gameRef,data=>{
+    if(!data||data.status==="finished")return;
 
-    data.lives = data.lives || {
-      white:3,
-      black:3
-    };
+    data.lives=data.lives||{white:3,black:3};
 
-    if(!Number.isInteger(data.lives.white)){
-      data.lives.white = 3;
-    }
+    if(!Number.isInteger(data.lives.white))data.lives.white=3;
+    if(!Number.isInteger(data.lives.black))data.lives.black=3;
 
-    if(!Number.isInteger(data.lives.black)){
-      data.lives.black = 3;
-    }
-
-    if(!data.fen){
-      data.fen = START_FEN;
-    }
-
-    if(!data.turn){
-      data.turn = "white";
-    }
+    if(!data.fen)data.fen=START_FEN;
+    if(!data.turn)data.turn="white";
 
     if(!data.turnDeadline){
-      data.turnStartedAt = serverNow();
-      data.turnDeadline = serverNow() + 30000;
+      data.turnStartedAt=serverNow();
+      data.turnDeadline=serverNow()+30000;
     }
 
     return data;
@@ -700,67 +543,59 @@ async function initializeClock(){
 }
 
 async function resolveTimeout(){
-  if(timeoutBusy || !gameData ||
-     gameData.status === "finished") return;
+  if(timeoutBusy||!gameData||gameData.status==="finished")return;
+  if(!gameData.turnDeadline||serverNow()<Number(gameData.turnDeadline))return;
 
-  if(!gameData.turnDeadline ||
-     serverNow() < Number(gameData.turnDeadline)) return;
-
-  timeoutBusy = true;
+  timeoutBusy=true;
 
   try{
-    await runTransaction(gameRef, data => {
+    await runTransaction(gameRef,data=>{
+      if(!data||data.status==="finished")return;
 
-      if(!data || data.status === "finished") return;
+      const now=serverNow();
 
-      const now = serverNow();
+      if(!data.turnDeadline||now<Number(data.turnDeadline))return;
 
-      if(!data.turnDeadline ||
-         now < Number(data.turnDeadline)) return;
+      const expiredColor=data.turn||"white";
 
-      const expiredColor = data.turn || "white";
-      const lives = data.lives || {white:3,black:3};
+      data.lives=data.lives||{white:3,black:3};
 
-      if(!Number.isInteger(lives[expiredColor])){
-        lives[expiredColor] = 3;
+      if(!Number.isInteger(data.lives[expiredColor])){
+        data.lives[expiredColor]=3;
       }
 
-      lives[expiredColor] -= 1;
-      data.lives = lives;
+      data.lives[expiredColor]-=1;
 
-      // If all lives are lost, the opponent wins.
-      if(lives[expiredColor] <= 0){
-        data.status = "finished";
-        data.winner =
-          expiredColor === "white" ? "black" : "white";
-        data.result = "timeout";
-        data.turnDeadline = null;
+      if(data.lives[expiredColor]<=0){
+        data.status="finished";
+        data.winner=expiredColor==="white"?"black":"white";
+        data.result="timeout";
+        data.turnDeadline=null;
         return data;
       }
 
-      // Otherwise play a random legal move.
-      const chess = new Chess(data.fen || START_FEN);
-      const legalMoves = chess.moves({verbose:true});
+      const chess=new Chess(data.fen||START_FEN);
+      const legalMoves=chess.moves({verbose:true});
 
-      if(legalMoves.length === 0){
-        data.status = "finished";
-        data.winner = "draw";
-        data.result = "draw";
-        data.turnDeadline = null;
+      if(!legalMoves.length){
+        data.status="finished";
+        data.winner="draw";
+        data.result="draw";
+        data.turnDeadline=null;
         return data;
       }
 
-      const randomMove =
-        legalMoves[Math.floor(Math.random() * legalMoves.length)];
+      const randomMove=legalMoves[
+        Math.floor(Math.random()*legalMoves.length)
+      ];
 
-      const played = chess.move(randomMove);
+      const played=chess.move(randomMove);
 
-      data.fen = chess.fen();
-      data.moveCount = (data.moveCount || 0) + 1;
+      data.fen=chess.fen();
+      data.moveCount=(data.moveCount||0)+1;
+      data.moves=data.moves||{};
 
-      data.moves = data.moves || {};
-
-      data.moves[data.moveCount] = {
+      data.moves[data.moveCount]={
         from:played.from,
         to:played.to,
         san:played.san,
@@ -769,82 +604,100 @@ async function resolveTimeout(){
         time:now
       };
 
-      data.lastMove = {
-        from:played.from,
-        to:played.to
-      };
+      data.lastMove={from:played.from,to:played.to};
 
       if(chess.isGameOver()){
-        data.status = "finished";
-        data.turnDeadline = null;
+        data.status="finished";
+        data.turnDeadline=null;
 
         if(chess.isCheckmate()){
-          data.winner = expiredColor;
-          data.result = "checkmate";
+          data.winner=expiredColor;
+          data.result="checkmate";
         }else{
-          data.winner = "draw";
-          data.result = "draw";
+          data.winner="draw";
+          data.result="draw";
         }
-
         return data;
       }
 
-      data.turn =
-        expiredColor === "white" ? "black" : "white";
-
-      data.turnStartedAt = now;
-      data.turnDeadline = now + 30000;
+      data.turn=expiredColor==="white"?"black":"white";
+      data.turnStartedAt=now;
+      data.turnDeadline=now+30000;
 
       return data;
     });
-
   }catch(error){
-    console.error("Timeout error:", error);
+    console.error("Timeout error:",error);
   }finally{
-    timeoutBusy = false;
+    timeoutBusy=false;
+  }
+}
+
+function createConfetti(){
+  const box=document.getElementById("gameOver");
+
+  if(box.dataset.confetti==="yes")return;
+  box.dataset.confetti="yes";
+
+  for(let i=0;i<35;i++){
+    const piece=document.createElement("div");
+    piece.className="confetti";
+    piece.style.left=Math.random()*100+"%";
+    piece.style.animationDelay=Math.random()*2+"s";
+    piece.style.background=[
+      "#ffd45c","#35e0a1","#ff7777","#ffffff","#65baff"
+    ][Math.floor(Math.random()*5)];
+    box.appendChild(piece);
   }
 }
 
 function showGameOver(){
-  const box = document.getElementById("gameOver");
-  const title = document.getElementById("resultTitle");
-  const result = document.getElementById("resultText");
+  const box=document.getElementById("gameOver");
+  const title=document.getElementById("resultTitle");
+  const result=document.getElementById("resultText");
+  const icon=document.getElementById("resultIcon");
 
-  if(gameData.status !== "finished"){
-    box.style.display = "none";
+  if(gameData.status!=="finished"){
+    box.style.display="none";
     return;
   }
 
-  box.style.display = "block";
+  box.style.display="block";
+  box.classList.remove("win","lose","draw");
 
-  if(gameData.winner === "draw"){
-    title.textContent = "Game Draw!";
-    result.textContent = "The game ended in a draw.";
+  if(gameData.winner==="draw"){
+    box.classList.add("draw");
+    icon.textContent="🤝";
+    title.textContent="MATCH DRAW!";
+    result.textContent="Well played! Both players played a great game.";
+  }else if(gameData.winner===myColor){
+    box.classList.add("win");
+    icon.textContent="🏆";
+    title.textContent="YOU WIN!";
+    result.textContent="Congratulations! You won the match! 🎉";
+    createConfetti();
   }else{
-    title.textContent =
-      (gameData.winner || "Unknown").toUpperCase() + " WINS!";
-
-    result.textContent =
-      gameData.result === "timeout"
-      ? "Opponent lost all 3 lives."
-      : "Congratulations!";
+    box.classList.add("lose");
+    icon.textContent="😔";
+    title.textContent="YOU LOST!";
+    result.textContent="Good game! Better luck next time.";
   }
 
-  document.getElementById("timer").textContent = "—";
-  document.getElementById("timerText").textContent = "Game Over";
+  document.getElementById("timer").textContent="—";
+  document.getElementById("timerText").textContent="Game Over";
 }
 
 function updateScreen(){
-  if(!gameData) return;
+  if(!gameData)return;
 
   updatePlayers();
   updateTimer();
   renderBoard();
   showGameOver();
 
-  if(gameData.status === "finished"){
+  if(gameData.status==="finished"){
     showMessage("Game finished.");
-  }else if(getCurrentColor() === myColor){
+  }else if(currentColor()===myColor){
     showMessage("Your turn. You have 30 seconds.");
   }else{
     showMessage("Opponent's turn. Please wait.");
@@ -852,90 +705,85 @@ function updateScreen(){
 }
 
 async function startGame(){
-  if(!matchId || !["white","black"].includes(myColor)){
+  if(!matchId||!["white","black"].includes(myColor)){
     showError("Invalid match link. Open the board from Multiplayer.");
     return;
   }
 
-  loading.textContent = "Checking your match...";
+  loading.textContent="Checking your match...";
 
-  const snapshot = await get(gameRef);
+  const snapshot=await get(gameRef);
 
   if(!snapshot.exists()){
     showError("Match not found. Please start a new match.");
     return;
   }
 
-  const data = snapshot.val();
+  const data=snapshot.val();
 
-  if(data.players?.[myColor]?.uid !== user.uid){
+  if(data.players?.[myColor]?.uid!==user.uid){
     showError("This match is not assigned to your account.");
     return;
   }
 
   await initializeClock();
 
-  loading.style.display = "none";
-  gameArea.style.display = "block";
+  loading.style.display="none";
+  gameArea.style.display="block";
 
-  if(unsubscribe){
-    unsubscribe();
-  }
+  if(unsubscribe)unsubscribe();
 
-  unsubscribe = onValue(gameRef, snapshot => {
+  unsubscribe=onValue(gameRef,snapshot=>{
     if(!snapshot.exists()){
       showError("Match was removed.");
       return;
     }
 
-    gameData = snapshot.val();
+    gameData=snapshot.val();
     updateScreen();
-  }, error => {
-    showError("Firebase: " + error.message);
+  },error=>{
+    showError("Firebase: "+error.message);
   });
 
-  if(timerInterval) clearInterval(timerInterval);
+  if(timerInterval)clearInterval(timerInterval);
 
-  timerInterval = setInterval(() => {
+  timerInterval=setInterval(()=>{
     updateTimer();
     resolveTimeout();
-  }, 300);
+  },300);
 }
 
-document.getElementById("flipBtn").addEventListener("click", () => {
-  flipped = !flipped;
+document.getElementById("flipBtn").addEventListener("click",()=>{
+  flipped=!flipped;
   renderBoard();
 });
 
-document.getElementById("refreshBtn").addEventListener("click", () => {
+document.getElementById("refreshBtn").addEventListener("click",()=>{
   location.reload();
 });
 
-document.getElementById("flipBtn").disabled = false;
-
-onValue(ref(db, ".info/serverTimeOffset"), snapshot => {
-  window.serverTimeOffset = snapshot.val() || 0;
+onValue(ref(db,".info/serverTimeOffset"),snapshot=>{
+  serverTimeOffset=snapshot.val()||0;
 });
 
-onAuthStateChanged(auth, async currentUser => {
+onAuthStateChanged(auth,async currentUser=>{
   if(!currentUser){
     location.replace("login.html");
     return;
   }
 
-  user = currentUser;
+  user=currentUser;
 
   try{
-    loading.textContent = "Loading your chess match...";
+    loading.textContent="Loading your chess match...";
     await startGame();
   }catch(error){
-    showError(error.message || String(error));
+    showError(error.message||String(error));
     console.error(error);
   }
 });
 
 </script>
-
 </body>
- </html>
- 
+  </html>
+  
