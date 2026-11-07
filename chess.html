@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +18,6 @@ body{
  padding-bottom:20px;
 }
 
-/* HEADER */
 .top-header{
  min-height:100px;
  padding:15px;
@@ -29,65 +29,34 @@ body{
  box-shadow:0 5px 15px #0008;
 }
 
-.brand{
- display:flex;
- align-items:center;
- gap:10px;
-}
+.brand{display:flex;align-items:center;gap:10px}
 
 .logo{
- width:60px;
- height:60px;
- border-radius:50%;
+ width:60px;height:60px;border-radius:50%;
  border:4px solid #f5c44a;
  background:radial-gradient(circle,#24445c,#081323);
- display:flex;
- align-items:center;
- justify-content:center;
- color:#f5c76a;
- font-size:35px;
+ display:flex;align-items:center;justify-content:center;
+ color:#f5c76a;font-size:35px;
 }
 
-.brand-name{
- color:#ffd16a;
- font-size:clamp(20px,5vw,28px);
- font-weight:900;
-}
-
-.brand-subtitle{
- font-size:10px;
- color:#7ce8e9;
- letter-spacing:3px;
- margin-top:5px;
- font-weight:bold;
-}
+.brand-name{color:#ffd16a;font-size:clamp(20px,5vw,28px);font-weight:900}
+.brand-subtitle{font-size:10px;color:#7ce8e9;letter-spacing:3px;margin-top:5px;font-weight:bold}
 
 .top-btn{
- width:50px;
- height:50px;
- border:0;
- border-radius:8px;
+ width:50px;height:50px;border:0;border-radius:8px;
  background:linear-gradient(#e62817,#a90000);
- color:#ffdb56;
- font-size:25px;
+ color:#ffdb56;font-size:25px;
 }
 
-/* PLAYERS */
 #players{
- display:flex;
- gap:8px;
- max-width:480px;
- margin:15px auto;
- padding:0 8px;
+ display:flex;gap:8px;max-width:480px;
+ margin:15px auto;padding:0 8px;
 }
 
 .player{
- flex:1;
- background:linear-gradient(110deg,#003137,#00464a);
- padding:13px 5px;
- border-radius:9px;
- font-size:13px;
- border:2px solid #75502b;
+ flex:1;background:linear-gradient(110deg,#003137,#00464a);
+ padding:12px 5px;border-radius:9px;
+ font-size:13px;border:2px solid #75502b;
  overflow-wrap:anywhere;
 }
 
@@ -96,22 +65,40 @@ body{
  box-shadow:0 0 10px #f5c44a66;
 }
 
-/* STATUS */
-#status{
- max-width:480px;
- margin:12px auto;
- background:linear-gradient(110deg,#003137,#00464a);
- padding:14px;
- border-radius:9px;
+.player-name{font-weight:bold;margin-bottom:9px}
+.lives{font-size:19px;letter-spacing:2px;margin:6px 0}
+
+.player-timer{
+ display:none;
+ background:#151c25;
  color:#ffcf53;
+ border:1px solid #e5b653;
+ border-radius:7px;
+ padding:8px;
+ margin-top:8px;
+ font-size:21px;
  font-weight:bold;
+ font-variant-numeric:tabular-nums;
+}
+
+.player-timer.urgent{
+ color:#ff4545;
+ border-color:#ff4545;
+ animation:blink .5s infinite alternate;
+}
+
+@keyframes blink{to{opacity:.45}}
+
+#status{
+ max-width:480px;margin:12px auto;
+ background:linear-gradient(110deg,#003137,#00464a);
+ padding:14px;border-radius:9px;
+ color:#ffcf53;font-weight:bold;
  border-bottom:3px solid #9d5723;
 }
 
-/* BOARD */
 .board-wrapper{
- width:100%;
- padding:0 5px;
+ width:100%;padding:0 5px;
  background:linear-gradient(#72340f,#301507);
  border-top:5px solid #a95b23;
  border-bottom:5px solid #a95b23;
@@ -119,155 +106,104 @@ body{
 }
 
 #board{
- width:100%;
- max-width:650px;
- aspect-ratio:1;
- display:grid;
- grid-template-columns:repeat(8,minmax(0,1fr));
+ width:100%;max-width:650px;aspect-ratio:1;
+ display:grid;grid-template-columns:repeat(8,minmax(0,1fr));
  border:4px solid #8b4b1d;
- overflow:hidden;
- margin:auto;
+ overflow:hidden;margin:auto;
 }
 
 .square{
- aspect-ratio:1;
- position:relative;
- display:flex;
- align-items:center;
- justify-content:center;
- cursor:pointer;
- user-select:none;
- overflow:hidden;
+ aspect-ratio:1;position:relative;
+ display:flex;align-items:center;justify-content:center;
+ cursor:pointer;user-select:none;overflow:hidden;
  -webkit-tap-highlight-color:transparent;
 }
 
-.light{
- background:linear-gradient(140deg,#fff5e3,#e8d5b8);
-}
-
+.light{background:linear-gradient(140deg,#fff5e3,#e8d5b8)}
 .dark{
  background:repeating-linear-gradient(160deg,transparent,#ffffff05 4px,transparent 9px),linear-gradient(140deg,#171717,#080808);
 }
 
-/* PIECES */
 .piece{
  font-family:"DejaVu Sans","Segoe UI Symbol",serif;
  font-size:clamp(34px,9.5vw,66px);
- line-height:1;
- z-index:2;
- display:block;
- transform:scale(1.08);
- pointer-events:none;
+ line-height:1;z-index:2;display:block;
+ transform:scale(1.08);pointer-events:none;
 }
 
 .white-piece{
- color:#fffdf5;
- -webkit-text-stroke:1px #777;
+ color:#fffdf5;-webkit-text-stroke:1px #777;
  text-shadow:0 2px 1px #777,0 4px 2px #555,0 6px 3px #333,0 0 7px #fff9;
 }
 
 .black-piece{
- color:#151a28;
- -webkit-text-stroke:1px #718096;
+ color:#151a28;-webkit-text-stroke:1px #718096;
  text-shadow:0 2px 1px #000,0 4px 2px #000,0 6px 3px #000,0 0 6px #aab8d880;
 }
 
-/* HIGHLIGHTS */
-.selected{
- background:#c9d64c!important;
- box-shadow:inset 0 0 0 4px #fff1a0;
-}
-
-.last-move{
- background:#b6c957!important;
-}
+.selected{background:#c9d64c!important;box-shadow:inset 0 0 0 4px #fff1a0}
+.last-move{background:#b6c957!important}
 
 .dot{
- width:25%;
- height:25%;
- border-radius:50%;
- background:#138d51;
- position:absolute;
- z-index:3;
- opacity:.8;
- pointer-events:none;
+ width:25%;height:25%;border-radius:50%;
+ background:#138d51;position:absolute;z-index:3;
+ opacity:.8;pointer-events:none;
 }
 
 .capture{
- position:absolute;
- inset:3px;
- border:4px solid #138d51;
- border-radius:50%;
- z-index:3;
- pointer-events:none;
+ position:absolute;inset:3px;border:4px solid #138d51;
+ border-radius:50%;z-index:3;pointer-events:none;
 }
 
-/* COORDINATES */
-.coordinates{
- position:absolute;
- z-index:4;
- font-size:10px;
- font-weight:bold;
- pointer-events:none;
-}
-
+.coordinates{position:absolute;z-index:4;font-size:10px;font-weight:bold;pointer-events:none}
 .rank{top:2px;left:3px}
 .file{bottom:2px;right:4px}
-
 .light .coordinates{color:#292929}
 .dark .coordinates{color:#fff}
 
-/* INFO */
 #info{
- color:#fff2c9;
- padding:12px;
- min-height:45px;
- font-size:14px;
- font-weight:bold;
- background:#00343a;
- margin-top:12px;
+ color:#fff2c9;padding:12px;min-height:45px;
+ font-size:14px;font-weight:bold;
+ background:#00343a;margin-top:12px;
 }
 
-/* BUTTONS */
 .controls{
- display:flex;
- justify-content:center;
- flex-wrap:wrap;
- gap:10px;
- padding:15px 8px;
+ display:flex;justify-content:center;
+ flex-wrap:wrap;gap:10px;padding:15px 8px;
 }
 
 button{
  padding:13px 20px;
  background:linear-gradient(#e8b84f,#b77b24);
- border:2px solid #f5cf72;
- border-radius:9px;
- color:#241506;
- font-weight:bold;
- cursor:pointer;
+ border:2px solid #f5cf72;border-radius:9px;
+ color:#241506;font-weight:bold;cursor:pointer;
 }
 
 button:active{transform:scale(.96)}
 
+#gameOver{
+ display:none;
+ max-width:430px;margin:15px auto;
+ background:#192532;border:2px solid #f5c44a;
+ border-radius:12px;padding:20px;
+ color:#ffcf53;
+}
+
 @media(min-width:600px){
- .board-wrapper{
-  max-width:660px;
-  margin:auto;
-  padding:5px;
- }
+ .board-wrapper{max-width:660px;margin:auto;padding:5px}
 }
 
 @media(max-width:360px){
  .coordinates{font-size:8px}
  .piece{font-size:clamp(30px,9vw,45px)}
  .player{font-size:11px}
+ .lives{font-size:16px}
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div class="top-header">
  <div class="brand">
   <div class="logo">♟</div>
@@ -285,20 +221,35 @@ button:active{transform:scale(.96)}
 
 <div id="gameArea" style="display:none">
 
- <!-- PLAYERS -->
  <div id="players">
-  <div class="player" id="whitePlayer">♔ White</div>
-  <div class="player" id="blackPlayer">♚ Black</div>
+
+  <div class="player" id="whitePlayer">
+   <div class="player-name">♔ White</div>
+   <div class="lives" id="whiteLives">❤️❤️❤️</div>
+   <div class="player-timer" id="whiteTimer">00:30</div>
+  </div>
+
+  <div class="player" id="blackPlayer">
+   <div class="player-name">♚ Black</div>
+   <div class="lives" id="blackLives">❤️❤️❤️</div>
+   <div class="player-timer" id="blackTimer">00:30</div>
+  </div>
+
  </div>
 
  <div id="status">Loading game...</div>
 
- <!-- CHESS BOARD -->
  <div class="board-wrapper">
   <div id="board"></div>
  </div>
 
  <p id="info">Select your piece and destination.</p>
+
+ <div id="gameOver">
+  <h2 id="gameOverTitle">GAME OVER</h2>
+  <p id="gameOverMessage" style="margin-top:12px"></p>
+  <button onclick="location.href='dashboard.html'">BACK TO DASHBOARD</button>
+ </div>
 
  <div class="controls">
   <button id="exitBtn">EXIT GAME</button>
@@ -316,7 +267,7 @@ import {getAuth,onAuthStateChanged}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
- getDatabase,ref,get,update,onValue,runTransaction
+ getDatabase,ref,get,update,onValue,runTransaction,off
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import {Chess}
@@ -365,6 +316,11 @@ let unsubscribe=null;
 let started=false;
 let lastMove=null;
 
+let serverOffset=0;
+let timeoutBusy=false;
+let clockInitBusy=false;
+let timerInterval=null;
+
 
 /* PIECES */
 
@@ -372,6 +328,20 @@ const pieces={
  w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
  b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
 };
+
+
+/* TIME */
+
+function serverNow(){
+ return Date.now()+serverOffset;
+}
+
+function formatTime(ms){
+ const seconds=Math.max(0,Math.ceil(ms/1000));
+ const m=String(Math.floor(seconds/60)).padStart(2,"0");
+ const s=String(seconds%60).padStart(2,"0");
+ return m+":"+s;
+}
 
 
 /* HELPERS */
@@ -389,6 +359,54 @@ function setStatus(t){
 function clearSelection(){
  selected=null;
  possibleMoves=[];
+}
+
+
+/* INITIALIZE TIMER AND LIVES */
+
+async function initializeClock(){
+
+ if(clockInitBusy||!gameRef)return;
+
+ clockInitBusy=true;
+
+ const now=serverNow();
+
+ try{
+
+  await runTransaction(gameRef,data=>{
+
+   if(!data||data.status!=="ready")return;
+
+   if(!data.lives){
+    data.lives={
+     white:3,
+     black:3
+    };
+   }
+
+   if(typeof data.lives.white!=="number")data.lives.white=3;
+   if(typeof data.lives.black!=="number")data.lives.black=3;
+
+   if(typeof data.turnDeadline!=="number"){
+
+    const turn=data.turn||
+     (data.fen?.split(" ")[1]==="b"?"black":"white");
+
+    data.turn=turn;
+    data.turnStartedAt=now;
+    data.turnDeadline=now+30000;
+   }
+
+   return data;
+
+  },{applyLocally:false});
+
+ }catch(e){
+  console.error("Clock initialization:",e);
+ }finally{
+  clockInitBusy=false;
+ }
 }
 
 
@@ -413,7 +431,7 @@ async function startGame(){
   const data=snap.val();
 
   if(data.status!=="ready"){
-   showError("Match is not ready. Please create a new match.");
+   showError("Match is not ready.");
    return;
   }
 
@@ -432,7 +450,13 @@ async function startGame(){
   area.style.display="block";
   loading.style.display="none";
 
+  await initializeClock();
+
   listenMatch();
+
+  if(!timerInterval){
+   timerInterval=setInterval(timerTick,200);
+  }
 
  }catch(e){
   showError("Firebase error: "+e.message);
@@ -456,11 +480,6 @@ function listenMatch(){
 
   matchData=snap.val();
 
-  if(matchData.status!=="ready"){
-   setStatus("Match is not active.");
-   return;
-  }
-
   if(matchData.players?.[player]?.uid!==user.uid){
    setStatus("Player verification failed.");
    return;
@@ -475,22 +494,18 @@ function listenMatch(){
 
   lastMove=matchData.lastMove||null;
 
-  document.getElementById("whitePlayer").textContent=
-   "♔ White: "+matchData.players.white.name;
-
-  document.getElementById("blackPlayer").textContent=
-   "♚ Black: "+matchData.players.black.name;
-
-  document.getElementById("whitePlayer").classList.toggle(
-   "active",game.turn()==="w"
-  );
-
-  document.getElementById("blackPlayer").classList.toggle(
-   "active",game.turn()==="b"
-  );
+  updatePlayerCards();
 
   render();
+
   updateStatus();
+
+  updateTimerUI();
+
+  if(matchData.status==="ready"&&
+     typeof matchData.turnDeadline!=="number"){
+   initializeClock();
+  }
 
  },error=>{
   setStatus("Database error: "+error.message);
@@ -498,12 +513,275 @@ function listenMatch(){
 }
 
 
+/* PLAYER CARDS */
+
+function updatePlayerCards(){
+
+ if(!matchData)return;
+
+ const white=document.getElementById("whitePlayer");
+ const black=document.getElementById("blackPlayer");
+
+ white.querySelector(".player-name").textContent=
+  "♔ White: "+(matchData.players.white.name||"White");
+
+ black.querySelector(".player-name").textContent=
+  "♚ Black: "+(matchData.players.black.name||"Black");
+
+ const lives=matchData.lives||{white:3,black:3};
+
+ document.getElementById("whiteLives").textContent=
+  "❤️".repeat(Math.max(0,lives.white))+
+  "🖤".repeat(Math.max(0,3-lives.white));
+
+ document.getElementById("blackLives").textContent=
+  "❤️".repeat(Math.max(0,lives.black))+
+  "🖤".repeat(Math.max(0,3-lives.black));
+
+ white.classList.toggle("active",game.turn()==="w"&&matchData.status==="ready");
+ black.classList.toggle("active",game.turn()==="b"&&matchData.status==="ready");
+}
+
+
+/* TIMER DISPLAY */
+
+function updateTimerUI(){
+
+ if(!matchData)return;
+
+ const whiteTimer=document.getElementById("whiteTimer");
+ const blackTimer=document.getElementById("blackTimer");
+
+ whiteTimer.style.display="none";
+ blackTimer.style.display="none";
+
+ whiteTimer.classList.remove("urgent");
+ blackTimer.classList.remove("urgent");
+
+ if(matchData.status!=="ready")return;
+
+ const currentTurn=game.turn()==="w"?"white":"black";
+
+ // Timer only on the screen of the player whose turn it is.
+ if(currentTurn!==player)return;
+
+ const timer=player==="white"?whiteTimer:blackTimer;
+
+ const deadline=matchData.turnDeadline;
+
+ if(typeof deadline!=="number")return;
+
+ const remaining=deadline-serverNow();
+
+ timer.textContent=formatTime(remaining);
+ timer.style.display="block";
+
+ if(remaining<=10000){
+  timer.classList.add("urgent");
+ }
+}
+
+
+/* TIMER ENGINE */
+
+function timerTick(){
+
+ if(!matchData||matchData.status!=="ready")return;
+
+ updateTimerUI();
+
+ const deadline=matchData.turnDeadline;
+
+ if(typeof deadline!=="number")return;
+
+ if(serverNow()>=deadline){
+  resolveTimeout();
+ }
+}
+
+
+/* TIMEOUT: REMOVE ONLY CURRENT PLAYER'S LIFE */
+
+async function resolveTimeout(){
+
+ if(timeoutBusy||!gameRef)return;
+
+ timeoutBusy=true;
+
+ const now=serverNow();
+
+ try{
+
+  await runTransaction(gameRef,data=>{
+
+   if(!data||data.status!=="ready")return;
+
+   if(typeof data.turnDeadline!=="number")return;
+
+   // Another player may already have made a move.
+   if(now<data.turnDeadline)return;
+
+   const latest=new Chess(data.fen||new Chess().fen());
+
+   const timedOutPlayer=
+    latest.turn()==="w"?"white":"black";
+
+   const otherPlayer=
+    timedOutPlayer==="white"?"black":"white";
+
+   data.lives=data.lives||{
+    white:3,
+    black:3
+   };
+
+   if(typeof data.lives[timedOutPlayer]!=="number"){
+    data.lives[timedOutPlayer]=3;
+   }
+
+   // Only the player whose turn expired loses a life.
+   data.lives[timedOutPlayer]=Math.max(
+    0,data.lives[timedOutPlayer]-1
+   );
+
+   data.lastTimeout={
+    player:timedOutPlayer,
+    at:now,
+    livesRemaining:data.lives[timedOutPlayer]
+   };
+
+   // Third life lost: game over.
+   if(data.lives[timedOutPlayer]<=0){
+
+    data.status="finished";
+    data.winner=otherPlayer;
+    data.result="timeout_lives";
+    data.finishedAt=now;
+    data.turnDeadline=null;
+
+    return data;
+   }
+
+   // Generate a random legal move for the timed-out player.
+   const legalMoves=latest.moves({verbose:true});
+
+   if(legalMoves.length===0){
+
+    data.status="finished";
+    data.winner=latest.isCheckmate()?otherPlayer:null;
+    data.result=latest.isCheckmate()?"checkmate":"draw";
+    data.finishedAt=now;
+    data.turnDeadline=null;
+
+    return data;
+   }
+
+   const randomMove=
+    legalMoves[Math.floor(Math.random()*legalMoves.length)];
+
+   latest.move({
+    from:randomMove.from,
+    to:randomMove.to,
+    promotion:randomMove.promotion||"q"
+   });
+
+   data.fen=latest.fen();
+
+   data.turn=latest.turn()==="w"?"white":"black";
+
+   data.lastMove={
+    from:randomMove.from,
+    to:randomMove.to,
+    by:"timeout",
+    timedOutPlayer:timedOutPlayer,
+    at:now
+   };
+
+   // Check whether the automatic move ended the chess game.
+   if(latest.isCheckmate()){
+
+    data.status="finished";
+    data.winner=latest.turn()==="w"?"black":"white";
+    data.result="checkmate";
+    data.finishedAt=now;
+    data.turnDeadline=null;
+
+   }else if(latest.isDraw()){
+
+    data.status="finished";
+    data.winner=null;
+    data.result="draw";
+    data.finishedAt=now;
+    data.turnDeadline=null;
+
+   }else{
+
+    // Start the next player's 30-second turn.
+    data.turnStartedAt=now;
+    data.turnDeadline=now+30000;
+   }
+
+   return data;
+
+  },{applyLocally:false});
+
+ }catch(e){
+  console.error("Timeout error:",e);
+ }finally{
+  timeoutBusy=false;
+ }
+}
+
+
 /* GAME STATUS */
 
 function updateStatus(){
 
+ if(!matchData)return;
+
+ if(matchData.status==="finished"){
+
+  const winner=matchData.winner;
+
+  if(matchData.result==="timeout_lives"){
+
+   setStatus("GAME OVER! "+winner.toUpperCase()+" WINS!");
+
+   document.getElementById("gameOverTitle").textContent="🏆 GAME OVER";
+
+   document.getElementById("gameOverMessage").textContent=
+    winner.toUpperCase()+" WINS! Opponent lost all 3 lives.";
+
+  }else if(matchData.result==="checkmate"){
+
+   setStatus("CHECKMATE! "+winner.toUpperCase()+" WINS!");
+
+   document.getElementById("gameOverTitle").textContent="🏆 CHECKMATE";
+
+   document.getElementById("gameOverMessage").textContent=
+    winner.toUpperCase()+" WINS!";
+
+  }else{
+
+   setStatus("GAME DRAW!");
+
+   document.getElementById("gameOverTitle").textContent="GAME DRAW";
+
+   document.getElementById("gameOverMessage").textContent=
+    "The match ended in a draw.";
+  }
+
+  document.getElementById("gameOver").style.display="block";
+
+  return;
+ }
+
+ if(matchData.status!=="ready"){
+  setStatus("Match is not active.");
+  return;
+ }
+
  if(game.isCheckmate()){
-  setStatus("CHECKMATE! "+(game.turn()==="w"?"Black":"White")+" wins!");
+  setStatus("CHECKMATE!");
   return;
  }
 
@@ -512,17 +790,17 @@ function updateStatus(){
   return;
  }
 
+ const current=game.turn()==="w"?"White":"Black";
+
+ const myTurn=game.turn()===(player==="white"?"w":"b");
+
  if(game.isCheck()){
-  setStatus((game.turn()==="w"?"White":"Black")+" is in CHECK!");
+  setStatus(current+" IS IN CHECK!"+(myTurn?" YOUR TURN":""));
   return;
  }
 
- const myTurn=
-  game.turn()===(player==="white"?"w":"b");
-
  setStatus(
-  (game.turn()==="w"?"White":"Black")+
-  " to move"+(myTurn?" — YOUR TURN":" — OPPONENT'S TURN")
+  current+" TO MOVE"+(myTurn?" — YOUR TURN":" — OPPONENT'S TURN")
  );
 }
 
@@ -534,9 +812,6 @@ function render(){
  boardEl.innerHTML="";
 
  const position=game.board();
-
- // White player: White pieces at bottom.
- // Black player: Black pieces at bottom.
 
  const rows=player==="white"?
   [0,1,2,3,4,5,6,7]:
@@ -561,20 +836,14 @@ function render(){
 
    square.className="square "+((vr+vc)%2?"dark":"light");
 
-   /* SELECTED */
-
    if(selected===name){
     square.classList.add("selected");
    }
-
-   /* LAST MOVE */
 
    if(lastMove&&
       (lastMove.from===name||lastMove.to===name)){
     square.classList.add("last-move");
    }
-
-   /* PIECES */
 
    if(cell){
 
@@ -588,8 +857,6 @@ function render(){
     square.appendChild(span);
    }
 
-   /* LEGAL MOVE INDICATORS */
-
    if(possibleMoves.some(m=>m.to===name)){
 
     const marker=document.createElement("div");
@@ -598,8 +865,6 @@ function render(){
 
     square.appendChild(marker);
    }
-
-   /* RANK COORDINATES */
 
    if(vc===0){
 
@@ -610,8 +875,6 @@ function render(){
 
     square.appendChild(rank);
    }
-
-   /* FILE COORDINATES */
 
    if(vr===7){
 
@@ -635,11 +898,19 @@ function render(){
 
 async function clickSquare(square){
 
- if(busy||!matchData||game.isGameOver())return;
+ if(busy||!matchData||matchData.status!=="ready"||game.isGameOver())return;
 
  const turnColor=player==="white"?"w":"b";
 
  if(game.turn()!==turnColor)return;
+
+ // Do not allow a move after the deadline.
+ if(typeof matchData.turnDeadline==="number"&&
+    serverNow()>=matchData.turnDeadline){
+
+  resolveTimeout();
+  return;
+ }
 
  const piece=game.get(square);
 
@@ -691,8 +962,6 @@ async function clickSquare(square){
   return;
  }
 
- /* PROMOTION */
-
  let promotion="q";
 
  if(choices.some(m=>m.promotion)){
@@ -716,94 +985,6 @@ async function clickSquare(square){
  busy=true;
  render();
 
- try{
+ const now=serverNow();
 
-  const result=await runTransaction(gameRef,data=>{
-
-   if(!data||data.status!=="ready")return;
-
-   if(data.players?.[player]?.uid!==user.uid)return;
-
-   const latest=new Chess(data.fen||new Chess().fen());
-
-   if(latest.turn()!==turnColor)return;
-
-   try{
-
-    latest.move({
-     from:from,
-     to:square,
-     promotion:promotion
-    });
-
-   }catch(e){
-    return;
-   }
-
-   data.fen=latest.fen();
-
-   data.turn=latest.turn()==="w"?"white":"black";
-
-   data.lastMove={
-    from:from,
-    to:square,
-    by:player,
-    at:Date.now()
-   };
-
-   return data;
-
-  },{applyLocally:false});
-
-  if(!result.committed){
-
-   document.getElementById("info").textContent=
-    "Move not accepted. Please try again.";
-
-  }else{
-
-   document.getElementById("info").textContent=
-    "Move updated live!";
-  }
-
- }catch(e){
-
-  document.getElementById("info").textContent=
-   "Error: "+e.message;
-
- }finally{
-
-  busy=false;
-  render();
- }
-}
-
-
-/* EXIT */
-
-document.getElementById("exitBtn").onclick=()=>{
-
- if(unsubscribe)unsubscribe();
-
- location.href="multiplayer.html";
-};
-
-
-/* AUTH */
-
-onAuthStateChanged(auth,async u=>{
-
- if(!u){
-  location.replace("login.html");
-  return;
- }
-
- user=u;
-
- await startGame();
-
-});
-
-</script>
-</body>
-  </html>
+ try
