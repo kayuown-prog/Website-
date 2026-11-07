@@ -79,13 +79,26 @@ button:hover {
 
 .mode {
   background: #1b2433;
-  padding: 25px;
-  border-radius: 12px;
+  padding: 35px 20px;
+  border-radius: 15px;
+  transition: 0.2s;
+}
+
+.mode:hover {
+  transform: translateY(-4px);
+  border: 1px solid #d6a84b;
 }
 
 .mode h3 {
   margin-bottom: 12px;
   color: #f5c76a;
+  font-size: 23px;
+}
+
+.mode p {
+  color: #ddd;
+  margin-bottom: 8px;
+  font-size: 16px;
 }
 
 #message {
@@ -117,33 +130,41 @@ button:hover {
     <div class="mode">
       <h3>♟ Play With Bot</h3>
       <p>Challenge computer</p>
-      <button onclick="location.href='bot.html'">Play Now</button>
+      <button onclick="location.href='bot.html'">
+        Play Now
+      </button>
     </div>
 
     <div class="mode">
       <h3>♚ Multiplayer</h3>
       <p>Play with other players</p>
-      <button onclick="location.href='chess.html'">Play Now</button>
+      <button onclick="location.href='chess.html'">
+        Play Now
+      </button>
     </div>
 
     <div class="mode">
-      <h3>♛ Chess Practice</h3>
-      <p>Improve your skills</p>
-      <button onclick="location.href='chess.html'">Practice</button>
+      <h3>🏆 Leaderboard</h3>
+      <p>Players Rankings & Points</p>
+      <button onclick="location.href='leaderboard.html'">
+        View Rankings
+      </button>
     </div>
 
   </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getAuth,
   onAuthStateChanged,
   signOut
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
@@ -155,7 +176,6 @@ const firebaseConfig = {
   appId: "1:909415918359:web:85da71cdd35a879fa86552",
   measurementId: "G-HV2ELB7GS6"
 };
-  
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -171,7 +191,8 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
+document.getElementById("logoutBtn")
+.addEventListener("click", async () => {
   try {
     await signOut(auth);
     window.location.replace("login.html");
@@ -179,8 +200,8 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     message.textContent = error.message;
   }
 });
+
 </script>
 
 </body>
- </html>
- 
+</html>
