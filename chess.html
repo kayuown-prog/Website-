@@ -1,495 +1,340 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chess Master - Live Multiplayer</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chess Master - Live Game</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-
-body{
- background:#10141c;
- color:white;
- font-family:Arial,sans-serif;
- text-align:center;
- padding:15px;
- min-height:100vh;
-}
-
+*{box-sizing:border-box}
+body{margin:0;background:#10141c;color:white;font-family:Arial;text-align:center;padding:12px}
 h1{color:#f5c76a;margin:12px}
-#players{
- display:flex;
- justify-content:space-between;
- gap:10px;
- max-width:480px;
- margin:18px auto;
-}
-.player{
- background:#222c3a;
- padding:12px;
- border-radius:10px;
- flex:1;
-}
-.active{border:2px solid #e8b957}
-
-#status{
- background:#222c3a;
- padding:13px;
- border-radius:10px;
- margin:12px auto;
- max-width:480px;
- color:#f5c76a;
-}
-
-#board{
- width:min(94vw,480px);
- aspect-ratio:1;
- display:grid;
- grid-template-columns:repeat(8,1fr);
- margin:18px auto;
- border:4px solid #d6a84b;
-}
-
-.square{
- position:relative;
- display:flex;
- justify-content:center;
- align-items:center;
- font-size:clamp(27px,8vw,53px);
- cursor:pointer;
- user-select:none;
-}
-
+#gameArea{display:none}
+#players{display:flex;gap:8px;max-width:480px;margin:15px auto}
+.player{flex:1;background:#222c3a;padding:12px;border-radius:9px;font-size:14px}
+.active{border:2px solid #e5b653}
+#status{max-width:480px;margin:12px auto;background:#222c3a;padding:13px;border-radius:9px;color:#f5c76a}
+#board{width:min(94vw,480px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);margin:15px auto;border:4px solid #d6a84b}
+.square{display:flex;align-items:center;justify-content:center;position:relative;font-size:clamp(27px,8vw,53px);cursor:pointer;user-select:none}
 .light{background:#f0d9b5}
 .dark{background:#779556}
 .selected{background:#e6d34c!important}
-
-.square small{
- position:absolute;
- bottom:2px;
- right:3px;
- font-size:9px;
- color:#222;
-}
-
-button{
- padding:13px 18px;
- background:#d6a84b;
- border:0;
- border-radius:8px;
- font-weight:bold;
- margin:6px;
- cursor:pointer;
-}
-
-button:disabled{opacity:.5}
-
-#loading{margin:25px;color:#f5c76a}
-#gameArea{display:none}
+.square small{position:absolute;bottom:2px;left:3px;font-size:9px;color:#222}
+button{padding:13px 20px;background:#d6a84b;border:0;border-radius:8px;font-weight:bold;margin:7px;cursor:pointer}
 #info{color:#aaa;margin:12px}
+#loading{color:#f5c76a;margin:30px}
 </style>
 </head>
-
 <body>
 
 <h1>♟ CHESS MASTER</h1>
-
-<div id="loading">Connecting to multiplayer match...</div>
+<div id="loading">Connecting to match...</div>
 
 <div id="gameArea">
-
- <div id="players">
-  <div class="player" id="whitePlayer">♔ White</div>
-  <div class="player" id="blackPlayer">♚ Black</div>
- </div>
-
- <div id="status">Loading chessboard...</div>
-
- <div id="board"></div>
-
- <p id="info">Select a piece and then its destination.</p>
-
- <button id="exitBtn">EXIT GAME</button>
- <button id="dashboardBtn">DASHBOARD</button>
-
+<div id="players">
+<div class="player" id="whitePlayer">♔ White</div>
+<div class="player" id="blackPlayer">♚ Black</div>
+</div>
+<div id="status">Loading game...</div>
+<div id="board"></div>
+<p id="info">Select your piece and destination.</p>
+<button id="exitBtn">EXIT GAME</button>
+<button onclick="location.href='dashboard.html'">DASHBOARD</button>
 </div>
 
 <script type="module">
-
 import {initializeApp}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import {
- getAuth,
- onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getAuth,onAuthStateChanged}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
- getDatabase,
- ref,
- onValue,
- runTransaction
+getDatabase,ref,get,update,onValue,runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {Chess}
-from "https://esm.sh/chess.js@1.4.0";
+import {Chess} from "https://esm.sh/chess.js@1.4.0";
 
-// FIREBASE CONFIG
-
-const firebaseConfig = {
- apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
- authDomain: "freedroid-cloud.firebaseapp.com",
- databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
- projectId: "freedroid-cloud",
- storageBucket: "freedroid-cloud.firebasestorage.app",
- messagingSenderId: "909415918359",
- appId: "1:909415918359:web:85da71cdd35a879fa86552",
- measurementId: "G-HV2ELB7GS6"
+const firebaseConfig={
+apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+authDomain:"freedroid-cloud.firebaseapp.com",
+databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
+projectId:"freedroid-cloud",
+storageBucket:"freedroid-cloud.firebasestorage.app",
+messagingSenderId:"909415918359",
+appId:"1:909415918359:web:85da71cdd35a879fa86552",
+measurementId:"G-HV2ELB7GS6"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getDatabase(app);
 
-// MATCH DETAILS
-
 const params=new URLSearchParams(location.search);
-
 const matchId=params.get("matchId");
 const player=params.get("color");
 
-if(!matchId || !["white","black"].includes(player)){
- document.getElementById("loading").textContent=
- "Invalid match. Please return to matchmaking.";
- throw new Error("Invalid match details");
-}
+const loading=document.getElementById("loading");
+const area=document.getElementById("gameArea");
+const boardEl=document.getElementById("board");
+const statusEl=document.getElementById("status");
 
-const gameRef=ref(db,"matchmaking/matches/"+matchId);
+const gameRef=matchId?ref(db,"matchmaking/matches/"+matchId):null;
 
-let currentUser=null;
+let user=null;
 let game=new Chess();
 let selected=null;
 let busy=false;
 let matchData=null;
 let unsubscribe=null;
+let started=false;
 
-const glyph={
- w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
- b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
+const pieces={
+w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
+b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
 };
 
-const boardElement=document.getElementById("board");
-const statusElement=document.getElementById("status");
-
-function showError(message){
- document.getElementById("loading").textContent=message;
+function showError(t){
+loading.textContent=t;
+loading.style.display="block";
+area.style.display="none";
 }
 
-// START GAME
+function setStatus(t){
+statusEl.textContent=t;
+}
 
 async function startGame(){
-
- try{
-
-  const result=await runTransaction(gameRef,data=>{
-
-   if(!data || data.status!=="ready") return;
-
-   if(!data.fen){
-    data.fen=new Chess().fen();
-    data.turn="white";
-   }
-
-   return data;
-
-  });
-
-  if(!result.committed){
-   showError("Match is not ready or has ended.");
-   return;
-  }
-
-  document.getElementById("loading").style.display="none";
-  document.getElementById("gameArea").style.display="block";
-
-  listenMatch();
-
- }catch(error){
-
-  showError("Connection error: "+error.message);
-
- }
-
+try{
+if(!matchId||!["white","black"].includes(player)){
+showError("Invalid match link.");
+return;
 }
 
-// LISTEN TO LIVE MATCH
+const snap=await get(gameRef);
+
+if(!snap.exists()){
+showError("Match ID not found in Firebase: "+matchId);
+return;
+}
+
+const data=snap.val();
+
+if(data.status!=="ready"){
+showError("Match status: "+(data.status||"missing")+". Please create a new match.");
+return;
+}
+
+if(data.players?.[player]?.uid!==user.uid){
+showError("Your account is not assigned to this match.");
+return;
+}
+
+if(!data.fen){
+await update(gameRef,{
+fen:new Chess().fen(),
+turn:"white"
+});
+}
+
+area.style.display="block";
+loading.style.display="none";
+listenMatch();
+}catch(e){
+showError("Firebase error: "+e.message);
+}
+}
 
 function listenMatch(){
+if(started)return;
+started=true;
 
- unsubscribe=onValue(gameRef,snapshot=>{
-
-  if(!snapshot.exists()){
-   statusElement.textContent="Match not found.";
-   return;
-  }
-
-  matchData=snapshot.val();
-
-  if(matchData.status!=="ready"){
-   statusElement.textContent="Match is not active.";
-   return;
-  }
-
-  if(!matchData.players?.[player] ||
-     matchData.players[player].uid!==currentUser.uid){
-
-   statusElement.textContent="Player verification failed.";
-   return;
-  }
-
-  try{
-   game=new Chess(matchData.fen || new Chess().fen());
-  }catch(e){
-   statusElement.textContent="Invalid chess position.";
-   return;
-  }
-
-  document.getElementById("whitePlayer").textContent=
-   "♔ White: "+matchData.players.white.name;
-
-  document.getElementById("blackPlayer").textContent=
-   "♚ Black: "+matchData.players.black.name;
-
-  document.getElementById("whitePlayer").classList.toggle(
-   "active",game.turn()==="w"
-  );
-
-  document.getElementById("blackPlayer").classList.toggle(
-   "active",game.turn()==="b"
-  );
-
-  render();
-  updateStatus();
-
- },error=>{
-  statusElement.textContent="Database error: "+error.message;
- });
-
+unsubscribe=onValue(gameRef,snap=>{
+if(!snap.exists()){
+setStatus("Match no longer exists.");
+return;
 }
 
-// GAME STATUS
+matchData=snap.val();
+
+if(matchData.status!=="ready"){
+setStatus("Match is not active.");
+return;
+}
+
+if(matchData.players?.[player]?.uid!==user.uid){
+setStatus("Player verification failed.");
+return;
+}
+
+try{
+game=new Chess(matchData.fen||new Chess().fen());
+}catch(e){
+setStatus("Invalid chess position.");
+return;
+}
+
+document.getElementById("whitePlayer").textContent=
+"♔ White: "+matchData.players.white.name;
+
+document.getElementById("blackPlayer").textContent=
+"♚ Black: "+matchData.players.black.name;
+
+document.getElementById("whitePlayer").classList.toggle("active",game.turn()==="w");
+document.getElementById("blackPlayer").classList.toggle("active",game.turn()==="b");
+
+render();
+updateStatus();
+},error=>setStatus("Database error: "+error.message));
+}
 
 function updateStatus(){
-
- if(game.isCheckmate()){
-  statusElement.textContent=
-   "CHECKMATE! "+(game.turn()==="w"?"Black":"White")+" wins!";
-  return;
- }
-
- if(game.isDraw()){
-  statusElement.textContent="GAME DRAW!";
-  return;
- }
-
- if(game.isCheck()){
-  statusElement.textContent=
-   (game.turn()==="w"?"White":"Black")+" is in CHECK!";
-  return;
- }
-
- statusElement.textContent=
-  (game.turn()==="w"?"White":"Black")+" to move"+
-  (game.turn()===(player==="white"?"w":"b")?
-   " — Your turn":" — Opponent's turn");
-
+if(game.isCheckmate()){
+setStatus("CHECKMATE! "+(game.turn()==="w"?"Black":"White")+" wins!");
+return;
 }
-
-// DRAW CHESSBOARD
+if(game.isDraw()){
+setStatus("GAME DRAW!");
+return;
+}
+if(game.isCheck()){
+setStatus((game.turn()==="w"?"White":"Black")+" is in CHECK!");
+return;
+}
+const myTurn=game.turn()===(player==="white"?"w":"b");
+setStatus((game.turn()==="w"?"White":"Black")+" to move"+(myTurn?" — YOUR TURN":" — OPPONENT'S TURN"));
+}
 
 function render(){
+boardEl.innerHTML="";
+const position=game.board();
 
- boardElement.innerHTML="";
+const rows=player==="white"?[0,1,2,3,4,5,6,7]:[7,6,5,4,3,2,1,0];
+const cols=player==="white"?[0,1,2,3,4,5,6,7]:[7,6,5,4,3,2,1,0];
 
- const position=game.board();
+for(const r of rows){
+for(const c of cols){
+const cell=position[r][c];
+const square=document.createElement("div");
+const name=String.fromCharCode(97+c)+(8-r);
 
- for(let r=0;r<8;r++){
+square.className="square "+((r+c)%2?"dark":"light");
 
-  for(let c=0;c<8;c++){
+if(cell)square.textContent=pieces[cell.color][cell.type];
 
-   const cell=position[r][c];
-   const square=document.createElement("div");
+if(selected===name)square.classList.add("selected");
 
-   square.className="square "+((r+c)%2?"dark":"light");
-
-   const squareName=String.fromCharCode(97+c)+(8-r);
-
-   if(cell){
-    square.textContent=glyph[cell.color][cell.type];
-   }
-
-   if(selected===squareName){
-    square.classList.add("selected");
-   }
-
-   const legalMoves=selected?
-    game.moves({square:selected,verbose:true}):[];
-
-   if(legalMoves.some(m=>m.to===squareName)){
-    square.style.boxShadow="inset 0 0 0 4px #e6d34c";
-   }
-
-   square.onclick=()=>clickSquare(squareName);
-
-   boardElement.appendChild(square);
-
-  }
-
- }
-
+if(selected){
+const moves=game.moves({square:selected,verbose:true});
+if(moves.some(m=>m.to===name)){
+square.style.boxShadow="inset 0 0 0 4px #e6d34c";
+}
 }
 
-// CLICK SQUARE
+square.onclick=()=>clickSquare(name);
+boardEl.appendChild(square);
+}
+}
+}
 
 async function clickSquare(square){
+if(busy||!matchData||game.isGameOver())return;
 
- if(busy || !matchData || game.isGameOver())return;
+const turnColor=player==="white"?"w":"b";
 
- const turnColor=player==="white"?"w":"b";
+if(game.turn()!==turnColor)return;
 
- if(game.turn()!==turnColor)return;
+const piece=game.get(square);
 
- const piece=game.get(square);
-
- if(!selected){
-
-  if(piece && piece.color===turnColor){
-   selected=square;
-   render();
-  }
-
-  return;
- }
-
- if(selected===square){
-  selected=null;
-  render();
-  return;
- }
-
- if(piece && piece.color===turnColor){
-  selected=square;
-  render();
-  return;
- }
-
- const moves=game.moves({
-  square:selected,
-  verbose:true
- });
-
- if(!moves.some(m=>m.to===square)){
-  selected=null;
-  render();
-  return;
- }
-
- const from=selected;
- selected=null;
- busy=true;
-
- try{
-
-  const result=await runTransaction(gameRef,data=>{
-
-   if(!data || data.status!=="ready")return;
-
-   if(data.players?.[player]?.uid!==currentUser.uid)return;
-
-   const latest=new Chess(data.fen || new Chess().fen());
-
-   if(latest.turn()!==turnColor)return;
-
-   try{
-
-    latest.move({
-     from:from,
-     to:square,
-     promotion:"q"
-    });
-
-   }catch(e){
-    return;
-   }
-
-   data.fen=latest.fen();
-   data.turn=latest.turn()==="w"?"white":"black";
-   data.lastMove={
-    from:from,
-    to:square,
-    by:player,
-    at:Date.now()
-   };
-
-   return data;
-
-  });
-
-  if(!result.committed){
-   document.getElementById("info").textContent=
-    "Move could not be completed. Please try again.";
-  }else{
-   document.getElementById("info").textContent=
-    "Move sent successfully.";
-  }
-
- }catch(error){
-
-  document.getElementById("info").textContent=error.message;
-
- }finally{
-
-  busy=false;
-  render();
-
- }
-
+if(!selected){
+if(piece&&piece.color===turnColor){
+selected=square;
+render();
+}
+return;
 }
 
-// EXIT
+if(selected===square){
+selected=null;
+render();
+return;
+}
+
+if(piece&&piece.color===turnColor){
+selected=square;
+render();
+return;
+}
+
+const from=selected;
+const possible=game.moves({square:from,verbose:true});
+const choices=possible.filter(m=>m.to===square);
+
+if(!choices.length){
+selected=null;
+render();
+return;
+}
+
+let promotion="q";
+if(choices.some(m=>m.promotion)){
+const answer=prompt("Promote to: q (Queen), r (Rook), b (Bishop), n (Knight)","q");
+promotion=["q","r","b","n"].includes(answer?.toLowerCase())?answer.toLowerCase():"q";
+}
+
+selected=null;
+busy=true;
+render();
+
+try{
+const result=await runTransaction(gameRef,data=>{
+if(!data||data.status!=="ready")return;
+if(data.players?.[player]?.uid!==user.uid)return;
+
+const latest=new Chess(data.fen||new Chess().fen());
+
+if(latest.turn()!==turnColor)return;
+
+try{
+latest.move({from,to:square,promotion});
+}catch(e){
+return;
+}
+
+data.fen=latest.fen();
+data.turn=latest.turn()==="w"?"white":"black";
+data.lastMove={from,to:square,by:player,at:Date.now()};
+
+return data;
+},{applyLocally:false});
+
+if(!result.committed){
+document.getElementById("info").textContent=
+"Move not accepted. Please try again.";
+}else{
+document.getElementById("info").textContent="Move updated live.";
+}
+}catch(e){
+document.getElementById("info").textContent="Error: "+e.message;
+}finally{
+busy=false;
+render();
+}
+}
 
 document.getElementById("exitBtn").onclick=()=>{
-
- if(unsubscribe)unsubscribe();
-
- location.href="multiplayer.html";
-
+if(unsubscribe)unsubscribe();
+location.href="multiplayer.html";
 };
 
-document.getElementById("dashboardBtn").onclick=()=>{
-
- if(unsubscribe)unsubscribe();
-
- location.href="dashboard.html";
-
-};
-
-// AUTHENTICATION
-
-onAuthStateChanged(auth,user=>{
-
- if(!user){
-  location.replace("login.html");
-  return;
- }
-
- currentUser=user;
- startGame();
-
+onAuthStateChanged(auth,async u=>{
+if(!u){
+location.replace("login.html");
+return;
+}
+user=u;
+await startGame();
 });
-
 </script>
 </body>
 </html>
-
