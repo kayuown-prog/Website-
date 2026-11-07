@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Master - Wooden Chess</title><style>
+<title>Chess Master - Play Bot</title><style>
 *{box-sizing:border-box;margin:0;padding:0}
 
 body{
@@ -14,9 +14,10 @@ body{
  padding-bottom:20px;
 }
 
+/* HEADER */
 .top-header{
- height:105px;
- padding:15px 22px;
+ min-height:115px;
+ padding:15px 16px;
  display:flex;
  justify-content:space-between;
  align-items:center;
@@ -25,45 +26,90 @@ body{
  box-shadow:0 5px 15px #0008;
 }
 
-.profile{
- width:72px;height:72px;
+.brand{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+
+.logo{
+ width:66px;
+ height:66px;
  border-radius:50%;
- border:5px solid #f5c44a;
+ border:4px solid #f5c44a;
  background:radial-gradient(circle,#24445c,#081323);
- display:flex;align-items:center;justify-content:center;
- font-size:43px;
- box-shadow:0 0 0 3px #542308;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#f5c76a;
+ font-size:37px;
+ box-shadow:0 0 0 3px #542308,0 0 12px #f5c76a66;
+}
+
+.brand-name{
+ color:#ffd16a;
+ font-size:clamp(20px,5.5vw,29px);
+ font-weight:900;
+ text-shadow:0 2px 4px #000;
+ letter-spacing:.5px;
+}
+
+.brand-subtitle{
+ font-size:10px;
+ color:#7ce8e9;
+ letter-spacing:3px;
+ margin-top:5px;
+ font-weight:bold;
 }
 
 .settings{
- width:60px;height:65px;
+ width:55px;
+ height:58px;
  border:0;
+ border-radius:8px;
  background:linear-gradient(#e62817,#a90000);
- color:#ffdb56;font-size:27px;
+ color:#ffdb56;
+ font-size:27px;
  cursor:pointer;
 }
 
-.level-area{
- padding:25px 10px;
+/* GAME STATUS */
+.game-status{
+ padding:18px 12px;
  background:linear-gradient(110deg,#003137,#00464a,#002e33);
- border-bottom:3px solid #9d5723;
- display:flex;align-items:center;justify-content:center;
+ border-bottom:4px solid #9d5723;
 }
 
-.level-arrow{font-size:40px;color:#f2bd35}
-.level-info{flex:1}
-.level-info h2{font-size:25px;color:#ffcf35}
-.level-info p{margin-top:7px;font-weight:bold}
+.turn-label{
+ font-size:22px;
+ font-weight:900;
+ color:#ffcf53;
+ letter-spacing:1px;
+}
 
-.difficulty-area{padding:12px;background:#003b40}
+#levelName{
+ font-size:14px;
+ margin-top:8px;
+ color:#fff;
+ font-weight:bold;
+}
+
+/* DIFFICULTY */
+.difficulty-area{
+ padding:12px;
+ background:#003b40;
+}
 
 #difficulty{
- padding:9px 20px;
- background:#164c50;color:white;
- border:1px solid #b98a3b;
- border-radius:8px;font-size:14px;
+ padding:10px 22px;
+ background:#164c50;
+ color:white;
+ border:1px solid #b98c42;
+ border-radius:8px;
+ font-size:15px;
 }
 
+/* BOARD */
 .board-wrapper{
  width:100%;
  padding:0 5px;
@@ -129,7 +175,9 @@ body{
  box-shadow:inset 0 0 0 4px #fff1a0;
 }
 
-.last-move{background:#b6c957!important}
+.last-move{
+ background:#b6c957!important;
+}
 
 .hint-square{
  background:#e3bf36!important;
@@ -137,23 +185,30 @@ body{
 }
 
 .dot{
- width:25%;height:25%;
+ width:25%;
+ height:25%;
  border-radius:50%;
  background:#138d51;
- position:absolute;z-index:3;
- opacity:.8;pointer-events:none;
+ position:absolute;
+ z-index:3;
+ opacity:.8;
+ pointer-events:none;
 }
 
 .capture{
- position:absolute;inset:3px;
+ position:absolute;
+ inset:3px;
  border:4px solid #138d51;
  border-radius:50%;
- z-index:3;pointer-events:none;
+ z-index:3;
+ pointer-events:none;
 }
 
 .coordinates{
- position:absolute;z-index:4;
- font-size:10px;font-weight:bold;
+ position:absolute;
+ z-index:4;
+ font-size:10px;
+ font-weight:bold;
  pointer-events:none;
 }
 
@@ -162,9 +217,11 @@ body{
 .light .coordinates{color:#292929}
 .dark .coordinates{color:#fff}
 
+/* CAPTURED PIECES */
 #captured{
  display:none;
- padding:12px;margin:12px 10px;
+ padding:12px;
+ margin:12px 10px;
  background:#00292e;
  border:1px solid #b78c42;
  border-radius:12px;
@@ -180,6 +237,7 @@ body{
  gap:5px;
 }
 
+/* BUTTONS */
 .bottom-controls{
  padding:22px 8px 12px;
  display:grid;
@@ -188,8 +246,10 @@ body{
 }
 
 .action{
- background:none;border:none;
- color:white;cursor:pointer;
+ background:none;
+ border:none;
+ color:white;
+ cursor:pointer;
  min-width:0;
 }
 
@@ -208,12 +268,16 @@ body{
  box-shadow:0 3px 0 #361607,inset 0 0 10px #f9d18a80,0 0 8px #000;
 }
 
-.action:active .action-circle{transform:scale(.94)}
+.action:active .action-circle{
+ transform:scale(.94);
+}
 
 .action-label{
- display:block;margin-top:10px;
+ display:block;
+ margin-top:10px;
  font-size:clamp(10px,2.8vw,14px);
- font-weight:900;color:white;
+ font-weight:900;
+ color:white;
 }
 
 #message{
@@ -226,42 +290,48 @@ body{
 }
 
 @media(min-width:600px){
- .board-wrapper{max-width:650px;margin:auto;padding:5px}
- .level-area{padding:35px}
+ .board-wrapper{
+  max-width:650px;
+  margin:auto;
+  padding:5px;
+ }
 }
 
 @media(max-width:360px){
- .bottom-controls{gap:3px;padding-left:3px;padding-right:3px}
+ .bottom-controls{
+  gap:3px;
+  padding-left:3px;
+  padding-right:3px;
+ }
  .action-label{font-size:10px}
  .coordinates{font-size:8px}
+ .brand-name{font-size:19px}
 }
-</style></head><body><div class="top-header">
- <div class="profile">♞</div>
- <button class="settings" onclick="location.href='dashboard.html'">⚙</button>
-</div><div class="level-area">
- <div class="level-arrow">❮</div>
- <div class="level-info">
-  <h2>LEVEL 2</h2>
-  <p id="levelName">NORMAL</p>
- </div>
- <div style="width:40px"></div>
-</div><div class="difficulty-area">
+</style></head><body><!-- CHESS MASTER HEADER --><div class="top-header"> <div class="brand">
+  <div class="logo">♟</div>
+  <div>
+   <div class="brand-name">CHESS MASTER</div>
+   <div class="brand-subtitle">PLAY • THINK • WIN</div>
+  </div>
+ </div><button class="settings" onclick="location.href='dashboard.html'">⚙</button>
+
+</div><!-- TURN STATUS --><div class="game-status">
+ <div class="turn-label" id="turnLabel">YOUR TURN</div>
+ <div id="levelName">YOU - WHITE</div>
+</div><!-- BOT DIFFICULTY --><div class="difficulty-area">
  <select id="difficulty">
   <option value="easy">Easy Bot</option>
   <option value="normal" selected>Normal Bot</option>
  </select>
-</div><div class="board-wrapper">
+</div><!-- CHESS BOARD --><div class="board-wrapper">
  <div id="board"></div>
-</div><div id="captured">
- <div class="captured-row">
+</div><!-- CAPTURED PIECES --><div id="captured"> <div class="captured-row">
   <span>Black captured:</span>
   <span id="blackCaptured">—</span>
- </div>
- <div class="captured-row">
+ </div> <div class="captured-row">
   <span>White captured:</span>
   <span id="whiteCaptured">—</span>
- </div>
-</div><div class="bottom-controls"> <button class="action" id="restartBtn">
+ </div></div><!-- GAME CONTROLS --><div class="bottom-controls"> <button class="action" id="restartBtn">
   <span class="action-circle">⟳</span>
   <span class="action-label">RESTART</span>
  </button> <button class="action" id="piecesBtn">
@@ -288,10 +358,11 @@ let botTimer=null;
 const board=document.getElementById("board");
 const message=document.getElementById("message");
 const status=document.getElementById("levelName");
+const turnLabel=document.getElementById("turnLabel");
 
 const pieces={
  w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
- b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟︎"}
+ b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
 };
 
 function clearSelection(){
@@ -363,28 +434,33 @@ function render(){
 function updateStatus(){
 
  if(game.isCheckmate()){
-  status.textContent="GAME OVER";
+  turnLabel.textContent="GAME OVER";
+  status.textContent="CHECKMATE";
   message.textContent=game.turn()==="w"?"Bot Wins!":"You Win!";
   return;
  }
 
  if(game.isDraw()){
+  turnLabel.textContent="GAME OVER";
   status.textContent="DRAW";
   message.textContent="Game drawn!";
   return;
  }
 
  if(game.isCheck()){
-  status.textContent="CHECK";
+  turnLabel.textContent="CHECK!";
+  status.textContent=game.turn()==="w"?"YOUR KING":"BOT KING";
   message.textContent=game.turn()==="w"?"Your king is in check!":"Bot is in check!";
   return;
  }
 
  if(botThinking){
-  status.textContent="THINKING";
+  turnLabel.textContent="BOT THINKING";
+  status.textContent="PLEASE WAIT";
   message.textContent="Bot is thinking...";
  }else{
-  status.textContent=game.turn()==="w"?"YOUR TURN":"BOT TURN";
+  turnLabel.textContent=game.turn()==="w"?"YOUR TURN":"BOT TURN";
+  status.textContent=game.turn()==="w"?"YOU - WHITE":"BOT - BLACK";
   message.textContent=game.turn()==="w"?"Your turn! Make your move.":"Bot's turn.";
  }
 }
@@ -524,6 +600,8 @@ function newGame(){
  botThinking=false;
  lastMove=null;
 
+ document.getElementById("captured").classList.remove("show");
+
  message.textContent="New game started!";
  render();
 }
@@ -545,7 +623,6 @@ function undoMove(){
   return;
  }
 
- // Undo bot and player moves if the bot has already played.
  if(game.turn()==="w"){
   game.undo();
   if(game.history().length)game.undo();
@@ -599,7 +676,8 @@ function togglePieces(){
   :"Captured pieces hidden.";
 }
 
-// BUTTON EVENTS
+/* BUTTON EVENTS */
+
 document.getElementById("restartBtn")
 .addEventListener("click",newGame);
 
@@ -614,10 +692,10 @@ document.getElementById("hintBtn")
 
 document.getElementById("difficulty")
 .addEventListener("change",function(){
- status.textContent=this.value==="easy"?"EASY":"NORMAL";
+ message.textContent="Difficulty changed to "+this.value+".";
 });
 
 newGame();
 
 </script></body>
-    </html>
+ </html>
