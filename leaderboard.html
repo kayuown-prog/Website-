@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master - Leaderboard</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #10141c;
+  color: white;
+  min-height: 100vh;
+  padding-bottom: 30px;
+}
+
+header {
+  background: #1b2433;
+  padding: 22px 15px;
+  text-align: center;
+  border-bottom: 2px solid #d6a84b;
+}
+
+header h1 {
+  color: #f5c76a;
+  font-size: 27px;
+}
+
+.back {
+  position: absolute;
+  left: 15px;
+  top: 23px;
+  color: white;
+  text-decoration: none;
+  font-size: 22px;
+}
+
+.container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 15px;
+}
+
+.heading {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.heading h2 {
+  color: #f5c76a;
+  font-size: 30px;
+  margin-bottom: 8px;
+}
+
+.heading p {
+  color: #aaa;
+}
+
+.my-rank {
+  background: #1b2433;
+  border: 1px solid #d6a84b;
+  border-radius: 13px;
+  padding: 18px;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.my-rank h3 {
+  color: #f5c76a;
+  margin-bottom: 10px;
+}
+
+#myRank {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+#myPoints {
+  color: #ccc;
+  margin-top: 5px;
+}
+
+.podium {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 30px;
+}
+
+.player-card {
+  background: #1b2433;
+  border: 1px solid #414d60;
+  border-radius: 13px;
+  text-align: center;
+  padding: 18px 5px;
+  min-width: 0;
+}
+
+.player-card.first {
+  border: 2px solid #e8c14f;
+  padding-top: 25px;
+}
+
+.medal {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.player-name {
+  font-weight: bold;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.player-points {
+  color: #f5c76a;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.table-box {
+  background: #1b2433;
+  border-radius: 13px;
+  padding: 15px;
+  overflow-x: auto;
+}
+
+.table-box h3 {
+  color: #f5c76a;
+  margin-bottom: 15px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+th {
+  color: #f5c76a;
+  font-size: 13px;
+  padding: 13px 5px;
+  border-bottom: 1px solid #485365;
+}
+
+td {
+  padding: 15px 5px;
+  border-bottom: 1px solid #343f50;
+  font-size: 14px;
+}
+
+tr.me {
+  background: #344258;
+}
+
+.rank {
+  color: #f5c76a;
+  font-weight: bold;
+}
+
+#loading {
+  text-align: center;
+  color: #ccc;
+  padding: 30px 5px;
+}
+
+#message {
+  text-align: center;
+  color: #ff8888;
+  padding: 15px;
+  overflow-wrap: anywhere;
+}
+
+.back-btn {
+  display: block;
+  margin: 25px auto;
+  background: #d6a84b;
+  color: #10141c;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 25px;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+@media(max-width:380px) {
+  .player-card {
+    padding: 12px 3px;
+  }
+  .player-name {
+    font-size: 12px;
+  }
+  td, th {
+    font-size: 12px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <a class="back" href="dashboard.html">❮</a>
+  <h1>♟ CHESS MASTER</h1>
+</header>
+
+<div class="container">
+
+  <div class="heading">
+    <h2>🏆 LEADERBOARD</h2>
+    <p>Top Chess Players</p>
+  </div>
+
+  <div class="my-rank">
+    <h3>YOUR RANK</h3>
+    <div id="myRank">--</div>
+    <div id="myPoints">Loading points...</div>
+  </div>
+
+  <div class="podium" id="podium"></div>
+
+  <div class="table-box">
+    <h3>🏅 All Players Rankings</h3>
+
+    <div id="loading">Loading leaderboard...</div>
+
+    <table id="rankingTable" style="display:none">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Points</th>
+          <th>Wins</th>
+        </tr>
+      </thead>
+      <tbody id="rankingBody"></tbody>
+    </table>
+  </div>
+
+  <div id="message"></div>
+
+  <button class="back-btn"
+    onclick="location.href='dashboard.html'">
+    Back to Dashboard
+  </button>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue
+} from
+"https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+  authDomain: "freedroid-cloud.firebaseapp.com",
+  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
+  projectId: "freedroid-cloud",
+  storageBucket: "freedroid-cloud.firebasestorage.app",
+  messagingSenderId: "909415918359",
+  appId: "1:909415918359:web:85da71cdd35a879fa86552",
+  measurementId: "G-HV2ELB7GS6"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const podium = document.getElementById("podium");
+const body = document.getElementById("rankingBody");
+const loading = document.getElementById("loading");
+const table = document.getElementById("rankingTable");
+const message = document.getElementById("message");
+
+let currentUser = null;
+
+function makePodium(players) {
+
+  podium.innerHTML = "";
+
+  if (!players.length) return;
+
+  const medals = ["🥇", "🥈", "🥉"];
+
+  const order = [1, 0, 2];
+
+  order.forEach(index => {
+
+    const player = players[index];
+    if (!player) return;
+
+    const card = document.createElement("div");
+
+    card.className =
+      "player-card " + (index === 0 ? "first" : "");
+
+    const medal = document.createElement("div");
+    medal.className = "medal";
+    medal.textContent = medals[index];
+
+    const name = document.createElement("div");
+    name.className = "player-name";
+    name.textContent = player.name;
+
+    const points = document.createElement("div");
+    points.className = "player-points";
+    points.textContent = player.points + " Points";
+
+    card.append(medal, name, points);
+    podium.appendChild(card);
+  });
+}
+
+function renderLeaderboard(data) {
+
+  const players = Object.entries(data || {}).map(([uid, p]) => ({
+    uid,
+    name: p.name || p.displayName ||
+          (p.email ? p.email.split("@")[0] : "Player"),
+    points: Number(p.points) || 0,
+    wins: Number(p.wins) || 0
+  }));
+
+  players.sort((a, b) => b.points - a.points);
+
+  loading.style.display = "none";
+  table.style.display = "table";
+  body.innerHTML = "";
+
+  if (!players.length) {
+    document.getElementById("myRank").textContent = "--";
+    document.getElementById("myPoints").textContent =
+      "No points available yet.";
+    message.textContent =
+      "No players found. Play matches to appear here.";
+    podium.innerHTML = "";
+    return;
+  }
+
+  message.textContent = "";
+
+  const myIndex = players.findIndex(
+    p => p.uid === currentUser.uid
+  );
+
+  if (myIndex !== -1) {
+    document.getElementById("myRank").textContent =
+      "#" + (myIndex + 1);
+
+    document.getElementById("myPoints").textContent =
+      players[myIndex].points + " Points";
+  } else {
+    document.getElementById("myRank").textContent = "--";
+    document.getElementById("myPoints").textContent =
+      "You are not ranked yet.";
+  }
+
+  makePodium(players.slice(0, 3));
+
+  players.forEach((player, index) => {
+
+    const tr = document.createElement("tr");
+
+    if (player.uid === currentUser.uid) {
+      tr.className = "me";
+    }
+
+    const values = [
+      "#" + (index + 1),
+      player.name,
+      player.points,
+      player.wins
+    ];
+
+    values.forEach((value, i) => {
+      const td = document.createElement("td");
+      td.textContent = value;
+
+      if (i === 0) td.className = "rank";
+
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+}
+
+onAuthStateChanged(auth, user => {
+
+  if (!user) {
+    window.location.replace("login.html");
+    return;
+  }
+
+  currentUser = user;
+
+  onValue(ref(db, "leaderboard"), snapshot => {
+    renderLeaderboard(snapshot.val());
+  }, error => {
+    loading.textContent = "Could not load leaderboard.";
+    message.textContent = error.message;
+  });
+
+});
+
+</script>
+
+</body>
+  </html>
+    
