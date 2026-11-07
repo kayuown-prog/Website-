@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Chess Master - Owner Admin</title>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#10141c;color:white;min-height:100vh}
@@ -13,7 +14,7 @@ header h1{color:#f5c76a;font-size:23px}
 header p{color:#aaa;font-size:12px;margin-top:5px}
 button{border:0;border-radius:7px;padding:11px 16px;background:#d6a84b;color:#10141c;font-weight:bold;cursor:pointer}
 button:hover{background:#f5c76a}
-button:disabled{opacity:.5;cursor:not-allowed}
+button:disabled{opacity:.5}
 .container{max-width:1100px;margin:25px auto;padding:15px}
 .welcome{background:#1b2433;padding:22px;border-radius:12px;margin-bottom:22px;border:1px solid #333}
 .welcome h2{color:#f5c76a;margin-bottom:8px}
@@ -46,6 +47,7 @@ header h1{font-size:19px}
 }
 </style>
 </head>
+
 <body>
 
 <header>
@@ -57,6 +59,7 @@ header h1{font-size:19px}
 </header>
 
 <div class="container">
+
  <div class="welcome">
   <h2>Welcome, Owner 👑</h2>
   <p id="ownerEmail" class="muted">Checking Admin Access...</p>
@@ -64,22 +67,43 @@ header h1{font-size:19px}
  </div>
 
  <div class="stats">
-  <div class="stat"><h3>Total Players</h3><strong id="totalPlayers">0</strong></div>
-  <div class="stat"><h3>Total Wins</h3><strong id="totalWins">0</strong></div>
-  <div class="stat"><h3>Total Losses</h3><strong id="totalLosses">0</strong></div>
-  <div class="stat"><h3>Matchmaking Entries</h3><strong id="totalMatches">0</strong></div>
+  <div class="stat">
+   <h3>Total Players</h3>
+   <strong id="totalPlayers">0</strong>
+  </div>
+  <div class="stat">
+   <h3>Total Wins</h3>
+   <strong id="totalWins">0</strong>
+  </div>
+  <div class="stat">
+   <h3>Total Losses</h3>
+   <strong id="totalLosses">0</strong>
+  </div>
+  <div class="stat">
+   <h3>Matchmaking Entries</h3>
+   <strong id="totalMatches">0</strong>
+  </div>
  </div>
 
  <div class="section">
   <h2>👥 Player Management</h2>
-  <input class="search" id="searchPlayer" placeholder="Search player by name or UID...">
+
+  <input class="search" id="searchPlayer"
+  placeholder="Search player by name or UID...">
+
   <div class="table-wrap">
    <table>
     <thead>
      <tr>
-      <th>Player</th><th>Points</th><th>Wins</th><th>Losses</th><th>Update</th><th>Access</th>
+      <th>Player / UID</th>
+      <th>Points</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>Update</th>
+      <th>Access</th>
      </tr>
     </thead>
+
     <tbody id="playerList">
      <tr><td colspan="6" class="empty">Loading players...</td></tr>
     </tbody>
@@ -90,27 +114,49 @@ header h1{font-size:19px}
  <div class="section">
   <h2>🎮 Matchmaking Information</h2>
   <p class="muted">Live Firebase matchmaking records.</p>
-  <div id="matchList" style="margin-top:12px"><p class="empty">Loading...</p></div>
+  <div id="matchList" style="margin-top:12px">
+   <p class="empty">Loading...</p>
+  </div>
  </div>
 
  <div class="section">
   <h2>🔒 Blocked Players</h2>
-  <div id="blockedList"><p class="empty">Loading...</p></div>
+  <div id="blockedList">
+   <p class="empty">Loading...</p>
+  </div>
  </div>
 
  <div style="text-align:center">
   <button id="refreshBtn">↻ Refresh Dashboard</button>
  </div>
+
 </div>
 
 <footer>Chess Master Owner Administration</footer>
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {getAuth,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import {getDatabase,ref,get,onValue,update,set,remove} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const firebaseConfig={
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+ getAuth,
+ onAuthStateChanged,
+ signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+ getDatabase,
+ ref,
+ get,
+ onValue,
+ update,
+ set,
+ remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+const firebaseConfig = {
  apiKey:"AIzaSyAtpvwOOn-7I6eoRRVK2ZR_IqIy7Hcu0Y",
  authDomain:"freedroid-cloud.firebaseapp.com",
  databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
@@ -121,247 +167,519 @@ const firebaseConfig={
  measurementId:"G-HV2ELB7GS6"
 };
 
-const OWNER_UID="rDUXxSYOPchI8eKuIPlyLy0dJdU2";
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getDatabase(app);
-const $=id=>document.getElementById(id);
 
-let players={};
-let blocked={};
-let matchesData={};
-let authenticated=false;
-let listenersStarted=false;
-let unsubscribers=[];
+// OWNER UID
+const OWNER_UID = "rDUXxSYOPchI8eKuIPlyLy0dJdU2";
 
-function showMessage(message){$("message").textContent=message}
-function isOwner(){return authenticated&&auth.currentUser&&auth.currentUser.uid===OWNER_UID}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-function hasValidAdminSession(user){
- try{
-  const session=JSON.parse(sessionStorage.getItem("chessMasterAdminSession"));
-  return !!(user&&user.uid===OWNER_UID&&session&&session.uid===OWNER_UID&&Number.isFinite(session.verifiedAt)&&Date.now()-session.verifiedAt<12*60*60*1000);
- }catch(error){return false}
+const $ = id => document.getElementById(id);
+
+let players = {};
+let blocked = {};
+let matchesData = {};
+
+let authenticated = false;
+let listenersStarted = false;
+let unsubscribers = [];
+
+function showMessage(message){
+ $("message").textContent = message;
 }
 
+function isOwner(){
+ return authenticated &&
+ auth.currentUser &&
+ auth.currentUser.uid === OWNER_UID;
+}
+
+
+// STATS
 function renderStats(){
- const list=Object.values(players);
- $("totalPlayers").textContent=list.length;
- $("totalWins").textContent=list.reduce((sum,p)=>sum+(Number(p?.wins)||0),0);
- $("totalLosses").textContent=list.reduce((sum,p)=>sum+(Number(p?.losses)||0),0);
- $("totalMatches").textContent=Object.keys(matchesData).length;
+
+ const list = Object.values(players);
+
+ $("totalPlayers").textContent = list.length;
+
+ $("totalWins").textContent =
+ list.reduce((sum,p)=>sum+(Number(p?.wins)||0),0);
+
+ $("totalLosses").textContent =
+ list.reduce((sum,p)=>sum+(Number(p?.losses)||0),0);
+
+ $("totalMatches").textContent =
+ Object.keys(matchesData).length;
 }
 
-function renderPlayers(){
- const tbody=$("playerList");
- tbody.replaceChildren();
- const search=$("searchPlayer").value.trim().toLowerCase();
 
- const entries=Object.entries(players).filter(([uid,p])=>{
-  const name=String(p?.name||"").toLowerCase();
-  return name.includes(search)||uid.toLowerCase().includes(search);
+// PLAYERS
+function renderPlayers(){
+
+ const tbody = $("playerList");
+ tbody.replaceChildren();
+
+ const search =
+ $("searchPlayer").value.trim().toLowerCase();
+
+ const entries = Object.entries(players).filter(([uid,p])=>{
+
+  const name = String(p?.name || "").toLowerCase();
+
+  return name.includes(search) ||
+         uid.toLowerCase().includes(search);
  });
 
  if(!entries.length){
-  const tr=document.createElement("tr");
-  const td=document.createElement("td");
-  td.colSpan=6;td.className="empty";td.textContent="No players found.";
-  tr.append(td);tbody.append(tr);return;
+
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+
+  td.colSpan = 6;
+  td.className = "empty";
+  td.textContent = "No players found.";
+
+  tr.append(td);
+  tbody.append(tr);
+
+  return;
  }
 
  entries.forEach(([uid,p])=>{
-  const tr=document.createElement("tr");
+
+  const tr = document.createElement("tr");
+
   function cell(value){
-   const td=document.createElement("td");
-   td.textContent=String(value);tr.append(td);return td;
+
+   const td = document.createElement("td");
+   td.textContent = String(value);
+
+   tr.append(td);
+
+   return td;
   }
 
-  cell(p?.name||uid.slice(0,10));
+  cell(p?.name || uid);
   cell(Number(p?.points)||0);
   cell(Number(p?.wins)||0);
   cell(Number(p?.losses)||0);
 
-  const editCell=document.createElement("td");
-  const input=document.createElement("input");
-  input.type="number";input.min="0";input.max="100000000";
-  input.value=Number(p?.points)||0;input.className="edit-input";
 
-  const save=document.createElement("button");
-  save.textContent="Save";save.className="small-btn";
+  // UPDATE POINTS
+  const editCell = document.createElement("td");
 
-  save.onclick=async()=>{
-   if(!isOwner()){showMessage("Access denied.");return}
-   const points=Number(input.value);
-   if(!Number.isSafeInteger(points)||points<0||points>100000000){
-    alert("Enter valid points.");return;
+  const input = document.createElement("input");
+
+  input.type = "number";
+  input.min = "0";
+  input.max = "100000000";
+  input.value = Number(p?.points)||0;
+  input.className = "edit-input";
+
+  const save = document.createElement("button");
+
+  save.textContent = "Save";
+  save.className = "small-btn";
+
+  save.onclick = async()=>{
+
+   if(!isOwner()){
+    showMessage("Access denied.");
+    return;
    }
+
+   const points = Number(input.value);
+
+   if(!Number.isSafeInteger(points) ||
+      points < 0 ||
+      points > 100000000){
+
+    alert("Enter valid points.");
+    return;
+   }
+
    try{
-    save.disabled=true;
-    await update(ref(db,"leaderboard/"+uid),{points});
+
+    save.disabled = true;
+
+    await update(ref(db,"leaderboard/"+uid),{
+     points:points
+    });
+
     showMessage("Points updated successfully.");
-   }catch(error){alert("Update failed: "+error.message)}
-   finally{save.disabled=false}
+
+   }catch(error){
+
+    alert("Update failed: "+error.message);
+
+   }finally{
+
+    save.disabled = false;
+   }
   };
-  editCell.append(input,save);tr.append(editCell);
 
-  const accessCell=document.createElement("td");
-  const blockBtn=document.createElement("button");
-  const isBlocked=!!blocked[uid]?.blocked;
-  blockBtn.textContent=isBlocked?"Unblock":"Block";
-  blockBtn.className="small-btn "+(isBlocked?"success":"danger");
+  editCell.append(input,save);
+  tr.append(editCell);
 
-  blockBtn.onclick=async()=>{
-   if(!isOwner()){showMessage("Access denied.");return}
+
+  // BLOCK / UNBLOCK
+  const accessCell = document.createElement("td");
+
+  const blockBtn = document.createElement("button");
+
+  const isBlocked = !!blocked[uid]?.blocked;
+
+  blockBtn.textContent = isBlocked ? "Unblock" : "Block";
+
+  blockBtn.className =
+   "small-btn "+(isBlocked?"success":"danger");
+
+  blockBtn.onclick = async()=>{
+
+   if(!isOwner()){
+    showMessage("Access denied.");
+    return;
+   }
+
    try{
-    blockBtn.disabled=true;
+
+    blockBtn.disabled = true;
+
     if(blocked[uid]?.blocked){
+
      await remove(ref(db,"blockedUsers/"+uid));
+
      showMessage("Player unblocked successfully.");
+
     }else{
+
      await set(ref(db,"blockedUsers/"+uid),{
-      blocked:true,blockedAt:Date.now()
+      blocked:true,
+      blockedAt:Date.now()
      });
+
      showMessage("Player blocked successfully.");
     }
+
    }catch(error){
+
     alert("Action failed: "+error.message);
-   }finally{blockBtn.disabled=false}
+
+   }finally{
+
+    blockBtn.disabled = false;
+   }
   };
 
-  accessCell.append(blockBtn);tr.append(accessCell);
+  accessCell.append(blockBtn);
+  tr.append(accessCell);
+
   tbody.append(tr);
+
  });
 }
 
+
+// MATCHMAKING
 function renderMatches(){
- const area=$("matchList");
+
+ const area = $("matchList");
  area.replaceChildren();
- const entries=Object.entries(matchesData);
- if(!entries.length){area.textContent="No matchmaking records found.";return}
+
+ const entries = Object.entries(matchesData);
+
+ if(!entries.length){
+
+  area.textContent = "No matchmaking records found.";
+  return;
+ }
 
  entries.slice(0,30).forEach(([id,data])=>{
-  const div=document.createElement("div");div.className="room";
-  const title=document.createElement("strong");title.textContent="Record: "+id;
-  const details=document.createElement("p");details.className="muted";
-  details.textContent=data&&typeof data==="object"?"Status: "+String(data.status||"Not specified"):"Matchmaking entry";
-  div.append(title,details);area.append(div);
+
+  const div = document.createElement("div");
+  div.className = "room";
+
+  const title = document.createElement("strong");
+  title.textContent = "Record: "+id;
+
+  const details = document.createElement("p");
+  details.className = "muted";
+
+  details.textContent =
+   data && typeof data === "object"
+   ? "Status: "+String(data.status||"Not specified")
+   : "Matchmaking entry";
+
+  div.append(title,details);
+  area.append(div);
+
  });
 
- if(entries.length>30){
-  const more=document.createElement("p");more.className="muted";
-  more.textContent="Showing first 30 of "+entries.length+" entries.";
+ if(entries.length > 30){
+
+  const more = document.createElement("p");
+
+  more.className = "muted";
+  more.textContent =
+   "Showing first 30 of "+entries.length+" entries.";
+
   area.append(more);
  }
 }
 
+
+// BLOCKED PLAYERS
 function renderBlocked(){
- const area=$("blockedList");
+
+ const area = $("blockedList");
  area.replaceChildren();
- const entries=Object.entries(blocked).filter(([uid,data])=>data?.blocked===true);
 
- if(!entries.length){area.textContent="No blocked players.";return}
+ const entries = Object.entries(blocked)
+ .filter(([uid,data])=>data?.blocked===true);
 
- entries.forEach(([uid,data])=>{
-  const div=document.createElement("div");div.className="room";
-  const label=document.createElement("strong");
-  label.textContent=(players[uid]?.name||uid)+" — Blocked";
+ if(!entries.length){
 
-  const btn=document.createElement("button");
-  btn.textContent="Unblock";btn.className="small-btn success";
-
-  btn.onclick=async()=>{
-   if(!isOwner()){showMessage("Access denied.");return}
-   try{
-    btn.disabled=true;
-    await remove(ref(db,"blockedUsers/"+uid));
-    showMessage("Player unblocked successfully.");
-   }catch(error){
-    alert(error.message);btn.disabled=false;
-   }
-  };
-  div.append(label,btn);area.append(div);
- });
-}
-
-function startLiveListeners(){
- if(listenersStarted||!isOwner())return;
- listenersStarted=true;
-
- const paths=[
-  ["leaderboard",data=>{
-   players=data||{};renderStats();renderPlayers();renderBlocked();
-  }],
-  ["matchmaking",data=>{
-   matchesData=data||{};renderStats();renderMatches();
-  }],
-  ["blockedUsers",data=>{
-   blocked=data||{};renderPlayers();renderBlocked();
-  }]
- ];
-
- paths.forEach(([path,callback])=>{
-  const unsubscribe=onValue(ref(db,path),snapshot=>{
-   if(!isOwner())return;
-   callback(snapshot.val());
-  },error=>showMessage("Firebase error: "+error.message));
-  unsubscribers.push(unsubscribe);
- });
-}
-
-async function loadDashboard(){
- if(!isOwner())return;
- const refresh=$("refreshBtn");
- refresh.disabled=true;
- showMessage("Refreshing Firebase data...");
-
- try{
-  const results=await Promise.all([
-   get(ref(db,"leaderboard")),
-   get(ref(db,"matchmaking")),
-   get(ref(db,"blockedUsers"))
-  ]);
-
-  if(!isOwner())return;
-  players=results[0].val()||{};
-  matchesData=results[1].val()||{};
-  blocked=results[2].val()||{};
-
-  renderStats();renderPlayers();renderMatches();renderBlocked();
-  showMessage("Dashboard updated successfully.");
- }catch(error){
-  showMessage("Error: "+error.message);
- }finally{refresh.disabled=false}
-}
-
-$("searchPlayer").addEventListener("input",renderPlayers);
-$("refreshBtn").onclick=loadDashboard;
-
-$("logoutBtn").onclick=async()=>{
- try{
-  authenticated=false;
-  unsubscribers.forEach(fn=>fn());
-  unsubscribers=[];listenersStarted=false;
-  sessionStorage.removeItem("chessMasterAdminSession");
-  await signOut(auth);
-  window.location.replace("admin-login.html");
- }catch(error){showMessage(error.message)}
-};
-
-onAuthStateChanged(auth,user=>{
- if(!user||!hasValidAdminSession(user)){
-  authenticated=false;
-  unsubscribers.forEach(fn=>fn());
-  unsubscribers=[];listenersStarted=false;
-  sessionStorage.removeItem("chessMasterAdminSession");
-  window.location.replace("admin-login.html");
+  area.textContent = "No blocked players.";
   return;
  }
 
- authenticated=true;
- $("ownerEmail").textContent=user.email||"Owner Account";
+ entries.forEach(([uid,data])=>{
+
+  const div = document.createElement("div");
+  div.className = "room";
+
+  const label = document.createElement("strong");
+
+  label.textContent =
+   (players[uid]?.name||uid)+" — Blocked";
+
+  const btn = document.createElement("button");
+
+  btn.textContent = "Unblock";
+  btn.className = "small-btn success";
+
+  btn.onclick = async()=>{
+
+   if(!isOwner()){
+    showMessage("Access denied.");
+    return;
+   }
+
+   try{
+
+    btn.disabled = true;
+
+    await remove(ref(db,"blockedUsers/"+uid));
+
+    showMessage("Player unblocked successfully.");
+
+   }catch(error){
+
+    alert(error.message);
+    btn.disabled = false;
+   }
+  };
+
+  div.append(label,btn);
+  area.append(div);
+
+ });
+}
+
+
+// LIVE FIREBASE LISTENERS
+function startLiveListeners(){
+
+ if(listenersStarted || !isOwner()) return;
+
+ listenersStarted = true;
+
+ const paths = [
+
+  ["leaderboard",data=>{
+
+   players = data || {};
+
+   renderStats();
+   renderPlayers();
+   renderBlocked();
+
+  }],
+
+  ["matchmaking",data=>{
+
+   matchesData = data || {};
+
+   renderStats();
+   renderMatches();
+
+  }],
+
+  ["blockedUsers",data=>{
+
+   blocked = data || {};
+
+   renderPlayers();
+   renderBlocked();
+
+  }]
+
+ ];
+
+ paths.forEach(([path,callback])=>{
+
+  const unsubscribe = onValue(
+   ref(db,path),
+
+   snapshot=>{
+
+    if(!isOwner()) return;
+
+    callback(snapshot.val());
+
+   },
+
+   error=>{
+
+    showMessage("Firebase error: "+error.message);
+
+   }
+  );
+
+  unsubscribers.push(unsubscribe);
+
+ });
+}
+
+
+// REFRESH
+async function loadDashboard(){
+
+ if(!isOwner()) return;
+
+ const refresh = $("refreshBtn");
+
+ refresh.disabled = true;
+
+ showMessage("Refreshing Firebase data...");
+
+ try{
+
+  const results = await Promise.all([
+
+   get(ref(db,"leaderboard")),
+
+   get(ref(db,"matchmaking")),
+
+   get(ref(db,"blockedUsers"))
+
+  ]);
+
+  if(!isOwner()) return;
+
+  players = results[0].val() || {};
+  matchesData = results[1].val() || {};
+  blocked = results[2].val() || {};
+
+  renderStats();
+  renderPlayers();
+  renderMatches();
+  renderBlocked();
+
+  showMessage("Dashboard updated successfully.");
+
+ }catch(error){
+
+  showMessage("Error: "+error.message);
+
+ }finally{
+
+  refresh.disabled = false;
+ }
+}
+
+
+// SEARCH
+$("searchPlayer").addEventListener("input",renderPlayers);
+
+
+// REFRESH BUTTON
+$("refreshBtn").onclick = loadDashboard;
+
+
+// LOGOUT
+$("logoutBtn").onclick = async()=>{
+
+ try{
+
+  authenticated = false;
+
+  unsubscribers.forEach(fn=>fn());
+
+  unsubscribers = [];
+  listenersStarted = false;
+
+  await signOut(auth);
+
+  window.location.replace("admin-login.html");
+
+ }catch(error){
+
+  showMessage(error.message);
+ }
+};
+
+
+// AUTH CHECK
+onAuthStateChanged(auth,user=>{
+
+ if(!user){
+
+  authenticated = false;
+
+  unsubscribers.forEach(fn=>fn());
+
+  unsubscribers = [];
+  listenersStarted = false;
+
+  window.location.replace("admin-login.html");
+
+  return;
+ }
+
+ // OWNER UID CHECK
+ if(user.uid !== OWNER_UID){
+
+  authenticated = false;
+
+  showMessage("Access Denied: You are not the owner.");
+
+  signOut(auth).finally(()=>{
+
+   window.location.replace("admin-login.html");
+
+  });
+
+  return;
+ }
+
+ // OWNER VERIFIED
+ authenticated = true;
+
+ $("ownerEmail").textContent =
+  user.email || "Owner Account";
+
+ showMessage("Owner verified successfully.");
+
  startLiveListeners();
+
  loadDashboard();
+
 });
+
 </script>
+
 </body>
-</html>
+ </html>
+ 
