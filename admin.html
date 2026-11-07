@@ -14,7 +14,7 @@ header h1{color:#f5c76a;font-size:23px}
 header p{color:#aaa;font-size:12px;margin-top:5px}
 button{border:0;border-radius:7px;padding:11px 16px;background:#d6a84b;color:#10141c;font-weight:bold;cursor:pointer}
 button:hover{background:#f5c76a}
-button:disabled{opacity:.5}
+button:disabled{opacity:.5;cursor:not-allowed}
 .container{max-width:1100px;margin:25px auto;padding:15px}
 .welcome{background:#1b2433;padding:22px;border-radius:12px;margin-bottom:22px;border:1px solid #333}
 .welcome h2{color:#f5c76a;margin-bottom:8px}
@@ -67,29 +67,15 @@ header h1{font-size:19px}
  </div>
 
  <div class="stats">
-  <div class="stat">
-   <h3>Total Players</h3>
-   <strong id="totalPlayers">0</strong>
-  </div>
-  <div class="stat">
-   <h3>Total Wins</h3>
-   <strong id="totalWins">0</strong>
-  </div>
-  <div class="stat">
-   <h3>Total Losses</h3>
-   <strong id="totalLosses">0</strong>
-  </div>
-  <div class="stat">
-   <h3>Matchmaking Entries</h3>
-   <strong id="totalMatches">0</strong>
-  </div>
+  <div class="stat"><h3>Total Players</h3><strong id="totalPlayers">0</strong></div>
+  <div class="stat"><h3>Total Wins</h3><strong id="totalWins">0</strong></div>
+  <div class="stat"><h3>Total Losses</h3><strong id="totalLosses">0</strong></div>
+  <div class="stat"><h3>Matchmaking Entries</h3><strong id="totalMatches">0</strong></div>
  </div>
 
  <div class="section">
   <h2>👥 Player Management</h2>
-
-  <input class="search" id="searchPlayer"
-  placeholder="Search player by name or UID...">
+  <input class="search" id="searchPlayer" placeholder="Search player by name or UID...">
 
   <div class="table-wrap">
    <table>
@@ -103,7 +89,6 @@ header h1{font-size:19px}
       <th>Access</th>
      </tr>
     </thead>
-
     <tbody id="playerList">
      <tr><td colspan="6" class="empty">Loading players...</td></tr>
     </tbody>
@@ -156,8 +141,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
+// IMPORTANT: SAME CONFIG AS ADMIN-LOGIN.HTML
+
 const firebaseConfig = {
- apiKey:"AIzaSyAtpvwOOn-7I6eoRRVK2ZR_IqIy7Hcu0Y",
+ apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
  authDomain:"freedroid-cloud.firebaseapp.com",
  databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
  projectId:"freedroid-cloud",
@@ -167,8 +154,6 @@ const firebaseConfig = {
  measurementId:"G-HV2ELB7GS6"
 };
 
-
-// OWNER UID
 const OWNER_UID = "rDUXxSYOPchI8eKuIPlyLy0dJdU2";
 
 const app = initializeApp(firebaseConfig);
@@ -177,13 +162,12 @@ const db = getDatabase(app);
 
 const $ = id => document.getElementById(id);
 
+let authenticated = false;
 let players = {};
 let blocked = {};
 let matchesData = {};
-
-let authenticated = false;
-let listenersStarted = false;
 let unsubscribers = [];
+let listenersStarted = false;
 
 function showMessage(message){
  $("message").textContent = message;
@@ -197,6 +181,7 @@ function isOwner(){
 
 
 // STATS
+
 function renderStats(){
 
  const list = Object.values(players);
@@ -214,7 +199,8 @@ function renderStats(){
 }
 
 
-// PLAYERS
+// PLAYER LIST
+
 function renderPlayers(){
 
  const tbody = $("playerList");
@@ -242,7 +228,6 @@ function renderPlayers(){
 
   tr.append(td);
   tbody.append(tr);
-
   return;
  }
 
@@ -251,12 +236,9 @@ function renderPlayers(){
   const tr = document.createElement("tr");
 
   function cell(value){
-
    const td = document.createElement("td");
    td.textContent = String(value);
-
    tr.append(td);
-
    return td;
   }
 
@@ -266,11 +248,11 @@ function renderPlayers(){
   cell(Number(p?.losses)||0);
 
 
-  // UPDATE POINTS
+  // POINTS UPDATE
+
   const editCell = document.createElement("td");
 
   const input = document.createElement("input");
-
   input.type = "number";
   input.min = "0";
   input.max = "100000000";
@@ -278,7 +260,6 @@ function renderPlayers(){
   input.className = "edit-input";
 
   const save = document.createElement("button");
-
   save.textContent = "Save";
   save.className = "small-btn";
 
@@ -292,9 +273,7 @@ function renderPlayers(){
    const points = Number(input.value);
 
    if(!Number.isSafeInteger(points) ||
-      points < 0 ||
-      points > 100000000){
-
+      points < 0 || points > 100000000){
     alert("Enter valid points.");
     return;
    }
@@ -311,10 +290,9 @@ function renderPlayers(){
 
    }catch(error){
 
-    alert("Update failed: "+error.message);
+    showMessage("Update failed: "+error.message);
 
    }finally{
-
     save.disabled = false;
    }
   };
@@ -324,14 +302,13 @@ function renderPlayers(){
 
 
   // BLOCK / UNBLOCK
-  const accessCell = document.createElement("td");
 
+  const accessCell = document.createElement("td");
   const blockBtn = document.createElement("button");
 
   const isBlocked = !!blocked[uid]?.blocked;
 
   blockBtn.textContent = isBlocked ? "Unblock" : "Block";
-
   blockBtn.className =
    "small-btn "+(isBlocked?"success":"danger");
 
@@ -349,7 +326,6 @@ function renderPlayers(){
     if(blocked[uid]?.blocked){
 
      await remove(ref(db,"blockedUsers/"+uid));
-
      showMessage("Player unblocked successfully.");
 
     }else{
@@ -364,10 +340,9 @@ function renderPlayers(){
 
    }catch(error){
 
-    alert("Action failed: "+error.message);
+    showMessage("Action failed: "+error.message);
 
    }finally{
-
     blockBtn.disabled = false;
    }
   };
@@ -376,12 +351,12 @@ function renderPlayers(){
   tr.append(accessCell);
 
   tbody.append(tr);
-
  });
 }
 
 
 // MATCHMAKING
+
 function renderMatches(){
 
  const area = $("matchList");
@@ -390,7 +365,6 @@ function renderMatches(){
  const entries = Object.entries(matchesData);
 
  if(!entries.length){
-
   area.textContent = "No matchmaking records found.";
   return;
  }
@@ -413,13 +387,11 @@ function renderMatches(){
 
   div.append(title,details);
   area.append(div);
-
  });
 
  if(entries.length > 30){
 
   const more = document.createElement("p");
-
   more.className = "muted";
   more.textContent =
    "Showing first 30 of "+entries.length+" entries.";
@@ -430,6 +402,7 @@ function renderMatches(){
 
 
 // BLOCKED PLAYERS
+
 function renderBlocked(){
 
  const area = $("blockedList");
@@ -439,7 +412,6 @@ function renderBlocked(){
  .filter(([uid,data])=>data?.blocked===true);
 
  if(!entries.length){
-
   area.textContent = "No blocked players.";
   return;
  }
@@ -450,21 +422,16 @@ function renderBlocked(){
   div.className = "room";
 
   const label = document.createElement("strong");
-
   label.textContent =
    (players[uid]?.name||uid)+" — Blocked";
 
   const btn = document.createElement("button");
-
   btn.textContent = "Unblock";
   btn.className = "small-btn success";
 
   btn.onclick = async()=>{
 
-   if(!isOwner()){
-    showMessage("Access denied.");
-    return;
-   }
+   if(!isOwner()) return;
 
    try{
 
@@ -476,19 +443,26 @@ function renderBlocked(){
 
    }catch(error){
 
-    alert(error.message);
+    showMessage(error.message);
     btn.disabled = false;
    }
   };
 
   div.append(label,btn);
   area.append(div);
-
  });
 }
 
 
-// LIVE FIREBASE LISTENERS
+// LIVE LISTENERS
+
+function stopLiveListeners(){
+
+ unsubscribers.forEach(fn=>fn());
+ unsubscribers = [];
+ listenersStarted = false;
+}
+
 function startLiveListeners(){
 
  if(listenersStarted || !isOwner()) return;
@@ -498,31 +472,22 @@ function startLiveListeners(){
  const paths = [
 
   ["leaderboard",data=>{
-
    players = data || {};
-
    renderStats();
    renderPlayers();
    renderBlocked();
-
   }],
 
   ["matchmaking",data=>{
-
    matchesData = data || {};
-
    renderStats();
    renderMatches();
-
   }],
 
   ["blockedUsers",data=>{
-
    blocked = data || {};
-
    renderPlayers();
    renderBlocked();
-
   }]
 
  ];
@@ -533,33 +498,27 @@ function startLiveListeners(){
    ref(db,path),
 
    snapshot=>{
-
     if(!isOwner()) return;
-
     callback(snapshot.val());
-
    },
 
    error=>{
-
     showMessage("Firebase error: "+error.message);
-
    }
   );
 
   unsubscribers.push(unsubscribe);
-
  });
 }
 
 
-// REFRESH
+// REFRESH DASHBOARD
+
 async function loadDashboard(){
 
  if(!isOwner()) return;
 
  const refresh = $("refreshBtn");
-
  refresh.disabled = true;
 
  showMessage("Refreshing Firebase data...");
@@ -567,13 +526,9 @@ async function loadDashboard(){
  try{
 
   const results = await Promise.all([
-
    get(ref(db,"leaderboard")),
-
    get(ref(db,"matchmaking")),
-
    get(ref(db,"blockedUsers"))
-
   ]);
 
   if(!isOwner()) return;
@@ -591,7 +546,7 @@ async function loadDashboard(){
 
  }catch(error){
 
-  showMessage("Error: "+error.message);
+  showMessage("Firebase error: "+error.message);
 
  }finally{
 
@@ -601,70 +556,65 @@ async function loadDashboard(){
 
 
 // SEARCH
+
 $("searchPlayer").addEventListener("input",renderPlayers);
 
 
-// REFRESH BUTTON
+// REFRESH
+
 $("refreshBtn").onclick = loadDashboard;
 
 
 // LOGOUT
+
 $("logoutBtn").onclick = async()=>{
+
+ authenticated = false;
+ stopLiveListeners();
 
  try{
 
-  authenticated = false;
-
-  unsubscribers.forEach(fn=>fn());
-
-  unsubscribers = [];
-  listenersStarted = false;
-
   await signOut(auth);
-
   window.location.replace("admin-login.html");
 
  }catch(error){
 
-  showMessage(error.message);
+  showMessage("Logout error: "+error.message);
  }
 };
 
 
-// AUTH CHECK
-onAuthStateChanged(auth,user=>{
+// AUTHENTICATION CHECK
+
+onAuthStateChanged(auth,async user=>{
 
  if(!user){
 
   authenticated = false;
+  stopLiveListeners();
 
-  unsubscribers.forEach(fn=>fn());
-
-  unsubscribers = [];
-  listenersStarted = false;
+  showMessage("Please login first.");
 
   window.location.replace("admin-login.html");
-
   return;
  }
 
- // OWNER UID CHECK
  if(user.uid !== OWNER_UID){
 
   authenticated = false;
+  stopLiveListeners();
 
-  showMessage("Access Denied: You are not the owner.");
+  showMessage("Access Denied: Unauthorized Owner.");
 
-  signOut(auth).finally(()=>{
-
+  try{
+   await signOut(auth);
+  }finally{
    window.location.replace("admin-login.html");
-
-  });
+  }
 
   return;
  }
 
- // OWNER VERIFIED
  authenticated = true;
 
  $("ownerEmail").textContent =
@@ -673,13 +623,11 @@ onAuthStateChanged(auth,user=>{
  showMessage("Owner verified successfully.");
 
  startLiveListeners();
-
  loadDashboard();
 
 });
 
 </script>
-
 </body>
  </html>
  
