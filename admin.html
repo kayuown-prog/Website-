@@ -1,0 +1,636 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess Master - Owner Admin</title>
+
+<style>
+*{
+ margin:0;padding:0;box-sizing:border-box;
+ font-family:Arial,sans-serif
+}
+body{
+ background:#10141c;color:white;min-height:100vh;
+}
+header{
+ background:#1b2433;padding:20px;
+ border-bottom:2px solid #d6a84b;
+ display:flex;justify-content:space-between;
+ align-items:center;gap:12px;flex-wrap:wrap
+}
+header h1{color:#f5c76a;font-size:23px}
+header p{color:#aaa;font-size:12px;margin-top:5px}
+button{
+ border:0;border-radius:7px;padding:11px 16px;
+ background:#d6a84b;color:#10141c;
+ font-weight:bold;cursor:pointer
+}
+button:hover{background:#f5c76a}
+button:disabled{opacity:.5;cursor:not-allowed}
+.container{
+ max-width:1100px;margin:25px auto;padding:15px
+}
+.welcome{
+ background:#1b2433;padding:22px;
+ border-radius:12px;margin-bottom:22px;
+ border:1px solid #333
+}
+.welcome h2{color:#f5c76a;margin-bottom:8px}
+.muted{color:#aaa;font-size:13px}
+.stats{
+ display:grid;grid-template-columns:repeat(4,1fr);
+ gap:13px;margin-bottom:25px
+}
+.stat{
+ background:#1b2433;padding:20px;
+ border-radius:12px;border:1px solid #303b4c
+}
+.stat h3{font-size:13px;color:#aaa;margin-bottom:12px}
+.stat strong{font-size:28px;color:#f5c76a}
+.section{
+ background:#1b2433;border-radius:12px;
+ padding:20px;margin-bottom:22px;
+ border:1px solid #303b4c
+}
+.section h2{color:#f5c76a;margin-bottom:16px}
+.search{
+ width:100%;padding:13px;background:#10141c;
+ color:white;border:1px solid #455064;
+ border-radius:7px;margin-bottom:15px
+}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{
+ padding:13px;text-align:left;
+ border-bottom:1px solid #354052;font-size:13px
+}
+th{color:#f5c76a}
+td{color:#eee}
+.edit-input{
+ width:85px;padding:8px;background:#10141c;
+ color:white;border:1px solid #596477;border-radius:5px
+}
+.small-btn{padding:8px 10px;font-size:12px}
+.danger{background:#e05252;color:white}
+.success{background:#239b67;color:white}
+.room{
+ padding:12px;background:#10141c;
+ border-radius:7px;margin:8px 0;
+ overflow-wrap:anywhere
+}
+#message{margin:12px 0;color:#f5c76a}
+.empty{color:#aaa;padding:15px;text-align:center}
+footer{text-align:center;padding:20px;color:#777;font-size:12px}
+@media(max-width:700px){
+ .stats{grid-template-columns:repeat(2,1fr)}
+ header h1{font-size:19px}
+ .container{padding:10px}
+ .section{padding:14px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div>
+  <h1>♟ CHESS MASTER ADMIN</h1>
+  <p>Private Owner Dashboard</p>
+ </div>
+ <button id="logoutBtn">Logout</button>
+</header>
+
+<div class="container">
+
+ <div class="welcome">
+  <h2>Welcome, Owner 👑</h2>
+  <p id="ownerEmail" class="muted">Checking Admin Access...</p>
+  <p id="message"></p>
+ </div>
+
+ <div class="stats">
+
+  <div class="stat">
+   <h3>Total Players</h3>
+   <strong id="totalPlayers">0</strong>
+  </div>
+
+  <div class="stat">
+   <h3>Total Wins</h3>
+   <strong id="totalWins">0</strong>
+  </div>
+
+  <div class="stat">
+   <h3>Total Losses</h3>
+   <strong id="totalLosses">0</strong>
+  </div>
+
+  <div class="stat">
+   <h3>Matchmaking Entries</h3>
+   <strong id="totalMatches">0</strong>
+  </div>
+
+ </div>
+
+ <div class="section">
+  <h2>👥 Player Management</h2>
+
+  <input
+   class="search"
+   id="searchPlayer"
+   placeholder="Search player by name or UID..."
+  >
+
+  <div class="table-wrap">
+   <table>
+    <thead>
+     <tr>
+      <th>Player</th>
+      <th>Points</th>
+      <th>Wins</th>
+      <th>Losses</th>
+      <th>Update</th>
+      <th>Access</th>
+     </tr>
+    </thead>
+    <tbody id="playerList">
+     <tr><td colspan="6" class="empty">Loading players...</td></tr>
+    </tbody>
+   </table>
+  </div>
+ </div>
+
+ <div class="section">
+  <h2>🎮 Matchmaking Information</h2>
+  <p class="muted">
+   Current records found in your Firebase matchmaking database.
+  </p>
+  <div id="matchList" style="margin-top:12px">
+   <p class="empty">Loading...</p>
+  </div>
+ </div>
+
+ <div class="section">
+  <h2>🔒 Blocked Players</h2>
+  <div id="blockedList">
+   <p class="empty">Loading...</p>
+  </div>
+ </div>
+
+ <div style="text-align:center">
+  <button id="refreshBtn">↻ Refresh Dashboard</button>
+ </div>
+
+</div>
+
+<footer>
+ Chess Master Owner Administration
+</footer>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+ getAuth,
+ onAuthStateChanged,
+ signOut
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+ getDatabase,
+ ref,
+ get,
+ update,
+ set,
+ remove
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+
+const firebaseConfig = {
+ apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+ authDomain: "freedroid-cloud.firebaseapp.com",
+ databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
+ projectId: "freedroid-cloud",
+ storageBucket: "freedroid-cloud.firebasestorage.app",
+ messagingSenderId: "909415918359",
+ appId: "1:909415918359:web:85da71cdd35a879fa86552",
+ measurementId: "G-HV2ELB7GS6"
+};
+
+const OWNER_UID = "rDUXxSYOPchI8eKuIPlyLy0dJdU2";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+const $ = id => document.getElementById(id);
+
+let players = {};
+let blocked = {};
+let authenticated = false;
+
+
+// Safe text helper
+
+function addText(element,text){
+ element.textContent = text ?? "";
+}
+
+
+// Admin security
+
+function hasValidAdminSession(user){
+
+ try{
+  const session = JSON.parse(
+   sessionStorage.getItem("chessMasterAdminSession")
+  );
+
+  return (
+   user &&
+   user.uid === OWNER_UID &&
+   session &&
+   session.uid === OWNER_UID &&
+   Number.isFinite(session.verifiedAt) &&
+   Date.now()-session.verifiedAt < 12*60*60*1000
+  );
+
+ }catch{
+  return false;
+ }
+}
+
+
+// Load Dashboard
+
+async function loadDashboard(){
+
+ if(!authenticated || auth.currentUser?.uid !== OWNER_UID){
+  return;
+ }
+
+ $("message").textContent = "Refreshing data...";
+
+ try{
+
+  const results = await Promise.all([
+   get(ref(db,"leaderboard")),
+   get(ref(db,"matchmaking")),
+   get(ref(db,"adminData/blockedUsers"))
+  ]);
+
+  if(auth.currentUser?.uid !== OWNER_UID){
+   throw new Error("Admin session expired.");
+  }
+
+  players = results[0].val() || {};
+  const matches = results[1].val() || {};
+  blocked = results[2].val() || {};
+
+  renderStats(matches);
+  renderPlayers();
+  renderMatches(matches);
+  renderBlocked();
+
+  $("message").textContent = "Dashboard updated successfully.";
+
+ }catch(error){
+
+  $("message").textContent = "Error: " + error.message;
+
+ }
+}
+
+
+// Stats
+
+function renderStats(matches){
+
+ const list = Object.values(players);
+
+ const wins = list.reduce(
+  (sum,p)=>sum+(Number(p?.wins)||0),0
+ );
+
+ const losses = list.reduce(
+  (sum,p)=>sum+(Number(p?.losses)||0),0
+ );
+
+ $("totalPlayers").textContent = list.length;
+ $("totalWins").textContent = wins;
+ $("totalLosses").textContent = losses;
+ $("totalMatches").textContent =
+  Object.keys(matches).length;
+}
+
+
+// Player Table
+
+function renderPlayers(){
+
+ const tbody = $("playerList");
+ tbody.replaceChildren();
+
+ const search = $("searchPlayer").value
+  .trim().toLowerCase();
+
+ const entries = Object.entries(players).filter(
+  ([uid,p])=>{
+   const name = String(p?.name || "").toLowerCase();
+   return name.includes(search) || uid.toLowerCase().includes(search);
+  }
+ );
+
+ if(!entries.length){
+  const tr = document.createElement("tr");
+  const td = document.createElement("td");
+  td.colSpan = 6;
+  td.className = "empty";
+  td.textContent = "No players found.";
+  tr.append(td);
+  tbody.append(tr);
+  return;
+ }
+
+ entries.forEach(([uid,p])=>{
+
+  const tr = document.createElement("tr");
+
+  function cell(value){
+   const td = document.createElement("td");
+   td.textContent = value;
+   tr.append(td);
+   return td;
+  }
+
+  cell(p?.name || uid.slice(0,10));
+  cell(Number(p?.points)||0);
+  cell(Number(p?.wins)||0);
+  cell(Number(p?.losses)||0);
+
+  // Points editor
+
+  const editCell = document.createElement("td");
+
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "0";
+  input.max = "100000000";
+  input.value = Number(p?.points)||0;
+  input.className = "edit-input";
+
+  const save = document.createElement("button");
+  save.textContent = "Save";
+  save.className = "small-btn";
+
+  save.onclick = async()=>{
+
+   if(auth.currentUser?.uid !== OWNER_UID){
+    alert("Access denied.");
+    return;
+   }
+
+   const points = Number(input.value);
+
+   if(!Number.isSafeInteger(points)||points<0||points>100000000){
+    alert("Enter valid points.");
+    return;
+   }
+
+   try{
+    save.disabled = true;
+
+    await update(
+     ref(db,"leaderboard/"+uid),
+     {points:points}
+    );
+
+    players[uid].points = points;
+    renderStats({});
+    $("message").textContent =
+     "Points updated for "+(p.name||uid);
+
+   }catch(error){
+    alert("Update failed: "+error.message);
+   }finally{
+    save.disabled = false;
+   }
+  };
+
+  editCell.append(input,save);
+  tr.append(editCell);
+
+  // Block button
+
+  const accessCell = document.createElement("td");
+  const blockBtn = document.createElement("button");
+
+  const isBlocked = !!blocked[uid];
+
+  blockBtn.textContent = isBlocked ? "Unblock" : "Block";
+  blockBtn.className =
+   "small-btn "+(isBlocked?"success":"danger");
+
+  blockBtn.onclick = async()=>{
+
+   if(auth.currentUser?.uid !== OWNER_UID){
+    alert("Access denied.");
+    return;
+   }
+
+   try{
+
+    blockBtn.disabled = true;
+
+    if(blocked[uid]){
+     await remove(
+      ref(db,"adminData/blockedUsers/"+uid)
+     );
+     delete blocked[uid];
+    }else{
+     await set(
+      ref(db,"adminData/blockedUsers/"+uid),
+      {
+       blocked:true,
+       blockedAt:Date.now()
+      }
+     );
+     blocked[uid] = {blocked:true};
+    }
+
+    renderPlayers();
+    renderBlocked();
+
+   }catch(error){
+    alert("Action failed: "+error.message);
+    blockBtn.disabled = false;
+   }
+  };
+
+  accessCell.append(blockBtn);
+  tr.append(accessCell);
+
+  tbody.append(tr);
+
+ });
+}
+
+
+// Matchmaking information
+
+function renderMatches(matches){
+
+ const area = $("matchList");
+ area.replaceChildren();
+
+ const entries = Object.entries(matches);
+
+ if(!entries.length){
+  area.textContent = "No matchmaking records found.";
+  return;
+ }
+
+ entries.slice(0,30).forEach(([id,data])=>{
+
+  const div = document.createElement("div");
+  div.className = "room";
+
+  const title = document.createElement("strong");
+  title.textContent = "Record: "+id;
+
+  const details = document.createElement("p");
+  details.className = "muted";
+
+  if(data && typeof data === "object"){
+   details.textContent =
+    "Status: "+String(data.status || "Not specified");
+  }else{
+   details.textContent = "Matchmaking entry";
+  }
+
+  div.append(title,details);
+  area.append(div);
+
+ });
+
+ if(entries.length>30){
+  const more = document.createElement("p");
+  more.className = "muted";
+  more.textContent = "Showing first 30 of "+entries.length+" entries.";
+  area.append(more);
+ }
+}
+
+
+// Blocked players
+
+function renderBlocked(){
+
+ const area = $("blockedList");
+ area.replaceChildren();
+
+ const entries = Object.entries(blocked);
+
+ if(!entries.length){
+  area.textContent = "No blocked players.";
+  return;
+ }
+
+ entries.forEach(([uid,data])=>{
+
+  const div = document.createElement("div");
+  div.className = "room";
+
+  const name = players[uid]?.name || uid;
+
+  const label = document.createElement("strong");
+  label.textContent = name+" — Blocked";
+
+  const btn = document.createElement("button");
+  btn.textContent = "Unblock";
+  btn.className = "small-btn success";
+
+  btn.onclick = async()=>{
+
+   try{
+    btn.disabled = true;
+
+    await remove(
+     ref(db,"adminData/blockedUsers/"+uid)
+    );
+
+    delete blocked[uid];
+    renderBlocked();
+    renderPlayers();
+
+   }catch(error){
+    alert(error.message);
+    btn.disabled = false;
+   }
+  };
+
+  div.append(label,btn);
+  area.append(div);
+
+ });
+}
+
+
+// Search
+
+$("searchPlayer").addEventListener(
+ "input",renderPlayers
+);
+
+
+// Refresh
+
+$("refreshBtn").onclick = loadDashboard;
+
+
+// Logout
+
+$("logoutBtn").onclick = async()=>{
+
+ try{
+
+  sessionStorage.removeItem("chessMasterAdminSession");
+  await signOut(auth);
+
+  window.location.replace("admin-login.html");
+
+ }catch(error){
+  $("message").textContent = error.message;
+ }
+};
+
+
+// Verify Owner
+
+onAuthStateChanged(auth,user=>{
+
+ if(!user || !hasValidAdminSession(user)){
+
+  authenticated = false;
+  sessionStorage.removeItem("chessMasterAdminSession");
+  window.location.replace("admin-login.html");
+  return;
+ }
+
+ authenticated = true;
+ $("ownerEmail").textContent = user.email || "Owner Account";
+
+ loadDashboard();
+
+});
+
+</script>
+</body>
+  </html>
+  
