@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,6 +88,13 @@ button:hover {
   padding: 30px 20px;
   border-radius: 12px;
   text-align: center;
+  border: 1px solid #303d50;
+  transition: 0.2s;
+}
+
+.card:hover {
+  border-color: #d6a84b;
+  transform: translateY(-4px);
 }
 
 .card h2 {
@@ -99,6 +105,11 @@ button:hover {
 .card p {
   color: #ccc;
   line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.card button {
+  padding: 12px 24px;
 }
 
 footer {
@@ -149,16 +160,28 @@ footer {
   <div class="card">
     <h2>♟ Play With Bot</h2>
     <p>Challenge yourself against the computer.</p>
+    <button onclick="location.href='bot.html'">
+      Play Now
+    </button>
   </div>
 
   <div class="card">
     <h2>♚ Multiplayer</h2>
-    <p>Play chess with your friends online.</p>
+    <p>Play chess with other players online.</p>
+    <button onclick="location.href='multiplayer.html'">
+      Play Now
+    </button>
   </div>
 
   <div class="card">
-    <h2>♛ Chess Practice</h2>
-    <p>Improve your chess skills with practice.</p>
+    <h2>🏆 Leaderboard</h2>
+    <p>
+      Check player rankings, points and
+      discover who is the Chess Master.
+    </p>
+    <button onclick="location.href='leaderboard.html'">
+      View Leaderboard
+    </button>
   </div>
 
 </section>
