@@ -3,562 +3,272 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chess Master - Multiplayer</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chess Master Multiplayer</title>
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial,sans-serif;
-}
-
-body{
-  background:#10141c;
-  color:white;
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:20px;
-}
-
-.container{
-  width:100%;
-  max-width:430px;
-  text-align:center;
-}
-
-.logo{
-  color:#f1c66b;
-  font-size:34px;
-  font-weight:bold;
-  margin-bottom:40px;
-}
-
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
+body{background:#10141c;color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+.container{width:100%;max-width:430px;text-align:center}
+.logo{color:#f1c66b;font-size:34px;font-weight:bold;margin-bottom:40px}
 h2{margin-bottom:15px}
-
-.subtitle{
-  color:#aaa;
-  line-height:1.5;
-  margin-bottom:30px;
-}
-
-button{
-  width:100%;
-  padding:16px;
-  border:0;
-  border-radius:12px;
-  background:#d9aa4c;
-  color:#111;
-  font-size:18px;
-  font-weight:bold;
-  cursor:pointer;
-  margin-top:12px;
-}
-
-button:disabled{
-  opacity:.5;
-  cursor:not-allowed;
-}
-
-.cancel{
-  background:#303744;
-  color:white;
-}
-
-.status{
-  display:none;
-  margin-top:20px;
-  padding:22px;
-  background:#1b2330;
-  border-radius:15px;
-}
-
-.loader{
-  width:42px;
-  height:42px;
-  border:4px solid #444;
-  border-top:4px solid #e5b653;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-  margin:10px auto 20px;
-}
-
-@keyframes spin{
-  to{transform:rotate(360deg)}
-}
-
-.player{
-  background:#303744;
-  padding:15px;
-  border-radius:10px;
-  margin-top:12px;
-}
-
-#message{
-  color:#f1c66b;
-  margin-top:20px;
-  line-height:1.5;
-  word-break:break-word;
-}
-
+.subtitle{color:#aaa;line-height:1.5;margin-bottom:30px}
+button{width:100%;padding:16px;border:0;border-radius:12px;background:#d9aa4c;color:#111;font-size:18px;font-weight:bold;cursor:pointer;margin-top:12px}
+button:disabled{opacity:.5}
+.cancel{background:#303744;color:white}
+.status{display:none;margin-top:20px;padding:22px;background:#1b2330;border-radius:15px}
+.loader{width:42px;height:42px;border:4px solid #444;border-top:4px solid #e5b653;border-radius:50%;animation:spin 1s linear infinite;margin:10px auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.player{background:#303744;padding:15px;border-radius:10px;margin-top:12px}
+#message{color:#f1c66b;margin-top:20px;line-height:1.5;word-break:break-word}
 </style>
 </head>
-
 <body>
-
 <div class="container">
+<div class="logo">♟ CHESS MASTER</div>
+<h2>Multiplayer Chess</h2>
+<p class="subtitle">Play chess with random players from anywhere.</p>
 
-  <div class="logo">♟ CHESS MASTER</div>
+<div id="searchSection">
+<button id="findBtn" disabled>LOADING...</button>
+</div>
 
-  <h2>Multiplayer Chess</h2>
+<div class="status" id="searchStatus">
+<div class="loader"></div>
+<h3>Finding Opponent...</h3>
+<p style="color:#aaa;margin-top:12px">Please wait for another player.</p>
+<button class="cancel" id="cancelBtn">CANCEL</button>
+</div>
 
-  <p class="subtitle">
-    Play chess with random players from anywhere.
-  </p>
-
-  <div id="searchSection">
-    <button id="findBtn" disabled>LOADING...</button>
-  </div>
-
-  <div class="status" id="searchStatus">
-    <div class="loader"></div>
-    <h3>Finding Opponent...</h3>
-    <p style="color:#aaa;margin-top:12px">
-      Please wait while we find another player.
-    </p>
-    <button class="cancel" id="cancelBtn">CANCEL</button>
-  </div>
-
-  <div class="status" id="matchStatus">
-
-    <h2 style="color:#f1c66b">
-      MATCH FOUND!
-    </h2>
-
-    <p style="margin-top:12px">
-      Your opponent is ready.
-    </p>
-
-    <div class="player" id="whitePlayer"></div>
-    <div class="player" id="blackPlayer"></div>
-
-    <button id="startBtn">OPEN CHESS BOARD</button>
-
-  </div>
-
-  <p id="message"></p>
-
+<div class="status" id="matchStatus">
+<h2 style="color:#f1c66b">MATCH FOUND!</h2>
+<p style="margin-top:12px">Your opponent is ready.</p>
+<div class="player" id="whitePlayer"></div>
+<div class="player" id="blackPlayer"></div>
+<button id="startBtn">OPEN CHESS BOARD</button>
+</div>
+<p id="message"></p>
 </div>
 
 <script type="module">
-
 import {initializeApp}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import {
-  getAuth,
-  onAuthStateChanged
-}
+import {getAuth,onAuthStateChanged}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  getDatabase,
-  ref,
-  push,
-  runTransaction,
-  onValue,
-  off
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+getDatabase,ref,push,runTransaction,onValue,off,update
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// FIREBASE CONFIG
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-  authDomain: "freedroid-cloud.firebaseapp.com",
-  databaseURL: "https://freedroid-cloud-default-rtdb.firebaseio.com",
-  projectId: "freedroid-cloud",
-  storageBucket: "freedroid-cloud.firebasestorage.app",
-  messagingSenderId: "909415918359",
-  appId: "1:909415918359:web:85da71cdd35a879fa86552",
-  measurementId: "G-HV2ELB7GS6"
+const firebaseConfig={
+apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+authDomain:"freedroid-cloud.firebaseapp.com",
+databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
+projectId:"freedroid-cloud",
+storageBucket:"freedroid-cloud.firebasestorage.app",
+messagingSenderId:"909415918359",
+appId:"1:909415918359:web:85da71cdd35a879fa86552",
+measurementId:"G-HV2ELB7GS6"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+const rootRef=ref(db,"matchmaking");
 
-const findBtn = document.getElementById("findBtn");
-const cancelBtn = document.getElementById("cancelBtn");
-const startBtn = document.getElementById("startBtn");
+const $=id=>document.getElementById(id);
+let user=null,matchId=null,currentMatch=null;
+let searching=false,queueListener=null,matchListener=null;
+let attempt=0;
 
-const searchSection = document.getElementById("searchSection");
-const searchStatus = document.getElementById("searchStatus");
-const matchStatus = document.getElementById("matchStatus");
-const message = document.getElementById("message");
+function msg(t){$("message").textContent=t}
 
-let currentUser = null;
-let currentMatch = null;
-let searching = false;
-let queueListener = null;
-let matchListener = null;
-let matchId = null;
-let attemptId = 0;
-
-// DATABASE LOCATION
-
-const matchmakingRef = ref(db,"matchmaking");
-
-// MESSAGE
-
-function showMessage(text){
-  message.textContent = text;
+function showSearch(){
+$("searchSection").style.display="none";
+$("searchStatus").style.display="block";
+$("matchStatus").style.display="none";
 }
 
-// SHOW SEARCH
-
-function showSearching(){
-
-  searchSection.style.display="none";
-  searchStatus.style.display="block";
-  matchStatus.style.display="none";
-
+function cleanup(){
+if(queueListener){off(rootRef);queueListener=null}
+if(matchListener && matchId){
+off(ref(db,"matchmaking/matches/"+matchId));
+matchListener=null;
 }
-
-// CLEAN LISTENERS
-
-function stopListeners(){
-
-  if(queueListener){
-    off(matchmakingRef);
-    queueListener=null;
-  }
-
-  if(matchListener && matchId){
-    off(ref(db,"matchmaking/matches/"+matchId));
-    matchListener=null;
-  }
-
 }
-
-// SHOW MATCH
 
 function showFound(match,id){
+currentMatch=match;
+matchId=id;
+searching=false;
+cleanup();
 
-  currentMatch=match;
-  matchId=id;
-  searching=false;
+$("searchSection").style.display="none";
+$("searchStatus").style.display="none";
+$("matchStatus").style.display="block";
 
-  searchSection.style.display="none";
-  searchStatus.style.display="none";
-  matchStatus.style.display="block";
-
-  document.getElementById("whitePlayer").textContent =
-    "♔ White: "+match.players.white.name;
-
-  document.getElementById("blackPlayer").textContent =
-    "♚ Black: "+match.players.black.name;
-
-  showMessage("Match ready! You can start playing.");
-
+$("whitePlayer").textContent="♔ White: "+match.players.white.name;
+$("blackPlayer").textContent="♚ Black: "+match.players.black.name;
+msg("Match ready! You can start playing.");
 }
 
-// WATCH MATCH
+function listenMatch(id){
+if(matchListener)return;
+matchId=id;
 
-function listenForMatch(id){
+const gameRef=ref(db,"matchmaking/matches/"+id);
 
-  if(matchListener) return;
-
-  matchId=id;
-
-  const gameRef=ref(
-    db,"matchmaking/matches/"+id
-  );
-
-  matchListener=onValue(gameRef,snapshot=>{
-
-    if(!snapshot.exists()) return;
-
-    const match=snapshot.val();
-
-    if(match.status==="ready"){
-      showFound(match,id);
-    }
-
-  },error=>{
-
-    showMessage("Match error: "+error.message);
-
-  });
-
+matchListener=onValue(gameRef,snap=>{
+if(!snap.exists()){
+msg("Match not found.");
+return;
 }
-
-// WATCH QUEUE
+const match=snap.val();
+if(match.status==="ready")showFound(match,id);
+else if(match.status==="finished")msg("This match has ended.");
+},error=>msg("Match error: "+error.message));
+}
 
 function watchQueue(myAttempt){
+if(queueListener)off(rootRef);
 
-  if(queueListener){
-    off(matchmakingRef);
-  }
+queueListener=onValue(rootRef,snap=>{
+if(!searching||myAttempt!==attempt)return;
 
-  queueListener=onValue(matchmakingRef,snapshot=>{
+const data=snap.val();
+const activeId=data?.activePlayers?.[user.uid];
 
-    if(!searching || myAttempt!==attemptId) return;
+if(activeId)listenMatch(activeId);
 
-    const data=snapshot.val();
-
-    const activeId=data?.activePlayers?.[currentUser.uid];
-
-    if(activeId){
-      listenForMatch(activeId);
-    }
-
-  },error=>{
-
-    showMessage("Database error: "+error.message);
-
-  });
-
+},error=>msg("Database error: "+error.message));
 }
-
-// FIND MATCH
 
 async function findMatch(){
+if(!user||searching)return;
 
-  if(!currentUser || searching) return;
+searching=true;
+currentMatch=null;
+matchId=null;
+const myAttempt=++attempt;
 
-  searching=true;
-  currentMatch=null;
-  matchId=null;
+showSearch();
+msg("Searching for opponent...");
 
-  const myAttempt=++attemptId;
+const uid=user.uid;
+const name=user.displayName||user.email?.split("@")[0]||"Player";
+const newId=push(ref(db,"matchmaking/matches")).key;
+const now=Date.now();
 
-  showSearching();
-  showMessage("Searching for opponent...");
+try{
+const result=await runTransaction(rootRef,data=>{
+data=data||{};
+data.matches=data.matches||{};
+data.activePlayers=data.activePlayers||{};
 
-  const uid=currentUser.uid;
-
-  const name=currentUser.displayName ||
-    currentUser.email?.split("@")[0] ||
-    "Player";
-
-  // Generate a unique match ID
-
-  const newMatchId=push(
-    ref(db,"matchmaking/matches")
-  ).key;
-
-  const now=Date.now();
-
-  try{
-
-    const result=await runTransaction(
-      matchmakingRef,
-      data=>{
-
-        data=data||{
-          waiting:null,
-          matches:{},
-          activePlayers:{}
-        };
-
-        data.matches=data.matches||{};
-        data.activePlayers=data.activePlayers||{};
-
-        const waiting=data.waiting;
-
-        // Remove expired waiting player
-
-        if(
-          waiting &&
-          now-waiting.joinedAt>120000
-        ){
-          data.waiting=null;
-        }
-
-        // Do not match with yourself
-
-        if(data.waiting?.uid===uid){
-          return;
-        }
-
-        // Match with waiting opponent
-
-        if(data.waiting){
-
-          const opponent=data.waiting;
-
-          data.matches[newMatchId]={
-            players:{
-              white:{
-                uid:opponent.uid,
-                name:opponent.name
-              },
-              black:{
-                uid:uid,
-                name:name
-              }
-            },
-            status:"ready",
-            moves:{},
-            turn:"white",
-            createdAt:now
-          };
-
-          data.activePlayers[opponent.uid]=newMatchId;
-          data.activePlayers[uid]=newMatchId;
-
-          data.waiting=null;
-
-        }else{
-
-          // Wait for another player
-
-          data.waiting={
-            uid:uid,
-            name:name,
-            joinedAt:now
-          };
-
-        }
-
-        return data;
-
-      },
-      {applyLocally:false}
-    );
-
-    if(!result.committed){
-      throw new Error("Matchmaking transaction failed.");
-    }
-
-    if(!searching || myAttempt!==attemptId) return;
-
-    const data=result.snapshot.val();
-
-    const activeId=data?.activePlayers?.[uid];
-
-    if(activeId){
-
-      listenForMatch(activeId);
-
-    }else{
-
-      showMessage("Waiting for another player...");
-
-      watchQueue(myAttempt);
-
-    }
-
-  }catch(error){
-
-    console.error(error);
-
-    searching=false;
-
-    searchSection.style.display="block";
-    searchStatus.style.display="none";
-
-    showMessage("Error: "+error.message);
-
-  }
-
+if(data.activePlayers[uid]){
+delete data.activePlayers[uid];
 }
 
-// CANCEL SEARCH
+if(data.waiting?.uid===uid){
+return;
+}
+
+if(data.waiting && now-data.waiting.joinedAt>120000){
+data.waiting=null;
+}
+
+if(data.waiting){
+const opponent=data.waiting;
+
+data.matches[newId]={
+players:{
+white:{uid:opponent.uid,name:opponent.name},
+black:{uid,name}
+},
+status:"ready",
+fen:"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+turn:"white",
+moves:{},
+createdAt:now
+};
+
+data.activePlayers[opponent.uid]=newId;
+data.activePlayers[uid]=newId;
+data.waiting=null;
+
+}else{
+data.waiting={uid,name,joinedAt:now};
+}
+return data;
+},{applyLocally:false});
+
+if(!searching||myAttempt!==attempt)return;
+
+if(!result.committed){
+throw new Error("Could not enter matchmaking queue.");
+}
+
+const data=result.snapshot.val();
+const activeId=data?.activePlayers?.[uid];
+
+if(activeId){
+listenMatch(activeId);
+}else{
+msg("Waiting for another player...");
+watchQueue(myAttempt);
+}
+
+}catch(e){
+searching=false;
+$("searchSection").style.display="block";
+$("searchStatus").style.display="none";
+msg("Error: "+e.message);
+}
+}
 
 async function cancelSearch(){
+if(!user||!searching)return;
 
-  if(!currentUser || !searching) return;
+searching=false;
+attempt++;
+cleanup();
 
-  const uid=currentUser.uid;
+try{
+await runTransaction(rootRef,data=>{
+if(!data)return data;
+if(data.waiting?.uid===user.uid)data.waiting=null;
+if(data.activePlayers?.[user.uid])delete data.activePlayers[user.uid];
+return data;
+},{applyLocally:false});
 
-  searching=false;
-  attemptId++;
+$("searchStatus").style.display="none";
+$("searchSection").style.display="block";
+msg("Search cancelled.");
 
-  try{
-
-    await runTransaction(
-      matchmakingRef,
-      data=>{
-
-        if(!data) return data;
-
-        if(data.waiting?.uid===uid){
-          data.waiting=null;
-        }
-
-        return data;
-
-      },
-      {applyLocally:false}
-    );
-
-    if(queueListener){
-      off(matchmakingRef);
-      queueListener=null;
-    }
-
-    searchStatus.style.display="none";
-    searchSection.style.display="block";
-
-    showMessage("Search cancelled.");
-
-  }catch(error){
-
-    showMessage("Cancel error: "+error.message);
-
-  }
-
+}catch(e){msg(e.message)}
 }
 
-// START CHESS
+$("findBtn").onclick=findMatch;
+$("cancelBtn").onclick=cancelSearch;
 
-startBtn.addEventListener("click",()=>{
+$("startBtn").onclick=()=>{
+if(!currentMatch||!user||!matchId)return;
 
-  if(!currentMatch || !currentUser || !matchId) return;
+const color=currentMatch.players.white.uid===user.uid?"white":"black";
 
-  const color=
-    currentMatch.players.white.uid===currentUser.uid
-    ?"white":"black";
+location.href="chess.html?matchId="+encodeURIComponent(matchId)+"&color="+color;
+};
 
-  window.location.href=
-    "chess.html?matchId="+encodeURIComponent(matchId)+
-    "&color="+color;
-
+onAuthStateChanged(auth,u=>{
+if(!u){
+location.replace("login.html");
+return;
+}
+user=u;
+$("findBtn").disabled=false;
+$("findBtn").textContent="FIND MATCH";
+msg("Welcome, "+(u.displayName||u.email));
 });
-
-// BUTTONS
-
-findBtn.addEventListener("click",findMatch);
-cancelBtn.addEventListener("click",cancelSearch);
-
-// LOGIN CHECK
-
-onAuthStateChanged(auth,user=>{
-
-  if(user){
-
-    currentUser=user;
-
-    findBtn.disabled=false;
-    findBtn.textContent="FIND MATCH";
-
-    showMessage("Welcome, "+
-      (user.displayName || user.email));
-
-  }else{
-
-    window.location.replace("login.html");
-
-  }
-
-});
-
 </script>
-
 </body>
 </html>
