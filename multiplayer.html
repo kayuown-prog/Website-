@@ -5,25 +5,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chess Master Multiplayer</title>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:Arial}
-body{background:#10141c;color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}
+body{
+ background:#10141c;color:white;min-height:100vh;
+ display:flex;justify-content:center;align-items:center;padding:20px
+}
 .container{width:100%;max-width:430px;text-align:center}
 .logo{color:#f1c66b;font-size:34px;font-weight:bold;margin-bottom:40px}
 h2{margin-bottom:15px}
 .subtitle{color:#aaa;line-height:1.5;margin-bottom:30px}
-button{width:100%;padding:16px;border:0;border-radius:12px;background:#d9aa4c;color:#111;font-size:18px;font-weight:bold;cursor:pointer;margin-top:12px}
-button:disabled{opacity:.5}
+button{
+ width:100%;padding:16px;border:0;border-radius:12px;
+ background:#d9aa4c;color:#111;font-size:18px;
+ font-weight:bold;cursor:pointer;margin-top:12px
+}
+button:disabled{opacity:.5;cursor:not-allowed}
 .cancel{background:#303744;color:white}
 .status{display:none;margin-top:20px;padding:22px;background:#1b2330;border-radius:15px}
-.loader{width:42px;height:42px;border:4px solid #444;border-top:4px solid #e5b653;border-radius:50%;animation:spin 1s linear infinite;margin:10px auto 20px}
+.loader{
+ width:42px;height:42px;border:4px solid #444;
+ border-top:4px solid #e5b653;border-radius:50%;
+ animation:spin 1s linear infinite;margin:10px auto 20px
+}
 @keyframes spin{to{transform:rotate(360deg)}}
 .player{background:#303744;padding:15px;border-radius:10px;margin-top:12px}
 #message{color:#f1c66b;margin-top:20px;line-height:1.5;word-break:break-word}
+.blocked{color:#ff7777}
 </style>
 </head>
+
 <body>
+
 <div class="container">
+
 <div class="logo">♟ CHESS MASTER</div>
 <h2>Multiplayer Chess</h2>
 <p class="subtitle">Play chess with random players from anywhere.</p>
@@ -46,229 +62,528 @@ button:disabled{opacity:.5}
 <div class="player" id="blackPlayer"></div>
 <button id="startBtn">OPEN CHESS BOARD</button>
 </div>
+
 <p id="message"></p>
+
 </div>
 
 <script type="module">
+
 import {initializeApp}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-import {getAuth,onAuthStateChanged}
+import {
+ getAuth,onAuthStateChanged
+}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-getDatabase,ref,push,runTransaction,onValue,off,update
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+ getDatabase,ref,push,runTransaction,
+ onValue,off,get
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 
 const firebaseConfig={
-apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-authDomain:"freedroid-cloud.firebaseapp.com",
-databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
-projectId:"freedroid-cloud",
-storageBucket:"freedroid-cloud.firebasestorage.app",
-messagingSenderId:"909415918359",
-appId:"1:909415918359:web:85da71cdd35a879fa86552",
-measurementId:"G-HV2ELB7GS6"
+ apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+ authDomain:"freedroid-cloud.firebaseapp.com",
+ databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
+ projectId:"freedroid-cloud",
+ storageBucket:"freedroid-cloud.firebasestorage.app",
+ messagingSenderId:"909415918359",
+ appId:"1:909415918359:web:85da71cdd35a879fa86552",
+ measurementId:"G-HV2ELB7GS6"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getDatabase(app);
+
 const rootRef=ref(db,"matchmaking");
 
 const $=id=>document.getElementById(id);
-let user=null,matchId=null,currentMatch=null;
-let searching=false,queueListener=null,matchListener=null;
+
+let user=null;
+let matchId=null;
+let currentMatch=null;
+let searching=false;
+let isBlocked=false;
+let queueListener=null;
+let matchListener=null;
+let blockedListener=null;
 let attempt=0;
 
-function msg(t){$("message").textContent=t}
+
+function msg(text){
+ $("message").textContent=text;
+}
 
 function showSearch(){
-$("searchSection").style.display="none";
-$("searchStatus").style.display="block";
-$("matchStatus").style.display="none";
+ $("searchSection").style.display="none";
+ $("searchStatus").style.display="block";
+ $("matchStatus").style.display="none";
+}
+
+function showHome(){
+ $("searchSection").style.display="block";
+ $("searchStatus").style.display="none";
+ $("matchStatus").style.display="none";
 }
 
 function cleanup(){
-if(queueListener){off(rootRef);queueListener=null}
-if(matchListener && matchId){
-off(ref(db,"matchmaking/matches/"+matchId));
-matchListener=null;
+
+ if(queueListener){
+  off(rootRef,"value",queueListener);
+  queueListener=null;
+ }
+
+ if(matchListener && matchId){
+  off(ref(db,"matchmaking/matches/"+matchId),
+      "value",matchListener);
+  matchListener=null;
+ }
 }
+
+function clearMatch(){
+ currentMatch=null;
+ matchId=null;
 }
+
+
+// Remove player from waiting queue
+
+async function removeFromQueue(){
+
+ if(!user)return;
+
+ await runTransaction(rootRef,data=>{
+
+  if(!data)return data;
+
+  if(data.waiting?.uid===user.uid){
+   data.waiting=null;
+  }
+
+  if(data.activePlayers?.[user.uid]){
+   delete data.activePlayers[user.uid];
+  }
+
+  return data;
+
+ },{applyLocally:false});
+}
+
+
+// Blocked player handling
+
+async function handleBlocked(){
+
+ if(!isBlocked)return;
+
+ searching=false;
+ attempt++;
+
+ cleanup();
+ clearMatch();
+
+ showHome();
+
+ $("findBtn").disabled=true;
+ $("findBtn").textContent="ACCESS BLOCKED";
+
+ $("message").className="blocked";
+ msg("Your account has been blocked by the Chess Master administrator.");
+
+ try{
+  await removeFromQueue();
+ }catch(error){
+  console.error("Queue cleanup:",error);
+ }
+}
+
+
+// Monitor Firebase block status
+
+function watchBlockedStatus(){
+
+ if(blockedListener){
+  off(ref(db,"blockedUsers/"+user.uid),
+      "value",blockedListener);
+ }
+
+ const blockedRef=ref(db,"blockedUsers/"+user.uid);
+
+ blockedListener=onValue(
+  blockedRef,
+  snapshot=>{
+
+   isBlocked=snapshot.val()?.blocked===true;
+
+   if(isBlocked){
+    handleBlocked();
+   }else{
+
+    $("message").className="";
+    $("findBtn").disabled=false;
+    $("findBtn").textContent="FIND MATCH";
+
+    if($("message").textContent.includes("blocked")){
+     msg("Your account is active. You can play now.");
+    }
+   }
+
+  },
+  error=>{
+   $("findBtn").disabled=true;
+   msg("Unable to verify account access: "+error.message);
+  }
+ );
+}
+
+
+// Final block verification
+
+async function checkBlocked(){
+
+ if(!user)return true;
+
+ const snapshot=await get(
+  ref(db,"blockedUsers/"+user.uid)
+ );
+
+ isBlocked=snapshot.val()?.blocked===true;
+
+ if(isBlocked){
+  await handleBlocked();
+  return true;
+ }
+
+ return false;
+}
+
+
+// Match found
 
 function showFound(match,id){
-currentMatch=match;
-matchId=id;
-searching=false;
-cleanup();
 
-$("searchSection").style.display="none";
-$("searchStatus").style.display="none";
-$("matchStatus").style.display="block";
+ if(isBlocked || !user)return;
 
-$("whitePlayer").textContent="♔ White: "+match.players.white.name;
-$("blackPlayer").textContent="♚ Black: "+match.players.black.name;
-msg("Match ready! You can start playing.");
+ if(!match?.players?.white?.uid ||
+    !match?.players?.black?.uid){
+  msg("Invalid match information.");
+  return;
+ }
+
+ currentMatch=match;
+ matchId=id;
+ searching=false;
+
+ cleanup();
+
+ $("searchSection").style.display="none";
+ $("searchStatus").style.display="none";
+ $("matchStatus").style.display="block";
+
+ $("whitePlayer").textContent=
+  "♔ White: "+(match.players.white.name||"Player");
+
+ $("blackPlayer").textContent=
+  "♚ Black: "+(match.players.black.name||"Player");
+
+ msg("Match ready! You can start playing.");
 }
+
+
+// Listen to match
 
 function listenMatch(id){
-if(matchListener)return;
-matchId=id;
 
-const gameRef=ref(db,"matchmaking/matches/"+id);
+ if(matchListener || isBlocked)return;
 
-matchListener=onValue(gameRef,snap=>{
-if(!snap.exists()){
-msg("Match not found.");
-return;
+ matchId=id;
+
+ const gameRef=ref(db,"matchmaking/matches/"+id);
+
+ matchListener=onValue(
+  gameRef,
+  snap=>{
+
+   if(!snap.exists()){
+    msg("Match not found.");
+    return;
+   }
+
+   const match=snap.val();
+
+   if(match.status==="ready"){
+    showFound(match,id);
+   }
+   else if(match.status==="finished"){
+    msg("This match has ended.");
+   }
+
+  },
+  error=>msg("Match error: "+error.message)
+ );
 }
-const match=snap.val();
-if(match.status==="ready")showFound(match,id);
-else if(match.status==="finished")msg("This match has ended.");
-},error=>msg("Match error: "+error.message));
-}
+
+
+// Watch matchmaking queue
 
 function watchQueue(myAttempt){
-if(queueListener)off(rootRef);
 
-queueListener=onValue(rootRef,snap=>{
-if(!searching||myAttempt!==attempt)return;
+ if(queueListener){
+  off(rootRef,"value",queueListener);
+ }
 
-const data=snap.val();
-const activeId=data?.activePlayers?.[user.uid];
+ queueListener=onValue(
+  rootRef,
+  snap=>{
 
-if(activeId)listenMatch(activeId);
+   if(!searching ||
+      myAttempt!==attempt ||
+      isBlocked)return;
 
-},error=>msg("Database error: "+error.message));
+   const data=snap.val();
+   const activeId=data?.activePlayers?.[user.uid];
+
+   if(activeId){
+    listenMatch(activeId);
+   }
+
+  },
+  error=>msg("Database error: "+error.message)
+ );
 }
+
+
+// Find match
 
 async function findMatch(){
-if(!user||searching)return;
 
-searching=true;
-currentMatch=null;
-matchId=null;
-const myAttempt=++attempt;
+ if(!user || searching || isBlocked)return;
 
-showSearch();
-msg("Searching for opponent...");
+ try{
 
-const uid=user.uid;
-const name=user.displayName||user.email?.split("@")[0]||"Player";
-const newId=push(ref(db,"matchmaking/matches")).key;
-const now=Date.now();
+  if(await checkBlocked())return;
 
-try{
-const result=await runTransaction(rootRef,data=>{
-data=data||{};
-data.matches=data.matches||{};
-data.activePlayers=data.activePlayers||{};
+  searching=true;
+  clearMatch();
 
-if(data.activePlayers[uid]){
-delete data.activePlayers[uid];
+  const myAttempt=++attempt;
+
+  showSearch();
+  msg("Searching for opponent...");
+
+  const uid=user.uid;
+
+  const name=
+   user.displayName ||
+   user.email?.split("@")[0] ||
+   "Player";
+
+  const newId=push(
+   ref(db,"matchmaking/matches")
+  ).key;
+
+  const now=Date.now();
+
+  const result=await runTransaction(
+   rootRef,
+   data=>{
+
+    data=data||{};
+    data.matches=data.matches||{};
+    data.activePlayers=data.activePlayers||{};
+
+    if(data.activePlayers[uid]){
+     delete data.activePlayers[uid];
+    }
+
+    if(data.waiting?.uid===uid){
+     return;
+    }
+
+    if(data.waiting &&
+       now-data.waiting.joinedAt>120000){
+     data.waiting=null;
+    }
+
+    if(data.waiting){
+
+     const opponent=data.waiting;
+
+     data.matches[newId]={
+      players:{
+       white:{
+        uid:opponent.uid,
+        name:opponent.name
+       },
+       black:{
+        uid:uid,
+        name:name
+       }
+      },
+      status:"ready",
+      fen:"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      turn:"white",
+      moves:{},
+      createdAt:now
+     };
+
+     data.activePlayers[opponent.uid]=newId;
+     data.activePlayers[uid]=newId;
+     data.waiting=null;
+
+    }else{
+
+     data.waiting={
+      uid:uid,
+      name:name,
+      joinedAt:now
+     };
+
+    }
+
+    return data;
+
+   },
+   {applyLocally:false}
+  );
+
+  if(!searching || myAttempt!==attempt)return;
+
+  if(!result.committed){
+   throw new Error("Could not enter matchmaking queue.");
+  }
+
+  // Check again after entering queue
+  if(await checkBlocked())return;
+
+  const data=result.snapshot.val();
+  const activeId=data?.activePlayers?.[uid];
+
+  if(activeId){
+   listenMatch(activeId);
+  }else{
+   msg("Waiting for another player...");
+   watchQueue(myAttempt);
+  }
+
+ }catch(error){
+
+  if(isBlocked)return;
+
+  searching=false;
+  cleanup();
+  showHome();
+
+  msg("Error: "+error.message);
+ }
 }
 
-if(data.waiting?.uid===uid){
-return;
-}
 
-if(data.waiting && now-data.waiting.joinedAt>120000){
-data.waiting=null;
-}
-
-if(data.waiting){
-const opponent=data.waiting;
-
-data.matches[newId]={
-players:{
-white:{uid:opponent.uid,name:opponent.name},
-black:{uid,name}
-},
-status:"ready",
-fen:"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-turn:"white",
-moves:{},
-createdAt:now
-};
-
-data.activePlayers[opponent.uid]=newId;
-data.activePlayers[uid]=newId;
-data.waiting=null;
-
-}else{
-data.waiting={uid,name,joinedAt:now};
-}
-return data;
-},{applyLocally:false});
-
-if(!searching||myAttempt!==attempt)return;
-
-if(!result.committed){
-throw new Error("Could not enter matchmaking queue.");
-}
-
-const data=result.snapshot.val();
-const activeId=data?.activePlayers?.[uid];
-
-if(activeId){
-listenMatch(activeId);
-}else{
-msg("Waiting for another player...");
-watchQueue(myAttempt);
-}
-
-}catch(e){
-searching=false;
-$("searchSection").style.display="block";
-$("searchStatus").style.display="none";
-msg("Error: "+e.message);
-}
-}
+// Cancel search
 
 async function cancelSearch(){
-if(!user||!searching)return;
 
-searching=false;
-attempt++;
-cleanup();
+ if(!user || !searching)return;
 
-try{
-await runTransaction(rootRef,data=>{
-if(!data)return data;
-if(data.waiting?.uid===user.uid)data.waiting=null;
-if(data.activePlayers?.[user.uid])delete data.activePlayers[user.uid];
-return data;
-},{applyLocally:false});
+ searching=false;
+ attempt++;
 
-$("searchStatus").style.display="none";
-$("searchSection").style.display="block";
-msg("Search cancelled.");
+ cleanup();
+ clearMatch();
 
-}catch(e){msg(e.message)}
+ try{
+
+  await removeFromQueue();
+
+  showHome();
+  msg("Search cancelled.");
+
+ }catch(error){
+  msg("Error: "+error.message);
+ }
 }
+
+
+// Open chess board
+
+$("startBtn").onclick=async()=>{
+
+ if(!currentMatch || !user || !matchId)return;
+
+ $("startBtn").disabled=true;
+
+ try{
+
+  if(await checkBlocked())return;
+
+  const id=matchId;
+
+  const color=
+   currentMatch.players.white.uid===user.uid
+   ?"white":"black";
+
+  location.href=
+   "chess.html?matchId="+encodeURIComponent(id)+
+   "&color="+color;
+
+ }catch(error){
+
+  msg("Access verification failed: "+error.message);
+
+ }finally{
+
+  $("startBtn").disabled=false;
+
+ }
+};
+
 
 $("findBtn").onclick=findMatch;
 $("cancelBtn").onclick=cancelSearch;
 
-$("startBtn").onclick=()=>{
-if(!currentMatch||!user||!matchId)return;
 
-const color=currentMatch.players.white.uid===user.uid?"white":"black";
+// Authentication
 
-location.href="chess.html?matchId="+encodeURIComponent(matchId)+"&color="+color;
-};
+onAuthStateChanged(auth,async u=>{
 
-onAuthStateChanged(auth,u=>{
-if(!u){
-location.replace("login.html");
-return;
-}
-user=u;
-$("findBtn").disabled=false;
-$("findBtn").textContent="FIND MATCH";
-msg("Welcome, "+(u.displayName||u.email));
+ if(!u){
+  location.replace("login.html");
+  return;
+ }
+
+ user=u;
+
+ $("findBtn").disabled=true;
+ $("findBtn").textContent="CHECKING ACCESS";
+
+ msg("Verifying your account...");
+
+ watchBlockedStatus();
+
+ try{
+
+  const blockedNow=await checkBlocked();
+
+  if(blockedNow)return;
+
+  $("findBtn").disabled=false;
+  $("findBtn").textContent="FIND MATCH";
+
+  msg("Welcome, "+(u.displayName||u.email||"Player"));
+
+ }catch(error){
+
+  $("findBtn").disabled=true;
+  msg("Account verification failed: "+error.message);
+
+ }
+
 });
+
 </script>
 </body>
 </html>
