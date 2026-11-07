@@ -1,48 +1,314 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Chess Master - Live Game</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#10141c;color:white;font-family:Arial;text-align:center;padding:12px}
-h1{color:#f5c76a;margin:12px}
-#gameArea{display:none}
-#players{display:flex;gap:8px;max-width:480px;margin:15px auto}
-.player{flex:1;background:#222c3a;padding:12px;border-radius:9px;font-size:14px}
-.active{border:2px solid #e5b653}
-#status{max-width:480px;margin:12px auto;background:#222c3a;padding:13px;border-radius:9px;color:#f5c76a}
-#board{width:min(94vw,480px);aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);margin:15px auto;border:4px solid #d6a84b}
-.square{display:flex;align-items:center;justify-content:center;position:relative;font-size:clamp(27px,8vw,53px);cursor:pointer;user-select:none}
-.light{background:#f0d9b5}
-.dark{background:#779556}
-.selected{background:#e6d34c!important}
-.square small{position:absolute;bottom:2px;left:3px;font-size:9px;color:#222}
-button{padding:13px 20px;background:#d6a84b;border:0;border-radius:8px;font-weight:bold;margin:7px;cursor:pointer}
-#info{color:#aaa;margin:12px}
-#loading{color:#f5c76a;margin:30px}
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+ min-height:100vh;
+ background:radial-gradient(ellipse at center,#07565a,#00272d 80%);
+ color:white;
+ font-family:Arial,sans-serif;
+ text-align:center;
+ padding-bottom:20px;
+}
+
+/* HEADER */
+.top-header{
+ min-height:100px;
+ padding:15px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ background:repeating-linear-gradient(175deg,transparent,#ffffff08 8px,transparent 18px),linear-gradient(145deg,#4b1d08,#8b3d12,#4a1d08);
+ border-bottom:5px solid #e5a72e;
+ box-shadow:0 5px 15px #0008;
+}
+
+.brand{
+ display:flex;
+ align-items:center;
+ gap:10px;
+}
+
+.logo{
+ width:60px;
+ height:60px;
+ border-radius:50%;
+ border:4px solid #f5c44a;
+ background:radial-gradient(circle,#24445c,#081323);
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ color:#f5c76a;
+ font-size:35px;
+}
+
+.brand-name{
+ color:#ffd16a;
+ font-size:clamp(20px,5vw,28px);
+ font-weight:900;
+}
+
+.brand-subtitle{
+ font-size:10px;
+ color:#7ce8e9;
+ letter-spacing:3px;
+ margin-top:5px;
+ font-weight:bold;
+}
+
+.top-btn{
+ width:50px;
+ height:50px;
+ border:0;
+ border-radius:8px;
+ background:linear-gradient(#e62817,#a90000);
+ color:#ffdb56;
+ font-size:25px;
+}
+
+/* PLAYERS */
+#players{
+ display:flex;
+ gap:8px;
+ max-width:480px;
+ margin:15px auto;
+ padding:0 8px;
+}
+
+.player{
+ flex:1;
+ background:linear-gradient(110deg,#003137,#00464a);
+ padding:13px 5px;
+ border-radius:9px;
+ font-size:13px;
+ border:2px solid #75502b;
+ overflow-wrap:anywhere;
+}
+
+.player.active{
+ border:2px solid #f5c44a;
+ box-shadow:0 0 10px #f5c44a66;
+}
+
+/* STATUS */
+#status{
+ max-width:480px;
+ margin:12px auto;
+ background:linear-gradient(110deg,#003137,#00464a);
+ padding:14px;
+ border-radius:9px;
+ color:#ffcf53;
+ font-weight:bold;
+ border-bottom:3px solid #9d5723;
+}
+
+/* BOARD */
+.board-wrapper{
+ width:100%;
+ padding:0 5px;
+ background:linear-gradient(#72340f,#301507);
+ border-top:5px solid #a95b23;
+ border-bottom:5px solid #a95b23;
+ box-shadow:0 5px 12px #0009;
+}
+
+#board{
+ width:100%;
+ max-width:650px;
+ aspect-ratio:1;
+ display:grid;
+ grid-template-columns:repeat(8,minmax(0,1fr));
+ border:4px solid #8b4b1d;
+ overflow:hidden;
+ margin:auto;
+}
+
+.square{
+ aspect-ratio:1;
+ position:relative;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ cursor:pointer;
+ user-select:none;
+ overflow:hidden;
+ -webkit-tap-highlight-color:transparent;
+}
+
+.light{
+ background:linear-gradient(140deg,#fff5e3,#e8d5b8);
+}
+
+.dark{
+ background:repeating-linear-gradient(160deg,transparent,#ffffff05 4px,transparent 9px),linear-gradient(140deg,#171717,#080808);
+}
+
+/* PIECES */
+.piece{
+ font-family:"DejaVu Sans","Segoe UI Symbol",serif;
+ font-size:clamp(34px,9.5vw,66px);
+ line-height:1;
+ z-index:2;
+ display:block;
+ transform:scale(1.08);
+ pointer-events:none;
+}
+
+.white-piece{
+ color:#fffdf5;
+ -webkit-text-stroke:1px #777;
+ text-shadow:0 2px 1px #777,0 4px 2px #555,0 6px 3px #333,0 0 7px #fff9;
+}
+
+.black-piece{
+ color:#151a28;
+ -webkit-text-stroke:1px #718096;
+ text-shadow:0 2px 1px #000,0 4px 2px #000,0 6px 3px #000,0 0 6px #aab8d880;
+}
+
+/* HIGHLIGHTS */
+.selected{
+ background:#c9d64c!important;
+ box-shadow:inset 0 0 0 4px #fff1a0;
+}
+
+.last-move{
+ background:#b6c957!important;
+}
+
+.dot{
+ width:25%;
+ height:25%;
+ border-radius:50%;
+ background:#138d51;
+ position:absolute;
+ z-index:3;
+ opacity:.8;
+ pointer-events:none;
+}
+
+.capture{
+ position:absolute;
+ inset:3px;
+ border:4px solid #138d51;
+ border-radius:50%;
+ z-index:3;
+ pointer-events:none;
+}
+
+/* COORDINATES */
+.coordinates{
+ position:absolute;
+ z-index:4;
+ font-size:10px;
+ font-weight:bold;
+ pointer-events:none;
+}
+
+.rank{top:2px;left:3px}
+.file{bottom:2px;right:4px}
+
+.light .coordinates{color:#292929}
+.dark .coordinates{color:#fff}
+
+/* INFO */
+#info{
+ color:#fff2c9;
+ padding:12px;
+ min-height:45px;
+ font-size:14px;
+ font-weight:bold;
+ background:#00343a;
+ margin-top:12px;
+}
+
+/* BUTTONS */
+.controls{
+ display:flex;
+ justify-content:center;
+ flex-wrap:wrap;
+ gap:10px;
+ padding:15px 8px;
+}
+
+button{
+ padding:13px 20px;
+ background:linear-gradient(#e8b84f,#b77b24);
+ border:2px solid #f5cf72;
+ border-radius:9px;
+ color:#241506;
+ font-weight:bold;
+ cursor:pointer;
+}
+
+button:active{transform:scale(.96)}
+
+@media(min-width:600px){
+ .board-wrapper{
+  max-width:660px;
+  margin:auto;
+  padding:5px;
+ }
+}
+
+@media(max-width:360px){
+ .coordinates{font-size:8px}
+ .piece{font-size:clamp(30px,9vw,45px)}
+ .player{font-size:11px}
+}
 </style>
 </head>
+
 <body>
 
-<h1>♟ CHESS MASTER</h1>
+<!-- HEADER -->
+<div class="top-header">
+ <div class="brand">
+  <div class="logo">♟</div>
+  <div>
+   <div class="brand-name">CHESS MASTER</div>
+   <div class="brand-subtitle">PLAY • THINK • WIN</div>
+  </div>
+ </div>
+
+ <button class="top-btn"
+ onclick="location.href='dashboard.html'">⚙</button>
+</div>
+
 <div id="loading">Connecting to match...</div>
 
-<div id="gameArea">
-<div id="players">
-<div class="player" id="whitePlayer">♔ White</div>
-<div class="player" id="blackPlayer">♚ Black</div>
-</div>
-<div id="status">Loading game...</div>
-<div id="board"></div>
-<p id="info">Select your piece and destination.</p>
-<button id="exitBtn">EXIT GAME</button>
-<button onclick="location.href='dashboard.html'">DASHBOARD</button>
+<div id="gameArea" style="display:none">
+
+ <!-- PLAYERS -->
+ <div id="players">
+  <div class="player" id="whitePlayer">♔ White</div>
+  <div class="player" id="blackPlayer">♚ Black</div>
+ </div>
+
+ <div id="status">Loading game...</div>
+
+ <!-- CHESS BOARD -->
+ <div class="board-wrapper">
+  <div id="board"></div>
+ </div>
+
+ <p id="info">Select your piece and destination.</p>
+
+ <div class="controls">
+  <button id="exitBtn">EXIT GAME</button>
+  <button onclick="location.href='dashboard.html'">DASHBOARD</button>
+ </div>
+
 </div>
 
 <script type="module">
+
 import {initializeApp}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
@@ -50,25 +316,32 @@ import {getAuth,onAuthStateChanged}
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-getDatabase,ref,get,update,onValue,runTransaction
+ getDatabase,ref,get,update,onValue,runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-import {Chess} from "https://esm.sh/chess.js@1.4.0";
+import {Chess}
+from "https://esm.sh/chess.js@1.4.0";
+
+
+/* FIREBASE CONFIG */
 
 const firebaseConfig={
-apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
-authDomain:"freedroid-cloud.firebaseapp.com",
-databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
-projectId:"freedroid-cloud",
-storageBucket:"freedroid-cloud.firebasestorage.app",
-messagingSenderId:"909415918359",
-appId:"1:909415918359:web:85da71cdd35a879fa86552",
-measurementId:"G-HV2ELB7GS6"
+ apiKey:"AIzaSyAtpvwOOn-7I6eoRR3VK2ZR_IqIy7Hcu0Y",
+ authDomain:"freedroid-cloud.firebaseapp.com",
+ databaseURL:"https://freedroid-cloud-default-rtdb.firebaseio.com",
+ projectId:"freedroid-cloud",
+ storageBucket:"freedroid-cloud.firebasestorage.app",
+ messagingSenderId:"909415918359",
+ appId:"1:909415918359:web:85da71cdd35a879fa86552",
+ measurementId:"G-HV2ELB7GS6"
 };
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getDatabase(app);
+
+
+/* MATCH DATA */
 
 const params=new URLSearchParams(location.search);
 const matchId=params.get("matchId");
@@ -79,262 +352,458 @@ const area=document.getElementById("gameArea");
 const boardEl=document.getElementById("board");
 const statusEl=document.getElementById("status");
 
-const gameRef=matchId?ref(db,"matchmaking/matches/"+matchId):null;
+const gameRef=matchId?
+ ref(db,"matchmaking/matches/"+matchId):null;
 
 let user=null;
 let game=new Chess();
 let selected=null;
+let possibleMoves=[];
 let busy=false;
 let matchData=null;
 let unsubscribe=null;
 let started=false;
+let lastMove=null;
+
+
+/* PIECES */
 
 const pieces={
-w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
-b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
+ w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
+ b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
 };
 
+
+/* HELPERS */
+
 function showError(t){
-loading.textContent=t;
-loading.style.display="block";
-area.style.display="none";
+ loading.textContent=t;
+ loading.style.display="block";
+ area.style.display="none";
 }
 
 function setStatus(t){
-statusEl.textContent=t;
+ statusEl.textContent=t;
 }
+
+function clearSelection(){
+ selected=null;
+ possibleMoves=[];
+}
+
+
+/* START GAME */
 
 async function startGame(){
-try{
-if(!matchId||!["white","black"].includes(player)){
-showError("Invalid match link.");
-return;
+
+ try{
+
+  if(!matchId||!["white","black"].includes(player)){
+   showError("Invalid match link.");
+   return;
+  }
+
+  const snap=await get(gameRef);
+
+  if(!snap.exists()){
+   showError("Match not found: "+matchId);
+   return;
+  }
+
+  const data=snap.val();
+
+  if(data.status!=="ready"){
+   showError("Match is not ready. Please create a new match.");
+   return;
+  }
+
+  if(data.players?.[player]?.uid!==user.uid){
+   showError("Your account is not assigned to this match.");
+   return;
+  }
+
+  if(!data.fen){
+   await update(gameRef,{
+    fen:new Chess().fen(),
+    turn:"white"
+   });
+  }
+
+  area.style.display="block";
+  loading.style.display="none";
+
+  listenMatch();
+
+ }catch(e){
+  showError("Firebase error: "+e.message);
+ }
 }
 
-const snap=await get(gameRef);
 
-if(!snap.exists()){
-showError("Match ID not found in Firebase: "+matchId);
-return;
-}
-
-const data=snap.val();
-
-if(data.status!=="ready"){
-showError("Match status: "+(data.status||"missing")+". Please create a new match.");
-return;
-}
-
-if(data.players?.[player]?.uid!==user.uid){
-showError("Your account is not assigned to this match.");
-return;
-}
-
-if(!data.fen){
-await update(gameRef,{
-fen:new Chess().fen(),
-turn:"white"
-});
-}
-
-area.style.display="block";
-loading.style.display="none";
-listenMatch();
-}catch(e){
-showError("Firebase error: "+e.message);
-}
-}
+/* LIVE MATCH LISTENER */
 
 function listenMatch(){
-if(started)return;
-started=true;
 
-unsubscribe=onValue(gameRef,snap=>{
-if(!snap.exists()){
-setStatus("Match no longer exists.");
-return;
+ if(started)return;
+ started=true;
+
+ unsubscribe=onValue(gameRef,snap=>{
+
+  if(!snap.exists()){
+   setStatus("Match no longer exists.");
+   return;
+  }
+
+  matchData=snap.val();
+
+  if(matchData.status!=="ready"){
+   setStatus("Match is not active.");
+   return;
+  }
+
+  if(matchData.players?.[player]?.uid!==user.uid){
+   setStatus("Player verification failed.");
+   return;
+  }
+
+  try{
+   game=new Chess(matchData.fen||new Chess().fen());
+  }catch(e){
+   setStatus("Invalid chess position.");
+   return;
+  }
+
+  lastMove=matchData.lastMove||null;
+
+  document.getElementById("whitePlayer").textContent=
+   "♔ White: "+matchData.players.white.name;
+
+  document.getElementById("blackPlayer").textContent=
+   "♚ Black: "+matchData.players.black.name;
+
+  document.getElementById("whitePlayer").classList.toggle(
+   "active",game.turn()==="w"
+  );
+
+  document.getElementById("blackPlayer").classList.toggle(
+   "active",game.turn()==="b"
+  );
+
+  render();
+  updateStatus();
+
+ },error=>{
+  setStatus("Database error: "+error.message);
+ });
 }
 
-matchData=snap.val();
 
-if(matchData.status!=="ready"){
-setStatus("Match is not active.");
-return;
-}
-
-if(matchData.players?.[player]?.uid!==user.uid){
-setStatus("Player verification failed.");
-return;
-}
-
-try{
-game=new Chess(matchData.fen||new Chess().fen());
-}catch(e){
-setStatus("Invalid chess position.");
-return;
-}
-
-document.getElementById("whitePlayer").textContent=
-"♔ White: "+matchData.players.white.name;
-
-document.getElementById("blackPlayer").textContent=
-"♚ Black: "+matchData.players.black.name;
-
-document.getElementById("whitePlayer").classList.toggle("active",game.turn()==="w");
-document.getElementById("blackPlayer").classList.toggle("active",game.turn()==="b");
-
-render();
-updateStatus();
-},error=>setStatus("Database error: "+error.message));
-}
+/* GAME STATUS */
 
 function updateStatus(){
-if(game.isCheckmate()){
-setStatus("CHECKMATE! "+(game.turn()==="w"?"Black":"White")+" wins!");
-return;
+
+ if(game.isCheckmate()){
+  setStatus("CHECKMATE! "+(game.turn()==="w"?"Black":"White")+" wins!");
+  return;
+ }
+
+ if(game.isDraw()){
+  setStatus("GAME DRAW!");
+  return;
+ }
+
+ if(game.isCheck()){
+  setStatus((game.turn()==="w"?"White":"Black")+" is in CHECK!");
+  return;
+ }
+
+ const myTurn=
+  game.turn()===(player==="white"?"w":"b");
+
+ setStatus(
+  (game.turn()==="w"?"White":"Black")+
+  " to move"+(myTurn?" — YOUR TURN":" — OPPONENT'S TURN")
+ );
 }
-if(game.isDraw()){
-setStatus("GAME DRAW!");
-return;
-}
-if(game.isCheck()){
-setStatus((game.turn()==="w"?"White":"Black")+" is in CHECK!");
-return;
-}
-const myTurn=game.turn()===(player==="white"?"w":"b");
-setStatus((game.turn()==="w"?"White":"Black")+" to move"+(myTurn?" — YOUR TURN":" — OPPONENT'S TURN"));
-}
+
+
+/* CHESSBOARD RENDER */
 
 function render(){
-boardEl.innerHTML="";
-const position=game.board();
 
-const rows=player==="white"?[0,1,2,3,4,5,6,7]:[7,6,5,4,3,2,1,0];
-const cols=player==="white"?[0,1,2,3,4,5,6,7]:[7,6,5,4,3,2,1,0];
+ boardEl.innerHTML="";
 
-for(const r of rows){
-for(const c of cols){
-const cell=position[r][c];
-const square=document.createElement("div");
-const name=String.fromCharCode(97+c)+(8-r);
+ const position=game.board();
 
-square.className="square "+((r+c)%2?"dark":"light");
+ // White player: White pieces at bottom.
+ // Black player: Black pieces at bottom.
 
-if(cell)square.textContent=pieces[cell.color][cell.type];
+ const rows=player==="white"?
+  [0,1,2,3,4,5,6,7]:
+  [7,6,5,4,3,2,1,0];
 
-if(selected===name)square.classList.add("selected");
+ const cols=player==="white"?
+  [0,1,2,3,4,5,6,7]:
+  [7,6,5,4,3,2,1,0];
 
-if(selected){
-const moves=game.moves({square:selected,verbose:true});
-if(moves.some(m=>m.to===name)){
-square.style.boxShadow="inset 0 0 0 4px #e6d34c";
+ for(let vr=0;vr<8;vr++){
+
+  for(let vc=0;vc<8;vc++){
+
+   const r=rows[vr];
+   const c=cols[vc];
+
+   const cell=position[r][c];
+
+   const name=String.fromCharCode(97+c)+(8-r);
+
+   const square=document.createElement("div");
+
+   square.className="square "+((vr+vc)%2?"dark":"light");
+
+   /* SELECTED */
+
+   if(selected===name){
+    square.classList.add("selected");
+   }
+
+   /* LAST MOVE */
+
+   if(lastMove&&
+      (lastMove.from===name||lastMove.to===name)){
+    square.classList.add("last-move");
+   }
+
+   /* PIECES */
+
+   if(cell){
+
+    const span=document.createElement("span");
+
+    span.className="piece "+
+     (cell.color==="w"?"white-piece":"black-piece");
+
+    span.textContent=pieces[cell.color][cell.type];
+
+    square.appendChild(span);
+   }
+
+   /* LEGAL MOVE INDICATORS */
+
+   if(possibleMoves.some(m=>m.to===name)){
+
+    const marker=document.createElement("div");
+
+    marker.className=cell?"capture":"dot";
+
+    square.appendChild(marker);
+   }
+
+   /* RANK COORDINATES */
+
+   if(vc===0){
+
+    const rank=document.createElement("span");
+
+    rank.className="coordinates rank";
+    rank.textContent=8-r;
+
+    square.appendChild(rank);
+   }
+
+   /* FILE COORDINATES */
+
+   if(vr===7){
+
+    const file=document.createElement("span");
+
+    file.className="coordinates file";
+    file.textContent=String.fromCharCode(97+c);
+
+    square.appendChild(file);
+   }
+
+   square.addEventListener("click",()=>clickSquare(name));
+
+   boardEl.appendChild(square);
+  }
+ }
 }
-}
 
-square.onclick=()=>clickSquare(name);
-boardEl.appendChild(square);
-}
-}
-}
+
+/* CLICK SQUARE */
 
 async function clickSquare(square){
-if(busy||!matchData||game.isGameOver())return;
 
-const turnColor=player==="white"?"w":"b";
+ if(busy||!matchData||game.isGameOver())return;
 
-if(game.turn()!==turnColor)return;
+ const turnColor=player==="white"?"w":"b";
 
-const piece=game.get(square);
+ if(game.turn()!==turnColor)return;
 
-if(!selected){
-if(piece&&piece.color===turnColor){
-selected=square;
-render();
+ const piece=game.get(square);
+
+ if(!selected){
+
+  if(piece&&piece.color===turnColor){
+
+   selected=square;
+
+   possibleMoves=game.moves({
+    square:selected,
+    verbose:true
+   });
+
+   render();
+  }
+
+  return;
+ }
+
+ if(selected===square){
+
+  clearSelection();
+  render();
+  return;
+ }
+
+ if(piece&&piece.color===turnColor){
+
+  selected=square;
+
+  possibleMoves=game.moves({
+   square:selected,
+   verbose:true
+  });
+
+  render();
+  return;
+ }
+
+ const from=selected;
+
+ const choices=possibleMoves.filter(m=>m.to===square);
+
+ if(!choices.length){
+
+  clearSelection();
+  render();
+  return;
+ }
+
+ /* PROMOTION */
+
+ let promotion="q";
+
+ if(choices.some(m=>m.promotion)){
+
+  const answer=prompt(
+   "Promote to: q (Queen), r (Rook), b (Bishop), n (Knight)",
+   "q"
+  );
+
+  if(answer===null){
+   clearSelection();
+   render();
+   return;
+  }
+
+  promotion=["q","r","b","n"].includes(answer.toLowerCase())?
+   answer.toLowerCase():"q";
+ }
+
+ clearSelection();
+ busy=true;
+ render();
+
+ try{
+
+  const result=await runTransaction(gameRef,data=>{
+
+   if(!data||data.status!=="ready")return;
+
+   if(data.players?.[player]?.uid!==user.uid)return;
+
+   const latest=new Chess(data.fen||new Chess().fen());
+
+   if(latest.turn()!==turnColor)return;
+
+   try{
+
+    latest.move({
+     from:from,
+     to:square,
+     promotion:promotion
+    });
+
+   }catch(e){
+    return;
+   }
+
+   data.fen=latest.fen();
+
+   data.turn=latest.turn()==="w"?"white":"black";
+
+   data.lastMove={
+    from:from,
+    to:square,
+    by:player,
+    at:Date.now()
+   };
+
+   return data;
+
+  },{applyLocally:false});
+
+  if(!result.committed){
+
+   document.getElementById("info").textContent=
+    "Move not accepted. Please try again.";
+
+  }else{
+
+   document.getElementById("info").textContent=
+    "Move updated live!";
+  }
+
+ }catch(e){
+
+  document.getElementById("info").textContent=
+   "Error: "+e.message;
+
+ }finally{
+
+  busy=false;
+  render();
+ }
 }
-return;
-}
 
-if(selected===square){
-selected=null;
-render();
-return;
-}
 
-if(piece&&piece.color===turnColor){
-selected=square;
-render();
-return;
-}
-
-const from=selected;
-const possible=game.moves({square:from,verbose:true});
-const choices=possible.filter(m=>m.to===square);
-
-if(!choices.length){
-selected=null;
-render();
-return;
-}
-
-let promotion="q";
-if(choices.some(m=>m.promotion)){
-const answer=prompt("Promote to: q (Queen), r (Rook), b (Bishop), n (Knight)","q");
-promotion=["q","r","b","n"].includes(answer?.toLowerCase())?answer.toLowerCase():"q";
-}
-
-selected=null;
-busy=true;
-render();
-
-try{
-const result=await runTransaction(gameRef,data=>{
-if(!data||data.status!=="ready")return;
-if(data.players?.[player]?.uid!==user.uid)return;
-
-const latest=new Chess(data.fen||new Chess().fen());
-
-if(latest.turn()!==turnColor)return;
-
-try{
-latest.move({from,to:square,promotion});
-}catch(e){
-return;
-}
-
-data.fen=latest.fen();
-data.turn=latest.turn()==="w"?"white":"black";
-data.lastMove={from,to:square,by:player,at:Date.now()};
-
-return data;
-},{applyLocally:false});
-
-if(!result.committed){
-document.getElementById("info").textContent=
-"Move not accepted. Please try again.";
-}else{
-document.getElementById("info").textContent="Move updated live.";
-}
-}catch(e){
-document.getElementById("info").textContent="Error: "+e.message;
-}finally{
-busy=false;
-render();
-}
-}
+/* EXIT */
 
 document.getElementById("exitBtn").onclick=()=>{
-if(unsubscribe)unsubscribe();
-location.href="multiplayer.html";
+
+ if(unsubscribe)unsubscribe();
+
+ location.href="multiplayer.html";
 };
 
+
+/* AUTH */
+
 onAuthStateChanged(auth,async u=>{
-if(!u){
-location.replace("login.html");
-return;
-}
-user=u;
-await startGame();
+
+ if(!u){
+  location.replace("login.html");
+  return;
+ }
+
+ user=u;
+
+ await startGame();
+
 });
+
 </script>
 </body>
-</html>
+  </html>
